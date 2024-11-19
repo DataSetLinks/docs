@@ -1,17 +1,17 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Starter Kit",
+  "name": "Documentation",
   "logo": {
-    "dark": "/logo/dark.svg",
-    "light": "/logo/light.svg"
+    "dark": "/logo/dsl_logo_transparent.png",
+    "light": "/logo/dsl_logo_transparent.png"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/logo/dsl_icon_transparent.png",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#07C983",
-    "dark": "#0D9373",
+    "primary": "#062C41",
+    "light": "#026AA2",
+    "dark": "#062C41",
     "anchors": {
-      "from": "#0D9373",
+      "from": "#026AA2",
       "to": "#07C983"
     }
   },
