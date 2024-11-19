@@ -19,7 +19,7 @@ Line by line:
 1 - You need to provide us with a Bearer token for your user. We don't have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us.
 
 
-2 - These three properties **username**/**namespace**/**objectname** can be found in the dataset url path by clicking My Data on the left menu and navigating to the dataset you want to query.
+2 - These three properties **username**/**namespace**/**objectname** can be found in the dataset URL path by clicking My Data on the left menu and navigating to the dataset you want to query.
 
 
 3 - The query you want to run. The reason why this curl is a Post is so you can send the query on the body. Our query language keeps growing and soon we'll publish documentation for the whole feature space. Till then below are some examples:
@@ -34,7 +34,7 @@ Line by line:
 
 ## Creating a dataset
 
-The api endpoint below will create a dataset under your user. You always need to create a dataset before you upload data to it.
+The API endpoint below will create a dataset under your user. You always need to create a dataset before you upload data to it.
 
 ```
 1  curl -H "Authorization: Bearer token1234abcdefg"
@@ -56,7 +56,7 @@ Line by line:
 
 ### Uploading structured data
 
-Uploading data can currently be done by uploading a structured json. You will need write permitions to that dataset, which you will have if it's a dataset you created. If the dataset belongs to someone else you'll need to request write permissions to be enabled for you in that dataset. This is currently supported but there isn't any UI element to do it, until there is if you ask the DataLinks team we'll enable the sharing on the backend.
+Uploading data can currently be done by uploading a structured JSON. You will need write permissions to that dataset, which you will have if it's a dataset you created. If the dataset belongs to someone else you'll need to request write permissions to be enabled for you in that dataset. This is currently supported but there isn't any UI element to do it, until there is if you ask the DataLinks team we'll enable the sharing on the backend.
 
 ```
   curl -H "Authorization: Bearer token1234abcdefg"
@@ -69,12 +69,12 @@ Line by line:
 1 - You need to provide us with a Bearer token for your user. We don't have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us.
 
 
-2 - The **namespace** is the name you want to group your datasets around. An **objectname** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
+2 - The **namespace** is the name you want to group your datasets around. An **object name** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
 
 
 3 - In the body of your **POST** you need to pass string with a JSON containing an array of rows within the property **data**. The example above sends two rows with the same columns.
 
-## Infering new columns when uploading data
+## Inferring new columns when uploading data
 
 When uploading data you can infer columns from existing ones. This uses our AI for auto derivations, you'll need to explain what the columns that you want are, and which steps you want to execute. We currently support three steps, Table, Rows and Normalize.
 
@@ -96,14 +96,14 @@ When uploading data you can infer columns from existing ones. This uses our AI f
 
 Line by line:
 
-1 - The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps suce has **table**, **rows**, **normalize**.
+1 - The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps such as **table**, **rows**, **normalize**.
 
 
 2 - In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
 
 ### Table extraction
 
-The table step will try to extract a table from any piece of text provided. This can be free text like a review of a restaurant, a report from a flight log or a finantial instrument notice. If this step is used alone, it will likely create somewhat random columns that will need to be normalized later. The table step will create new columns and append these to the rows in the existing table.
+The table step will try to extract a table from any piece of text provided. This can be free text like a review of a restaurant, a report from a flight log or a financial instrument notice. If this step is used alone, it will likely create somewhat random columns that will need to be normalized later. The table step will create new columns and append these to the rows in the existing table.
 
 <Tip>
   Pro tip: Calling an extraction with just the **table** step is a great way to see what kind of **structured** data can be generated from your unstructured data.
@@ -119,7 +119,7 @@ The table step will try to extract a table from any piece of text provided. This
 
 #### Rows
 
-Whenever you have a table in json format within a column you can transform it directly into a table. The json should be an array of objects, each key in the object will be mapped to a new column.
+Whenever you have a table in JSON format within a column you can transform it directly into a table. The JSON should be an array of objects, each key in the object will be mapped to a new column.
 
 ```
   {
@@ -130,7 +130,7 @@ Whenever you have a table in json format within a column you can transform it di
 
 #### Normalize names
 
-Use the Normalize names step to consolidate the schema or column space. Here you should pass the columns that you want outputed in your table that gets indexed into datalinks.
+Use the Normalize names step to consolidate the schema or column space. Here you should pass the columns that you want outputted in your table that gets indexed into datalinks.
 
 ```
   {
