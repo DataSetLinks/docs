@@ -1,32 +1,103 @@
-# Mintlify Starter Kit
+---
+title: 'Development'
+description: 'Preview changes locally to update your docs'
+---
 
-Click on `Use this template` to copy the Mintlify starter kit. The starter kit contains examples including
+<Info>
+  **Prerequisite**: Please install Node.js (version 19 or higher) before proceeding.
+</Info>
 
-- Guide pages
-- Navigation
-- Customizations
-- API Reference pages
-- Use of popular components
+Follow these steps to install and run Mintlify on your operating system:
 
-### Development
+**Step 1**: Install Mintlify:
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
+<CodeGroup>
+  ```bash npm
+  npm i -g mintlify
+  ```
 
-```
-npm i -g mintlify
-```
+  ```bash yarn
+  yarn global add mintlify
+  ```
+</CodeGroup>
 
-Run the following command at the root of your documentation (where mint.json is)
+**Step 2**: Navigate to the docs directory (where the `mint.json` file is located) and execute the following command:
 
-```
+```bash
 mintlify dev
 ```
 
-### Publishing Changes
+A local preview of your documentation will be available at `http://localhost:3000`.
 
-Install our Github App to auto propagate changes from your repo to your deployment. Changes will be deployed to production automatically after pushing to the default branch. Find the link to install on your dashboard. 
+### Custom Ports
 
-#### Troubleshooting
+By default, Mintlify uses port 3000. You can customize the port Mintlify runs on by using the `--port` flag. To run Mintlify on port 3333, for instance, use this command:
 
-- Mintlify dev isn't running - Run `mintlify install` it'll re-install dependencies.
-- Page loads as a 404 - Make sure you are running in a folder with `mint.json`
+```bash
+mintlify dev --port 3333
+```
+
+If you attempt to run Mintlify on a port that's already in use, it will use the next available port:
+
+```md
+Port 3000 is already in use. Trying 3001 instead.
+```
+
+## Mintlify Versions
+
+Please note that each CLI release is associated with a specific version of Mintlify. If your local website doesn't align with the production version, please update the CLI:
+
+<CodeGroup>
+  ```bash npm
+  npm i -g mintlify@latest
+  ```
+
+  ```bash yarn
+  yarn global upgrade mintlify
+  ```
+</CodeGroup>
+
+## Validating Links
+
+The CLI can assist with validating reference links made in your documentation. To identify any broken links, use the following command:
+
+```bash
+mintlify broken-links
+```
+
+## Deployment
+
+<Tip>
+  Unlimited editors available under the [Pro
+  Plan](https://mintlify.com/pricing) and above.
+</Tip>
+
+If the deployment is successful, you should see the following:
+
+<Frame>
+  <img src="/images/checks-passed.png" style={{ borderRadius: '0.5rem' }} />
+</Frame>
+
+## Code Formatting
+
+We suggest using extensions on your IDE to recognize and format MDX. If you're a VSCode user, consider the [MDX VSCode extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) for syntax highlighting, and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) for code formatting.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Error: Could not load the &#x22;sharp&#x22; module using the darwin-arm64 runtime">
+    This may be due to an outdated version of node. Try the following:
+
+    1. Remove the currently-installed version of mintlify: `npm remove -g mintlify`
+
+    2. Upgrade to Node v19 or higher.
+
+    3. Reinstall mintlify: `npm install -g mintlify`
+  </Accordion>
+
+  <Accordion title="Issue: Encountering an unknown error">
+    Solution: Go to the root of your device and delete the \~/.mintlify folder. Afterwards, run `mintlify dev` again.
+  </Accordion>
+</AccordionGroup>
+
+Curious about what changed in the CLI version? [Check out the CLI changelog.](https://www.npmjs.com/package/mintlify?activeTab=versions)
