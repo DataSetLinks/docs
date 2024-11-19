@@ -17,7 +17,11 @@ You can send expressive queries to the backend that can filter, do search around
 Line by line:
 
 1 - You need to provide us with a Bearer token for your user. We don't have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us.
+
+
 2 - These three properties **username**/**namespace**/**objectname** can be found in the dataset url path by clicking My Data on the left menu and navigating to the dataset you want to query.
+
+
 3 - The query you want to run. The reason why this curl is a Post is so you can send the query on the body. Our query language keeps growing and soon we'll publish documentation for the whole feature space. Till then below are some examples:
 
 ```
@@ -40,6 +44,8 @@ The api endpoint below will create a dataset under your user. You always need to
 Line by line:
 
 1 - You need to provide us with a Bearer token for your user. We don't have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us.
+
+
 2 - The **namespace** is the name you want to group your datasets around. An **objectname** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
 
 ## Uploading data into a dataset
@@ -61,7 +67,11 @@ Uploading data can currently be done by uploading a structured json. You will ne
 Line by line:
 
 1 - You need to provide us with a Bearer token for your user. We don't have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us.
+
+
 2 - The **namespace** is the name you want to group your datasets around. An **objectname** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
+
+
 3 - In the body of your **POST** you need to pass string with a JSON containing an array of rows within the property **data**. The example above sends two rows with the same columns.
 
 ## Infering new columns when uploading data
@@ -86,8 +96,10 @@ When uploading data you can infer columns from existing ones. This uses our AI f
 
 Line by line:
 
-6 - The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps suce has **table**, **rows**, **normalize**.
-7 - In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
+1 - The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps suce has **table**, **rows**, **normalize**.
+
+
+2 - In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
 
 ### Table extraction
 
