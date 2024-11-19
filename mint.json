@@ -18,13 +18,15 @@
   "navigation": [
     {
       "group": "Get Started",
+      "icon": "file-lines"
       "pages": [
         "Welcome"
       ]
     }
   ],
   "footerSocials": {
-    "linkedin": "https://linkedin.com/company/datasetlinks"
+    "linkedin": "https://linkedin.com/company/datasetlinks",
+    "website": "datalinks.tech"
   },
   "topbarCTA": {
     "name": "My Data",
