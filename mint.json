@@ -25,9 +25,9 @@
   ],
   "footerSocials": {
     "linkedin": "https://linkedin.com/company/datasetlinks"
-  }
-}
+  },
   "topbarCTA": {
     "name": "My Data",
     "url": "https://datalinks.tech/home/data"
   }
+}
