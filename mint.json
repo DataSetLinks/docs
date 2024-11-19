@@ -18,7 +18,7 @@
   "navigation": [
     {
       "group": "Get Started",
-      "icon": "file-lines"
+      "icon": "file-lines",
       "pages": [
         "Welcome"
       ]
