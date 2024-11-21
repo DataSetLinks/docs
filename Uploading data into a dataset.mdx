@@ -1,0 +1,23 @@
+## Uploading data into a dataset
+
+<Warning>
+  Before uploading data to a dataset you first need to create it! Use the instructions above or the UI in [My Data](https://datalinks.tech/home/data)
+</Warning>
+
+### Uploading structured data
+
+Uploading data can currently be done by uploading a structured JSON. You will need write permissions to that dataset, which you will have if it's a dataset you created. If the dataset belongs to someone else you'll need to request write permissions to be enabled for you in that dataset. This is currently supported but there isn't any UI element to do it, until there is if you ask the DataLinks team we'll enable the sharing on the backend.
+
+```
+  curl -H "Authorization: Bearer token1234abcdefg"
+       -X POST https://api.datasetlinks.com/api/ingest/namespace/objectname
+       --data '{"data": [{"col1": 123, "col2": "foo"}, {"col1": 444, "col2": "bar"}] }'
+```
+
+Line by line:
+
+1 - You need to provide us with a Bearer token for your user. We don't have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us.
+
+2 - The **namespace** is the name you want to group your datasets around. An **object name** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
+
+3 - In the body of your **POST** you need to pass string with a JSON containing an array of rows within the property **data**. The example above sends two rows with the same columns.

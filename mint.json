@@ -3,24 +3,28 @@
   "name": "Documentation",
   "logo": {
     "dark": "/logo/dsl_logo_transparent.png",
-    "light": "/logo/dsl_logo_transparent.png"
+    "light": "/logo/DATALINKS logo_white.svg"
   },
   "favicon": "/logo/dsl_icon_transparent.png",
   "colors": {
-    "primary": "#062C41",
-    "light": "#026AA2",
-    "dark": "#062C41",
+    "primary": "#7CD4FD",
+    "light": "#0BA5EC",
+    "dark": "#7CD4FD",
     "anchors": {
-      "from": "#026AA2",
+      "from": "#0BA5EC",
       "to": "#07C983"
     }
   },
   "navigation": [
     {
-      "group": "Get Started",
+      "group": "DataLinks",
       "icon": "file-lines",
       "pages": [
-        "Welcome"
+        "Welcome",
+        "Querying data",
+        "Creating a dataset",
+        "Uploading data into a dataset",
+        "Inferring new columns when uploading data"
       ]
     }
   ],

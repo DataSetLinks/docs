@@ -1,0 +1,68 @@
+## Inferring new columns when uploading data
+
+When uploading data you can infer columns from existing ones. This uses our AI for auto derivations, you'll need to explain what the columns that you want are, and which steps you want to execute. We currently support three steps, Table, Rows and Normalize.
+
+```
+1  curl -H "Authorization: Bearer token1234abcdefg"
+2       -X POST https://api.datasetlinks.com/api/ingest/namespace/objectname
+3       --data '{
+4                 "data": [{"col1": 123, "col2": "foo", "colWithATable":                5                 "direction,size;up,large"}, {"col1": 444, "col2": "bar"}]
+6                   "infer": {
+7                     "steps": [{
+8                        "type": "table"
+9                        "deriveFrom": "colWithATable"
+10                       "helperPrompt": "This text contains a table comma separated,  
+11                       but instead of line breaks we are using a &apos;;&apos;."
+12                    }]
+13                  }
+14               }'
+```
+
+Line by line:
+
+7 - The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps such as **table**, **rows**, **normalize**.
+
+8 - In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
+
+### Table extraction
+
+The table step will try to extract a table from any piece of text provided. This can be free text like a review of a restaurant, a report from a flight log or a financial instrument notice. If this step is used alone, it will likely create somewhat random columns that will need to be normalized later. The table step will create new columns and append these to the rows in the existing table.
+
+<Tip>
+  Pro tip: Calling an extraction with just the **table** step is a great way to see what kind of **structured** data can be generated from your unstructured data.
+</Tip>
+
+```
+1  {
+2    "type": "table"
+3    "deriveFrom": "columnName from where the column should be derived from"
+4    "helperPrompt": "This text contains a table comma separated, but instead of line breaks 5    we are using a &apos;;&apos;."
+6  }
+```
+
+#### Rows
+
+Whenever you have a table in JSON format within a column you can transform it directly into a table. The JSON should be an array of objects, each key in the object will be mapped to a new column.
+
+```
+  {
+    "type": "rows"
+    "deriveFrom": "columnName from where the json content will be read"
+  }
+```
+
+#### Normalize names
+
+Use the Normalize names step to consolidate the schema or column space. Here you should pass the columns that you want outputted in your table that gets indexed into datalinks.
+
+```
+  {
+    "type": "normalize"
+    "targetCols": {
+        "NameOfTheColumn": "Description for what this column is, which will enable the AI to automatically transform other names into
+        the desired schema, you can have as many columns as you want"
+    },
+    "helperPrompt": "This prompt will help the llm understand what the domain you are operating under is. So that can correctly
+        interpret the existing column names and the target columns."
+  }
+```

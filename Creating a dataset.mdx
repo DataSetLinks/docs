@@ -1,0 +1,14 @@
+## Creating a dataset
+
+The API endpoint below will create a dataset under your user. You always need to create a dataset before you upload data to it.
+
+```
+1  curl -H "Authorization: Bearer token1234abcdefg"
+2       -X POST https://api.datasetlinks.com/api/ingest/new/namespace/objectname
+```
+
+Line by line:
+
+1 - You need to provide us with a Bearer token for your user. We don't have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us.
+
+2 - The **namespace** is the name you want to group your datasets around. An **objectname** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
