@@ -21,7 +21,7 @@
       "icon": "file-lines",
       "pages": [
         "Welcome",
-        "Querying+data",
+        "Querying_data",
         "Creating a dataset",
         "Uploading data into a dataset",
         "Inferring new columns when uploading data"
