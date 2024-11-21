@@ -2,8 +2,8 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "Documentation",
   "logo": {
-    "dark": "/logo/dsl_logo_transparent.png",
-    "light": "/logo/DATALINKS logo_white.svg"
+    "dark": "/logo/DATALINKS logo_white.svg",
+    "light": "/logo/DATALINKS logo_fullcolor.svg"
   },
   "favicon": "/logo/dsl_icon_transparent.png",
   "colors": {
