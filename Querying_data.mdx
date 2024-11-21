@@ -1,0 +1,25 @@
+## Querying data
+
+You can send expressive queries to the backend that can filter, do search arounds, aggregations and more!
+
+```
+ 1 curl -H "Authorization: Bearer token1234abcdefg"`
+ 2      -X POST https://api.datasetlinks.com/api/data/username/namespace/objectname
+ 3      --data 'OntologyObject("objectname").get()'
+```
+
+Line by line:
+
+1 - You need to provide us with a Bearer token for your user. We don’t have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us.
+
+2 - These three properties **username**/**namespace**/**objectname** can be found in the dataset URL path by clicking My Data on the left menu and navigating to the dataset you want to query.
+
+3 - The query you want to run. The reason why this curl is a Post is so you can send the query on the body. Our query language keeps growing and soon we’ll publish documentation for the whole feature space. Till then below are some examples:
+
+```
+1 Getting all data - OntologyObject("objectname").get()
+2 Filtering a column - OntologyObject("objectname").filter("columnName==Foo").get()
+3 Filter with Logic expressions - OntologyObject("objectname").filter("columnName==Foo  
+  && column2 > 2").get()
+4 Following links - OntologyObject("objectname").searchAround().find("otherObject").get()
+```

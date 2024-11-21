@@ -22,9 +22,9 @@
       "pages": [
         "Welcome",
         "Querying_data",
-        "Creating a dataset",
-        "Uploading data into a dataset",
-        "Inferring new columns when uploading data"
+        "Creating_a_dataset",
+        "Uploading_data_into_a_dataset",
+        "Inferring_new_columns_when_uploading_data"
       ]
     }
   ],
