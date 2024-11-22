@@ -15,6 +15,10 @@
       "to": "#07C983"
     }
   },
+    "topbarCTA": {
+    "name": "My Data",
+    "url": "https://datalinks.tech/home/data"
+  },
   "navigation": [
     {
       "group": "DataLinks",
@@ -32,8 +36,4 @@
     "linkedin": "https://linkedin.com/company/datasetlinks",
     "website": "https://datalinks.tech/"
   },
-  "topbarCTA": {
-    "name": "My Data",
-    "url": "https://datalinks.tech/home/data"
-  }
 }
