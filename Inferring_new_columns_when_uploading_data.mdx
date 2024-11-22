@@ -1,4 +1,4 @@
-When uploading data you can infer columns from existing ones. This uses our AI for auto derivations, you'll need to explain what the columns that you want are, and which steps you want to execute. We currently support three steps, Table, Rows and Normalize.
+When uploading data, you can infer columns from existing ones. This uses our AI for auto derivations, you'll need to explain what the columns that you want are, and which steps you want to execute. We currently support three steps: Table, Rows and Normalize.
 
 ```
 1  curl -H "Authorization: Bearer token1234abcdefg"
@@ -24,17 +24,18 @@ Line by line:
 
 ### Table extraction
 
-The table step will try to extract a table from any piece of text provided. This can be free text like a review of a restaurant, a report from a flight log or a financial instrument notice. If this step is used alone, it will likely create somewhat random columns that will need to be normalized later. The table step will create new columns and append these to the rows in the existing table.
+The Table Step is designed to extract a table from any text input, whether it's free text like a restaurant review, a flight log report, or a financial instrument notice. When used on its own, the step may generate columns that are somewhat arbitrary and will likely require normalization afterward. It works by creating new columns based on the extracted data and appending them to the rows of the existing table.
 
 <Tip>
-  Pro tip: Calling an extraction with just the **table** step is a great way to see what kind of **structured** data can be generated from your unstructured data.
+  **Pro tip:** Calling an extraction with just the **table** step is a great way to see what kind of **structured** data can be generated from your unstructured data.
 </Tip>
 
 ```
 1  {
 2    "type": "table"
 3    "deriveFrom": "columnName from where the column should be derived from"
-4    "helperPrompt": "This text contains a table comma separated, but instead of line breaks 5    we are using a &apos;;&apos;."
+4    "helperPrompt": "This text contains a table comma separated, but instead of line     
+5     breaks we are using a &apos;;&apos;."
 6  }
 ```
 
@@ -51,16 +52,16 @@ Whenever you have a table in JSON format within a column you can transform it di
 
 #### Normalize names
 
-Use the Normalize names step to consolidate the schema or column space. Here you should pass the columns that you want outputted in your table that gets indexed into datalinks.
+Use the Normalize names step to consolidate the schema or column space. Here you should pass the columns that you want outputted in your table that gets indexed into DataLinks.
 
 ```
-  {
-    "type": "normalize"
-    "targetCols": {
-        "NameOfTheColumn": "Description for what this column is, which will enable the AI to automatically transform other names into
-        the desired schema, you can have as many columns as you want"
-    },
-    "helperPrompt": "This prompt will help the llm understand what the domain you are operating under is. So that can correctly
-        interpret the existing column names and the target columns."
-  }
+1  {
+2    "type": "normalize"
+3    "targetCols": {
+4        "NameOfTheColumn": "Description for what this column is, which will enable the 5         AI to automatically transform other names into the desired schema, you can     
+6         have as many columns as you want"
+7    },
+8    "helperPrompt": "This prompt will help the llm understand what the domain you are  9     operating under is. So that can correctly
+10        interpret the existing column names and the target columns."
+11  }
 ```
