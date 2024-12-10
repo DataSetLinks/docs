@@ -15,7 +15,7 @@
       "to": "#07C983"
     }
   },
-    "topbarCTA": {
+    "topbarCtaButton": {
     "name": "My Data",
     "url": "https://datalinks.tech/home/data"
   },
