@@ -15,7 +15,7 @@
       "to": "#07C983"
     }
   },
-    "topbarCtaButton": {
+  "topbarCtaButton": {
     "name": "My Data",
     "url": "https://datalinks.tech/home/data"
   },
@@ -30,13 +30,15 @@
         "Uploading_data_into_a_dataset",
         "Inferring_new_columns_when_uploading_data"
       ]
-        {
+    },
+    {
       "group": "Example_Use_Cases",
       "icon": "file-lines",
       "pages": [
         "Placeholder",
         "Placeholder2",
         "Placeholder3"
+      ]
     }
   ],
   "footerSocials": {
