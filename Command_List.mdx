@@ -1,4 +1,114 @@
 ---
-title: 'Command List'
-description: 'Description of your new file.'
+title: "Query Language Command List"
+description: "This documentation provides a reference for constructing queries in the ontology graph engine. Queries allow you to search, filter, group, and process data stored in interconnected schemas."
 ---
+
+### **Core Functions**
+
+#### **`OntologyObject`**
+
+* **Description**: Initializes a query on a specific table/schema.
+
+* **Syntax**: `OntologyObject("TableName")`
+
+* **Example**:
+  `OntologyObject("Movies")`
+
+
+#### **`filter`**
+
+* **Description**: Filters data based on conditions or free-text search.
+
+* **Syntax**:
+
+  * For conditions: `filter("field==value")`
+
+  * For free-text search: `filter("searchText")`
+
+* **Example**:
+  `OntologyObject("Movies").filter("year==2005")`
+  `OntologyObject("Movies").filter("John Wick")`
+
+
+#### **`searchAround`**
+
+* **Description**: Searches objects connected to the current object, optionally specifying the depth of traversal.
+
+* **Syntax**: `searchAround({depth: n})`
+
+* **Example**:
+  `OntologyObject("Movies").filter("Inception").searchAround({depth: 2})`
+
+
+#### **`find`**
+
+* **Description**: Specifies the table/schema to traverse to.
+
+* **Syntax**: `find("TableName")`
+
+* **Example**:
+  `OntologyObject("Actor").find("Movies")`
+
+
+#### **`unique`**
+
+* **Description**: Ensures only unique objects are returned.
+
+* **Syntax**: `unique()`
+
+* **Example**:
+  `OntologyObject("CompanyRegister/Shareholders").unique()`
+
+
+#### **`groupBy`**
+
+* **Description**: Groups data by specified fields.
+
+* **Syntax**: `groupBy("field1", "field2", ...)`
+
+* **Example**:
+  `OntologyObject("Sanctions/Companies").groupBy("program", "nationalities")`
+
+
+#### **`count`**
+
+* **Description**: Counts the number of results in the query.
+
+* **Syntax**: `count()`
+
+* **Example**:
+  `OntologyObject("Movies").filter("year==2020").count()`
+
+
+#### **`sortBy`**
+
+* **Description**: Sorts results by a specific field.
+
+* **Syntax**: `sortBy("field")`
+
+* **Example**:
+  `OntologyObject("Movies").filter("year==2020").sortBy("budget")`
+
+
+#### **`get`**
+
+* **Description**: Executes the query and retrieves the results.
+
+* **Syntax**: `get()`
+
+* **Example**:
+  `OntologyObject("Movies").filter("Inception").get()`
+
+
+
+### **Error Handling**
+
+If a query returns unexpected results:
+
+1. Check field names and table relationships for correctness.
+
+2. Ensure the depth in `searchAround` is sufficient for your query.
+
+3. Use `unique()` to remove duplicates if necessary.
+
+4. Debug by breaking the query into smaller parts and testing them individually.
