@@ -10,15 +10,17 @@ Data can currently be uploaded by providing a structured JSON file. To upload da
 While this functionality is supported, there is no user interface available for it at the moment. Until the UI is implemented, you can contact the DataLinks team to enable sharing permissions on the backend.
 
 ```
-  curl -H "Authorization: Bearer token1234abcdefg"
-       -X POST https://api.datasetlinks.com/api/ingest/namespace/objectname
-       --data '{"data": [{"col1": 123, "col2": "foo"}, {"col1": 444, "col2": "bar"}] }'
+1  curl -H "Authorization: Bearer token1234abcdefg"
+2       -H "Content-Encoding: gzip" \
+3       -H "Content-Type: application/json" \
+4       -X POST https://api.datasetlinks.com/api/ingest/namespace/objectname \
+5       --data-binary @data.json.gz
 ```
 
 Line by line:
 
 1 - You need to provide us with a Bearer token for your user. We don't have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us.
 
-2 - The **namespace** is the name you want to group your datasets around. An **object name** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
+4 - The **namespace** is the name you want to group your datasets around. An **object name** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
 
-3 - In the body of your **POST** you need to pass a string with a JSON containing an array of rows within the property **data**. The example above sends two rows with the same columns.
+4 - In the body of your **POST** you need to pass a string with a JSON containing an array of rows within the property **data**. The example above is compressing a JSON file (in this case with gzip) and adding a header for the compressed content.
