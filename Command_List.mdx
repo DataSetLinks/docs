@@ -1,7 +1,15 @@
 ---
 title: "Query Language Command List"
+---
+
+This documentation provides a reference for constructing queries in the ontology graph engine. Queries allow you to search, filter, group, and process data stored in interconnected schemas.
+
+---
+title: "Query Language Command List"
 description: "This documentation provides a reference for constructing queries in the ontology graph engine. Queries allow you to search, filter, group, and process data stored in interconnected schemas."
 ---
+
+
 
 ### **Core Functions**
 
@@ -13,7 +21,6 @@ description: "This documentation provides a reference for constructing queries i
 
 * **Example**:
   `OntologyObject("Movies")`
-
 
 #### **`filter`**
 
@@ -29,7 +36,6 @@ description: "This documentation provides a reference for constructing queries i
   `OntologyObject("Movies").filter("year==2005")`
   `OntologyObject("Movies").filter("John Wick")`
 
-
 #### **`searchAround`**
 
 * **Description**: Searches objects connected to the current object, optionally specifying the depth of traversal.
@@ -38,7 +44,6 @@ description: "This documentation provides a reference for constructing queries i
 
 * **Example**:
   `OntologyObject("Movies").filter("Inception").searchAround({depth: 2})`
-
 
 #### **`find`**
 
@@ -49,7 +54,6 @@ description: "This documentation provides a reference for constructing queries i
 * **Example**:
   `OntologyObject("Actor").find("Movies")`
 
-
 #### **`unique`**
 
 * **Description**: Ensures only unique objects are returned.
@@ -58,7 +62,6 @@ description: "This documentation provides a reference for constructing queries i
 
 * **Example**:
   `OntologyObject("CompanyRegister/Shareholders").unique()`
-
 
 #### **`groupBy`**
 
@@ -69,7 +72,6 @@ description: "This documentation provides a reference for constructing queries i
 * **Example**:
   `OntologyObject("Sanctions/Companies").groupBy("program", "nationalities")`
 
-
 #### **`count`**
 
 * **Description**: Counts the number of results in the query.
@@ -78,7 +80,6 @@ description: "This documentation provides a reference for constructing queries i
 
 * **Example**:
   `OntologyObject("Movies").filter("year==2020").count()`
-
 
 #### **`sortBy`**
 
@@ -89,7 +90,6 @@ description: "This documentation provides a reference for constructing queries i
 * **Example**:
   `OntologyObject("Movies").filter("year==2020").sortBy("budget")`
 
-
 #### **`get`**
 
 * **Description**: Executes the query and retrieves the results.
@@ -98,8 +98,6 @@ description: "This documentation provides a reference for constructing queries i
 
 * **Example**:
   `OntologyObject("Movies").filter("Inception").get()`
-
-
 
 ### **Error Handling**
 
