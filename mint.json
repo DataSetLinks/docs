@@ -3,8 +3,7 @@
   "name": "Documentation",
   "logo": {
     "dark": "/logo/DATALINKS logo_white.svg",
-    "light": "/logo/DATALINKS logo_fullcolor.svg",
-    "size": "150px"
+    "light": "/logo/DATALINKS logo_fullcolor.svg"
   },
   "favicon": "/favicon.png",
   "colors": {
@@ -46,5 +45,16 @@
   "footerSocials": {
     "linkedin": "https://linkedin.com/company/datasetlinks",
     "website": "https://datalinks.com/"
-  }
+  },
+  "customCss": {
+    "styles": `
+      .logo {
+        width: 150px;
+        height: auto; /* Maintains aspect ratio */
+      }
+    `
+  },
+  "customHtmlHead": `
+    <link rel="icon" href="/favicon.png" type="image/png">
+  `
 }
