@@ -5,7 +5,7 @@
     "dark": "/logo/DATALINKS logo_white.svg",
     "light": "/logo/DATALINKS logo_fullcolor.svg"
   },
-  "favicon": "favicon.svg",
+  "favicon": "/logo/favicon.svg",
   "colors": {
     "primary": "#7CD4FD",
     "light": "#0BA5EC",
