@@ -13,7 +13,7 @@ OntologyObject("Shops");
      .filter("name == 'Shop A'") // Filter for Shop A
      .searchAround(500) // Search within a 500-meter radius
     .find("Shops");
-    .filter`(
+    .filter(
         "NAICS_code == 447110 || " +  // Gasoline stations with convenience stores
         "NAICS_code == 447190 || " +  // Other gasoline stations
         "NAICS_code == 454310 || " +  // Fuel dealers
@@ -34,7 +34,7 @@ The query results provide the following fields for each potentially hazardous lo
 **Name**: The name of the business.
 **NAICS Code**: The classification code for the type of business.
 **Distance**: The distance from "Shop A" in meters.
-**Risk Level** (if added): A classification of the risk (e.g., High, Medium, Low).
+**Risk Level** (<u>if added</u>): A classification of the risk (e.g., High, Medium, Low).
 
 | Name               | NAICS CODE | Distance (m) | Risk Level |
 | ------------------ | ---------- | ------------ | ---------- |
