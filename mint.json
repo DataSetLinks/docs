@@ -17,7 +17,7 @@
   },
   "topbarCtaButton": {
     "name": "My Data",
-    "url": "https://datalinks.tech/home/data"
+    "url": "https://datalinks.com/home/data"
   },
   "navigation": [
     {
@@ -33,7 +33,7 @@
       ]
     },
     {
-      "group": "Example_Use_Cases",
+      "group": "Example Use Cases",
       "icon": "file-lines",
       "pages": [
         "UseCase1",
