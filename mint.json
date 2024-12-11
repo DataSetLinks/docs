@@ -36,9 +36,8 @@
       "group": "Example_Use_Cases",
       "icon": "file-lines",
       "pages": [
-        "Placeholder",
-        "Placeholder2",
-        "Placeholder3"
+        "UseCase1",
+        "UseCase2"
       ]
     }
   ],
