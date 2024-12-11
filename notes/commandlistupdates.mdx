@@ -1,0 +1,63 @@
+---
+title: "New file"
+description: "(probable) future updates to command list"
+---
+
+#### **`select`**
+
+* **Description**: Specifies the fields or attributes to include in the query result, narrowing the output to only the fields of interest.
+
+* **Syntax**: `select("field1", "field2", ...)`
+
+* **Example**:
+  `OntologyObject("Movies").select("name", "year").get()`
+
+#### 5. **`unique`**
+
+* **Description**: Ensures only unique objects are returned.
+
+* **Syntax**: `unique()`
+
+* **Example**:
+  javascript
+  Copy code
+  `OntologyObject("CompanyRegister/Shareholders").unique`()
+
+***
+
+#### 6. **`groupBy`**
+
+* **Description**: Groups data by specified fields.
+
+* **Syntax**: `groupBy("field1", "field2", ...)`
+
+* **Example**:
+  javascript
+  Copy code
+  `OntologyObject("Sanctions/Companies").groupBy("program", "nationalities"`)
+
+***
+
+#### 7. **`count`**
+
+* **Description**: Counts the number of results in the query.
+
+* **Syntax**: `count()`
+
+* **Example**:
+  javascript
+  Copy code
+  `OntologyObject("Movies").filter("year==2020").count`()
+
+***
+
+#### 8. **`sortBy`**
+
+* **Description**: Sorts results by a specific field.
+
+* **Syntax**: `sortBy("field")`
+
+* **Example**:
+  javascript
+  Copy code
+  `OntologyObject("Movies").filter("year==2020").sortBy("budget")`
