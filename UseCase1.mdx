@@ -23,7 +23,6 @@ OntologyObject("Shops");
         "NAICS_code == 332996 || " +  // Ammunition manufacturing
         "NAICS_code == 424710"        // Petroleum bulk stations and terminals
      ) // Filter for potentially explosive NAICS codes
-    .select("name, NAICS_code, distance") // Select relevant fields for output
     .get();
 ```
 
@@ -33,17 +32,16 @@ The query results provide the following fields for each potentially hazardous lo
 
 **Name**: The name of the business.
 
-
 **NAICS Code**: The classification code for the type of business.
-
 
 **Distance**: The distance from "Shop A" in meters.
 
-
 **Risk Level** (<u>if added</u>): A classification of the risk (e.g., High, Medium, Low).
 
-| Name               | NAICS CODE | Distance (m) | Risk Level |
-| ------------------ | ---------- | ------------ | ---------- |
-| Fuel Station Alpha | 447110     | 250          | High       |
-| Petrochem Plant B  | 32511      | 430          | High       |
-| Ammunition Depot C | 332996     | 750          | Medium     |
+**Others**: Other columns, in case these weren't filtered beforehand.
+
+| Name               | NAICS CODE | Distance (m) | Risk Level | (Others) |
+| ------------------ | ---------- | ------------ | ---------- | :------- |
+| Fuel Station Alpha | 447110     | 250          | High       | ...      |
+| Petrochem Plant B  | 32511      | 430          | High       | ...      |
+| Ammunition Depot C | 332996     | 750          | Medium     | ...      |
