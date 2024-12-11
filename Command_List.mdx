@@ -45,42 +45,6 @@ This documentation provides a reference for constructing queries in the ontology
 * **Example**:
   `OntologyObject("Actor").find("Movies")`
 
-#### **`unique`**
-
-* **Description**: Ensures only unique objects are returned.
-
-* **Syntax**: `unique()`
-
-* **Example**:
-  `OntologyObject("CompanyRegister/Shareholders").unique()`
-
-#### **`groupBy`**
-
-* **Description**: Groups data by specified fields.
-
-* **Syntax**: `groupBy("field1", "field2", ...)`
-
-* **Example**:
-  `OntologyObject("Sanctions/Companies").groupBy("program", "nationalities")`
-
-#### **`count`**
-
-* **Description**: Counts the number of results in the query.
-
-* **Syntax**: `count()`
-
-* **Example**:
-  `OntologyObject("Movies").filter("year==2020").count()`
-
-#### **`sortBy`**
-
-* **Description**: Sorts results by a specific field.
-
-* **Syntax**: `sortBy("field")`
-
-* **Example**:
-  `OntologyObject("Movies").filter("year==2020").sortBy("budget")`
-
 #### **`get`**
 
 * **Description**: Executes the query and retrieves the results.
@@ -98,6 +62,4 @@ If a query returns unexpected results:
 
 2. Ensure the depth in `searchAround` is sufficient for your query.
 
-3. Use `unique()` to remove duplicates if necessary.
-
-4. Debug by breaking the query into smaller parts and testing them individually.
+3. Debug by breaking the query into smaller parts and testing them individually.
