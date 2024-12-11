@@ -12,9 +12,9 @@ title: "Use Case #2"
 OntologyObject("InsuranceRequests")
     .filter(
         "insurance_type == 'Health' && " +
-        "insurance_activation_reason.contains('broken') && " +
+        "insurance_activation_reason == 'Broken' && " +
         "date_of_request == '2024-10-01'"
-    ) // Filter users with health insurance requests due to injuries (reason contains 'broken') and made on 1st October 2024
+    ) // Filter users with health insurance requests due to injuries (reason being'broken') and made on 1st October 2024
     .find("ShopsReviews")
     .filter(
         "review_date >= '2024-09-01' && " +
@@ -24,7 +24,7 @@ OntologyObject("InsuranceRequests")
     .filter(
         "NAICS_code == 713990 || " + // All other amusement and recreation industries (e.g., bungee jumping)
         "NAICS_code == 713940 || " + // Fitness and recreational sports centers
-        "NAICS_code == 611620"        // Sports and recreation instruction (e.g., skydiving lessons)
+        "NAICS_code == 611620" // Sports and recreation instruction (e.g., skydiving lessons)
     ) // Filter for services associated with radical or dangerous sports
     .select("user_name, insurance_activation_reason, service_name, review_date, NAICS_code")
     .get();
@@ -35,13 +35,21 @@ OntologyObject("InsuranceRequests")
 The query results provide the following fields for each identified user:
 
 **User Name**: The name of the user with health insurance.
+
+
 **Insurance Activation Reason**: The reason for activating the insurance.
+
+
 **Service Name**: The name of the service related to radical sports.
+
+
 **Review Date**: The date of the user’s review of the service.
+
+
 **NAICS Code**: The classification code for the service.
 
-| Use Name               | Insurance Activation Reason | Service Name	 | Review Date | NAICS Code |
-| ------------------ | ---------- | ------------ | ---------- | ---------- |
-| John Doe	 | Broken Leg	     | Extreme Bungee Adventures          | 2024-09-15	       | 713990
-| Jane Smith	  | 	Broken Arm      | Sky High Skydiving	          | 2024-09-20	       | 611620
-| Alice Johnson | Broken Wrist     | Xtreme Fitness Gym	          | 2024-10-01	     | 713940
+| Individual    | Insurance Activation Reason | Service Name              | Review Date | NAICS Code |
+| ------------- | --------------------------- | ------------------------- | ----------- | ---------- |
+| John Doe      | Broken Leg                  | Extreme Bungee Adventures | 2024-09-15  | 713990     |
+| Jane Smith    | Broken Arm                  | Sky High Skydiving        | 2024-09-20  | 611620     |
+| Alice Johnson | Broken Wrist                | Xtreme Fitness Gym        | 2024-10-01  | 713940     |
