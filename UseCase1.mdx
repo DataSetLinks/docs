@@ -1,3 +1,41 @@
 ---
 title: "Use Case #1"
 ---
+
+### Use Case: Detecting Potentially Explosive Locations Around a Specific Shop
+
+**Objective**: This use case demonstrates how to identify potential hazards around a specific shop by detecting nearby gas stations or other businesses classified as potentially explosive based on their NAICS codes. For this example, we use "Shop A" as the target.
+
+### **Example Query**
+
+`OntologyObject("Shops"`)&#x20;
+`     .filter("name == 'Shop A'") // Filter for Shop A  `
+`     .searchAround(500) // Search within a 500-meter radius  `
+`    .find("Shops"`)&#x20;
+`    .filter`(
+`        "NAICS_code == 447110 || " +  // Gasoline stations with convenience stores`
+`        "NAICS_code == 447190 || " +  // Other gasoline stations`
+`        "NAICS_code == 454310 || " +  // Fuel dealers`
+`        "NAICS_code == 32511 || " +   // Petrochemical manufacturing`
+`        "NAICS_code == 325120 || " +  // Industrial gas manufacturing`
+`        "NAICS_code == 324110 || " +  // Petroleum refineries`
+`        "NAICS_code == 332996 || " +  // Ammunition manufacturing`
+`        "NAICS_code == 424710"        // Petroleum bulk stations and terminals`
+`     ) // Filter for potentially explosive NAICS codes  `
+`    .select("name, NAICS_code, distance") // Select relevant fields for output`
+`    .get();`
+
+### **Output Example**
+
+The query results provide the following fields for each potentially hazardous location:
+
+**Name**: The name of the business.
+**NAICS Code**: The classification code for the type of business.
+**Distance**: The distance from "Shop A" in meters.
+**Risk Level** (if added): A classification of the risk (e.g., High, Medium, Low).
+
+\| Name | NAICS CODE | Distance (m) | Risk Level |
+\| -------- | --------|-------------|----------- |
+\| Fuel Station Alpha | 447110 | 250 | High |
+\| Petrochem Plant B | 32511 | 430 | High |
+\| Ammunition Depot C | 332996 | 750 | Medium |
