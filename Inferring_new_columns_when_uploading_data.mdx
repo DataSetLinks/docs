@@ -1,4 +1,4 @@
-When uploading data, you can infer columns from existing ones. This uses our AI for auto derivations, you'll need to explain what the columns that you want are, and which steps you want to execute. We currently support three steps: Table, Rows and Normalize.
+When uploading data, you can derive new columns from existing ones using our AI for automatic derivations. To do this, you’ll need to specify the desired columns and the steps you want to execute. Currently, we support three steps: Table, Rows, and Normalize.
 
 ```
 1  curl -H "Authorization: Bearer token1234abcdefg"
@@ -16,15 +16,15 @@ When uploading data, you can infer columns from existing ones. This uses our AI 
 14               }'
 ```
 
-Line by line:
+Analyzing the code line-by-line:
 
-7 - The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps such as **table**, **rows**, **normalize**.
+**7** - The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps such as **table**, **rows**, **normalize**.
 
-8 - In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
+**8** - In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
 
 ### Table extraction
 
-The Table Step is designed to extract a table from any text input, whether it's free text like a restaurant review, a flight log report, or a financial instrument notice. When used on its own, the step may generate columns that are somewhat arbitrary and will likely require normalization afterward. It works by creating new columns based on the extracted data and appending them to the rows of the existing table.
+The Table Step is designed to extract a table from any text input, whether it’s free-form text such as a restaurant review, a flight log report, or a financial instrument notice. When used independently, this step may produce columns that are somewhat arbitrary and often require normalization afterward. It functions by extracting data to create new columns and appending them to the rows of the existing table.
 
 <Tip>
   **Pro tip:** Calling an extraction with just the **table** step is a great way to see what kind of **structured** data can be generated from your unstructured data.
@@ -41,7 +41,7 @@ The Table Step is designed to extract a table from any text input, whether it's 
 
 #### Rows
 
-Whenever you have a table in JSON format within a column you can transform it directly into a table. The JSON should be an array of objects, each key in the object will be mapped to a new column.
+If a table is stored in JSON format within a column, you can directly transform it into a structured table. The JSON should consist of an array of objects, with each key in the objects mapped to a new column.
 
 ```
 1  {
@@ -52,7 +52,7 @@ Whenever you have a table in JSON format within a column you can transform it di
 
 #### Normalize names
 
-Use the Normalize names step to consolidate the schema or column space. Here you should pass the columns that you want outputted in your table that gets indexed into DataLinks.
+Use the Normalize Names step to consolidate the schema or column space. In this step, specify the columns you want to include in the final table that will be indexed into DataLinks.
 
 ```
 1  {

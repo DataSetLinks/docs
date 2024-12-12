@@ -1,6 +1,6 @@
 <Warning>
   Before uploading data to a dataset you first need to create it!
-  Use the instructions on the "Welcome" tab, or the UI in [My Data](https://datalinks.tech/home/data)
+  Please do so through [My Data](https://datalinks.tech/home/data), or find your datasets through the UI.
 </Warning>
 
 ### Uploading structured data
@@ -17,10 +17,10 @@ While this functionality is supported, there is no user interface available for 
 5       --data-binary @data.json.gz
 ```
 
-Line by line:
+Analyzing the code line-by-line:
 
-1 - You need to provide us with a Bearer token for your user. We don't have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us.
+**1** - You will need to provide a Bearer token associated with your account. While we don't yet offer a self-service token generator, you can request a token by contacting the DataLinks team directly.
 
-4 - The **namespace** is the name you want to group your datasets around. An **object name** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
+**4** - The **namespace** is the name you want to group your datasets around. An **objectname** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
 
-4 - In the body of your **POST** you need to pass a string with a JSON containing an array of rows within the property **data**. The example above is compressing a JSON file (in this case with gzip) and adding a header for the compressed content.
+**4** - In the body of your **POST** you need to pass a string with a JSON containing an array of rows within the property data. The example above is compressing a JSON file (in this case with gzip) and adding a header for the compressed content.

@@ -1,4 +1,4 @@
-For data querying, you can send expressive queries to the backend that can filter, do search arounds, aggregations and more!
+For data querying, you can send expressive queries to the backend, enabling you to filter, perform searches, aggregations and more!
 
 ```
  1 curl -H "Authorization: Bearer token1234abcdefg"`
@@ -6,15 +6,15 @@ For data querying, you can send expressive queries to the backend that can filte
  3      --data 'OntologyObject("objectname").get()'
 ```
 
-Line by line:
+Analyzing the code line-by-line:
 
-1 - You need to provide us with a Bearer token for your user. We don’t have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us -- [support@datasetlinks.com](mailto:support@datasetlinks.com).
+**1** - You need to provide us with a Bearer token for your user. We don’t have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us -- [support@datasetlinks.com](mailto:support@datasetlinks.com).
 
-2 - These three properties **username**/**namespace**/**objectname** can be found in the dataset URL path by clicking My Data on the left menu and navigating to the dataset you want to query.
+**2** - These three properties **username**/**namespace**/**objectname** can be found in the dataset URL path by clicking My Data on the left menu and navigating to the dataset you want to query.
 
-3 - This line contains the query you want to run. The reason why this curl is a POST is so that you can send the query on the body. Our query language keeps growing and soon we’ll publish documentation for the whole feature space.
+**3** - This line specifies the query you want to execute. The use of POST in this curl command allows you to include the query in the request body. Our query language continues to evolve. In the meantime, you can check all commands available to you in the [Query Language Command List](https://datalinks.mintlify.app/Command_List).
 
-For the time-being, you can find the following examples below:
+Some examples can be found below:
 
 **Getting all data:**
 
