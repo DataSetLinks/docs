@@ -19,6 +19,6 @@ Analyzing the code line-by-line:
 
 **1** - You will need to provide a Bearer token associated with your account. While we don't yet offer a self-service token generator, you can request a token by contacting the DataLinks team directly.
 
-**4** - The **namespace** is the name you want to group your datasets around. An **objectname** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
+**2** - The **namespace** is the name you want to group your datasets around. An **objectname** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
 
-**4** - In the body of your **POST** you need to pass a string with a JSON containing an array of rows within the property data. The example above is compressing a JSON file (in this case with gzip) and adding a header for the compressed content.
+**3** - In the body of your **POST** you need to pass a string with a JSON containing an array of rows within the property data. The example above sends two rows with the same columns.
