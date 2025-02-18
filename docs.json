@@ -1,0 +1,72 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Documentation",
+  "colors": {
+    "primary": "#0BA5EC",
+    "light": "#0BA5EC",
+    "dark": "#7CD4FD"
+  },
+  "favicon": "/logo/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "DataLinks",
+            "pages": [
+              "Welcome",
+              "Querying_data",
+              "Creating_a_dataset",
+              "Uploading_data_into_a_dataset",
+              "Inferring_new_columns_when_uploading_data",
+              "Command_List"
+            ],
+            "icon": "file-lines"
+          },
+          {
+            "group": "Example Use Cases",
+            "pages": [
+              "UseCase1",
+              "UseCase2"
+            ],
+            "icon": "file-lines"
+          }
+        ]
+      },
+      {
+        "tab": "API v1",
+        "openapi": {
+          "source": "api-reference/openapi.yml",
+          "directory": "api-reference"
+        }
+      }
+    ]
+  },
+  "logo": {
+    "light": "/logo/DATALINKS logo_fullcolor.svg",
+    "dark": "/logo/DATALINKS logo_white.svg"
+  },
+  "navbar": {
+    "primary": {
+      "type": "button",
+      "label": "My Data",
+      "href": "https://datalinks.com/home/data"
+    }
+  },
+  "footer": {
+    "socials": {
+      "linkedin": "https://linkedin.com/company/datasetlinks",
+      "website": "https://datalinks.com/"
+    }
+  },
+  "api": {
+    "playground": {
+      "proxy": false
+    },
+    "openapi": {
+      "source": "api-reference/openapi.yml"
+    }
+  }
+}
