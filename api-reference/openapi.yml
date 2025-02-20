@@ -1,0 +1,251 @@
+openapi: 3.0.3
+info:
+  title: DataLinks
+  version: 1.0.0
+servers:
+  - url: https://api.datasetlinks.com/api
+    description: production server
+
+security:
+  - bearerAuth: [ ]
+paths:
+  /ingest/new/{namespace}/{objectName}:
+    post:
+      summary: Create new dataset
+      description: Creates a new dataset within a specified namespace.
+      tags:
+        - ingest
+        - datasets
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          description: Namespace for the dataset.
+          schema:
+            type: string
+        - name: objectName
+          in: path
+          required: true
+          description: Name of the new dataset.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isPrivate:
+                  type: boolean
+                  description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
+              required:
+                - isPrivate
+      responses:
+        '200':
+          description: Dataset created successfully.
+        '400':
+          description: Invalid request parameters.
+        '500':
+          description: Internal server error.
+  /ingest/{namespace}/{objectName}:
+    post:
+      summary: Ingest data
+      description: Load data into specified dataset
+      tags:
+        - ingest
+      parameters:
+        - name: namespace
+          in: path
+          required: true
+          description: The namespace in which the data will be ingested.
+          schema:
+            type: string
+        - name: objectName
+          in: path
+          required: true
+          description: The object name (in lowercase) to which the data will be ingested.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestRequest'
+      responses:
+        '200':
+          description: Successful ingestion response.
+        '400':
+          description: Invalid request. This error occurs if the payload is malformed or missing required properties.
+        '401':
+          description: Unauthorized. This error occurs if the token is missing or invalid.
+        '500':
+          description: Internal server error.
+  /data/{username}/{namespace}/{objectName}:
+    post:
+      summary: Query data
+      description: Execute ontology query and fetch data
+      tags:
+        - query
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: The username associated with the request.
+          schema:
+            type: string
+        - name: namespace
+          in: path
+          required: true
+          description: The namespace associated with the object.
+          schema:
+            type: string
+        - name: objectName
+          in: path
+          required: true
+          description: The name of the ontology object being retrieved.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: OntologyObject("objectName").get()
+              description: for details check [Querying data](/Querying_data)
+
+      responses:
+        '200':
+          description: Successful response with the ontology data object.
+        '400':
+          description: Bad request. This occurs when the required parameters are missing or invalid.
+        '401':
+          description: Unauthorized. This error occurs if the token is missing or invalid.
+        '500':
+          description: Internal server error. This occurs when the server encounters an error.
+  /data/:
+    get:
+      summary: Fetch data for the specified namespace
+      description: Retrieve data for a specific namespace, or return data for all namespaces if no namespace is provided.
+      tags:
+        - datasets
+      responses:
+        '200':
+          description: Successful response containing data with namespace details.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    username:
+                      type: string
+                      description: The username associated with the data.
+                    nameWithNamespace:
+                      type: string
+                      description: The name concatenated with the namespace.
+                    public:
+                      type: string
+                      description: Indicates whether the data is public or private.
+                      enum:
+                        - Public
+                        - Private
+        '400':
+          description: Invalid namespace provided.
+        '500':
+          description: Internal server error.
+  /data/{namespace}:
+    get:
+      summary: Fetch data for the specified namespace
+      description: Retrieve data for a specific namespace, or return data for all namespaces if no namespace is provided.
+      tags:
+        - datasets
+      parameters:
+        - name: namespace
+          in: path
+          required: false
+          description: The namespace for the query. If omitted, data for all namespaces will be returned.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response containing data with namespace details.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    username:
+                      type: string
+                      description: The username associated with the data.
+                    nameWithNamespace:
+                      type: string
+                      description: The name concatenated with the namespace.
+                    public:
+                      type: string
+                      description: Indicates whether the data is public or private.
+                      enum:
+                        - Public
+                        - Private
+        '400':
+          description: Invalid namespace provided.
+        '500':
+          description: Internal server error.
+
+
+components:
+  schemas:
+    IngestRequest:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              col1:
+                type: string
+                example: "foobar"
+              col2:
+                type: integer
+                example: 123
+              freeText:
+                type: string
+                example: "Some random free text with a code, the code is 777"
+        infer:
+          type: object
+          properties:
+            columns:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "code"
+                  description:
+                    type: string
+                    example: "code present in the free text"
+                  deriveFrom:
+                    type: string
+                    example: "freeText"
+        link:
+          type: object
+          properties:
+            ExactMatch:
+              type: string
+              nullable: true
+              example: null
+      required:
+        - data
+        - infer
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Use a Bearer token for authentication. Submit the token using the `Authorization` 
+        header: `Authorization: Bearer <token>`.
