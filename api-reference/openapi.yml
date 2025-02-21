@@ -9,6 +9,31 @@ servers:
 security:
   - bearerAuth: [ ]
 paths:
+
+  /data/:
+    get:
+      summary: Fetch datasets
+      description: Retrieve all available datasets
+      tags:
+        - datasets
+      responses:
+        '200':
+          $ref: '#/components/responses/ListOfDatasets'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /data/{namespace}:
+    get:
+      summary: Fetch datasets in namespace
+      description: Retrieve dataset for a specific namespace.
+      tags:
+        - datasets
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+      responses:
+        '200':
+          $ref: '#/components/responses/ListOfDatasets'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /ingest/new/{namespace}/{objectName}:
     post:
       summary: Create new dataset
@@ -17,37 +42,19 @@ paths:
         - ingest
         - datasets
       parameters:
-        - name: namespace
-          in: path
-          required: true
-          description: Namespace for the dataset.
-          schema:
-            type: string
-        - name: objectName
-          in: path
-          required: true
-          description: Name of the new dataset.
-          schema:
-            type: string
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                isPrivate:
-                  type: boolean
-                  description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
-              required:
-                - isPrivate
+              $ref: '#/components/schemas/CreateDatasetResponse'
       responses:
-        '200':
+        '201':
           description: Dataset created successfully.
-        '400':
-          description: Invalid request parameters.
-        '500':
-          description: Internal server error.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /ingest/{namespace}/{objectName}:
     post:
       summary: Ingest data
@@ -55,18 +62,8 @@ paths:
       tags:
         - ingest
       parameters:
-        - name: namespace
-          in: path
-          required: true
-          description: The namespace in which the data will be ingested.
-          schema:
-            type: string
-        - name: objectName
-          in: path
-          required: true
-          description: The object name (in lowercase) to which the data will be ingested.
-          schema:
-            type: string
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
       requestBody:
         required: true
         content:
@@ -76,127 +73,169 @@ paths:
       responses:
         '200':
           description: Successful ingestion response.
-        '400':
-          description: Invalid request. This error occurs if the payload is malformed or missing required properties.
         '401':
-          description: Unauthorized. This error occurs if the token is missing or invalid.
-        '500':
-          description: Internal server error.
+          $ref: '#/components/responses/Unauthorized'
+  /infer/preview:
+    post:
+      summary: Preview
+      description: Process data like in ingest but don't save in dataset
+      tags:
+        - ingest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestRequest'
+      responses:
+        '200':
+          description: Success
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /data/{username}/{namespace}/{objectName}:
     post:
       summary: Query data
-      description: Execute ontology query and fetch data
+      description: Execute ontology query
       tags:
         - query
       parameters:
-        - name: username
-          in: path
-          required: true
-          description: The username associated with the request.
-          schema:
-            type: string
-        - name: namespace
-          in: path
-          required: true
-          description: The namespace associated with the object.
-          schema:
-            type: string
-        - name: objectName
-          in: path
-          required: true
-          description: The name of the ontology object being retrieved.
-          schema:
-            type: string
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
       requestBody:
         required: true
         content:
           text/plain:
             schema:
-              type: string
-              example: OntologyObject("objectName").get()
-              description: for details check [Querying data](/Querying_data)
-
+              $ref: '#/components/schemas/OntologyRequest'
+            examples:
+              movies:
+                value: "OntologyObject(\"Movies\").filter(\"name==The Matrix\").searchAround().find(\"Actor\").filter(\"name==Keanu Reeves\").get()"
+              empty:
+                value: ""
       responses:
         '200':
           description: Successful response with the ontology data object.
-        '400':
-          description: Bad request. This occurs when the required parameters are missing or invalid.
         '401':
-          description: Unauthorized. This error occurs if the token is missing or invalid.
-        '500':
-          description: Internal server error. This occurs when the server encounters an error.
-  /data/:
-    get:
-      summary: Fetch data for the specified namespace
-      description: Retrieve data for a specific namespace, or return data for all namespaces if no namespace is provided.
-      tags:
-        - datasets
-      responses:
-        '200':
-          description: Successful response containing data with namespace details.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  properties:
-                    username:
-                      type: string
-                      description: The username associated with the data.
-                    nameWithNamespace:
-                      type: string
-                      description: The name concatenated with the namespace.
-                    public:
-                      type: string
-                      description: Indicates whether the data is public or private.
-                      enum:
-                        - Public
-                        - Private
-        '400':
-          description: Invalid namespace provided.
-        '500':
-          description: Internal server error.
-  /data/{namespace}:
-    get:
-      summary: Fetch data for the specified namespace
-      description: Retrieve data for a specific namespace, or return data for all namespaces if no namespace is provided.
-      tags:
-        - datasets
-      parameters:
-        - name: namespace
-          in: path
-          required: false
-          description: The namespace for the query. If omitted, data for all namespaces will be returned.
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful response containing data with namespace details.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  properties:
-                    username:
-                      type: string
-                      description: The username associated with the data.
-                    nameWithNamespace:
-                      type: string
-                      description: The name concatenated with the namespace.
-                    public:
-                      type: string
-                      description: Indicates whether the data is public or private.
-                      enum:
-                        - Public
-                        - Private
-        '400':
-          description: Invalid namespace provided.
-        '500':
-          description: Internal server error.
+          $ref: '#/components/responses/Unauthorized'
 
+  /links/{username}/{namespace}/{objectName}:
+    get:
+      summary: Load links
+      description: Load links for specified dataset
+      tags:
+        - links
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          description: List of links related to specified dataset.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinksResponse'
+        '204':
+          description: There are no links assosiated with specified dataset
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: "Rebuild links"
+      description: "Recalculate links for specified dataset"
+      tags:
+        - links
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinksRequest'
+      responses:
+        '200':
+          description: Success
+
+  /links/preview/{username}/{namespace}/{objectName}:
+    post:
+      summary: "Preview links"
+      description: "Show what recalulate would done"
+      tags:
+        - links
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinksRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinksResponse'
+
+  /ontology/{username}/{namespace}/{objectName}:
+    get:
+      description: load ontology
+      tags:
+        - ontology
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OntologyResponse'
+        '204':
+          description: There is no ontology for specified dataset
+    post:
+      description: save ontology
+      tags:
+        - ontology
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          description: Success
 
 components:
+  parameters:
+    Namespace:
+      name: namespace
+      in: path
+      required: true
+      description: Namespace for the dataset.
+      schema:
+        type: string
+    ObjectName:
+      name: objectName
+      in: path
+      required: true
+      description: Name of the new dataset.
+      schema:
+        type: string
+    Username:
+      name: username
+      in: path
+      required: true
+      description: The username associated with the request.
+      schema:
+        type: string
   schemas:
     IngestRequest:
       type: object
@@ -242,6 +281,113 @@ components:
       required:
         - data
         - infer
+    OntologyRequest:
+      type: string
+      example: "OntologyObject(\"objectName\").get()"
+      description: for details check [Querying data](/Querying_data)
+    LinksResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          destination:
+            type: string
+            example: "ri.user.examples.companies.other addresses"
+          origin:
+            type: string
+            example: "ri.user.examples.companies.nationalities"
+          linkType:
+            type: string
+            example: "ExactMatch"
+          matchType:
+            type: string
+            example: "ExactMatch"
+          hits:
+            type: integer
+            example: 5
+      example:
+        - destination: "ri.user.examples.companies.other addresses"
+          origin: "ri.user.examples.companies.nationalities"
+          linkType: "ExactMatch"
+          matchType: "ExactMatch"
+          hits: 5
+    LinksRequest:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        link:
+          type: object
+      example:
+        data:
+          - name: "Braveheart"
+            year: "1995"
+            budget: "72000000"
+            director: "Mel Gibson"
+          - name: "Argo"
+            year: "2012"
+            budget: "44500000"
+            director: "Ben Affleck"
+        link:
+          ExactMatch: null
+          GeoMatch: null
+    CreateDatasetResponse:
+      type: object
+      properties:
+        isPrivate:
+          type: boolean
+          description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
+          example: true
+      required:
+        - isPrivate
+    DatasetsResponse:
+      type: array
+      items:
+        properties:
+          username:
+            type: string
+            description: The username associated with the data.
+          nameWithNamespace:
+            type: string
+            description: The name concatenated with the namespace.
+          public:
+            type: string
+            description: Indicates whether the data is public or private.
+            enum:
+              - Public
+              - Private
+    OntologyResponse:
+      type: array
+      properties:
+        destination:
+          type: string
+        hits:
+          type: number
+        linkType:
+          type: string
+        matchType:
+          type: string
+        origin:
+          type: string
+      example:
+        - "destination": "ri.user.examples.actor.name"
+          "hits": 6
+          "linkType": "ExactMatch"
+          "matchType": "ExactMatch"
+          "origin": "ri.user.examples.movies.director"
+
+
+  responses:
+    Unauthorized:
+      description: Unauthorized. This error occurs if the authentication token is missing or invalid.
+    ListOfDatasets:
+      description: Successful response containing data with namespace details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DatasetsResponse'
   securitySchemes:
     bearerAuth:
       type: http
