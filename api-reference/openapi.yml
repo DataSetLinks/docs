@@ -49,7 +49,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateDatasetResponse'
+              $ref: '#/components/schemas/CreateDatasetRequest'
       responses:
         '201':
           description: Dataset created successfully.
@@ -70,6 +70,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/IngestRequest'
+            examples:
+              movies:
+                $ref: '#/components/examples/moviesExample'
+              actors:
+                $ref: '#/components/examples/actorsExample'
       responses:
         '200':
           description: Successful ingestion response.
@@ -87,6 +92,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/IngestRequest'
+            examples:
+              movies:
+                $ref: '#/components/examples/moviesExample'
+              actors:
+                $ref: '#/components/examples/actorsExample'
       responses:
         '200':
           description: Success
@@ -103,19 +113,27 @@ paths:
         - $ref: '#/components/parameters/ObjectName'
         - $ref: '#/components/parameters/Username'
       requestBody:
-        required: true
+        required: false
         content:
           text/plain:
             schema:
               $ref: '#/components/schemas/OntologyRequest'
             examples:
-              movies:
-                value: "OntologyObject(\"Movies\").filter(\"name==The Matrix\").searchAround().find(\"Actor\").filter(\"name==Keanu Reeves\").get()"
+              WilliamWallace:
+                value: "OntologyObject(\"movies\").filter(name==\"Braveheart\").searchAround().find(\"actors\").filter(name==\"Mel Gibson\")"
+              EarliestMovie:
+                value: "OntologyObject(\"movies\").sortDescending(\"year\").limit(1)"
               empty:
                 value: ""
       responses:
         '200':
           description: Successful response with the ontology data object.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -135,7 +153,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LinksResponse'
+                $ref: '#/components/schemas/IngestLinksResponse'
         '204':
           description: There are no links assosiated with specified dataset
         '401':
@@ -154,7 +172,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LinksRequest'
+              $ref: '#/components/schemas/IngestLinksRequest'
       responses:
         '200':
           description: Success
@@ -174,14 +192,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LinksRequest'
+              $ref: '#/components/schemas/IngestLinksRequest'
       responses:
         '200':
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LinksResponse'
+                $ref: '#/components/schemas/IngestLinksResponse'
 
   /ontology/{username}/{namespace}/{objectName}:
     get:
@@ -213,6 +231,50 @@ paths:
         '200':
           description: Success
 
+  /user/tokens:
+    get:
+      description: list all user tokens
+      tags:
+        - user
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTokenResponse'
+
+
+  /user/token:
+    post:
+      description: add user token
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserToken'
+
+  /user/token/{tokenId}:
+    delete:
+      description: delete user token
+      tags:
+        - user
+      parameters:
+        - $ref: '#/components/parameters/TokenId'
+      responses:
+        '200':
+          description: Success
+
 components:
   parameters:
     Namespace:
@@ -222,6 +284,7 @@ components:
       description: Namespace for the dataset.
       schema:
         type: string
+      example: cinematografy
     ObjectName:
       name: objectName
       in: path
@@ -229,6 +292,14 @@ components:
       description: Name of the new dataset.
       schema:
         type: string
+      examples:
+        movies:
+          value: "movies"
+          summary: "Movies"
+        actors:
+          value: "actors"
+          summary: "Actors"
+
     Username:
       name: username
       in: path
@@ -236,6 +307,13 @@ components:
       description: The username associated with the request.
       schema:
         type: string
+    TokenId:
+      name: tokenId
+      in: path
+      required: true
+      description: Token id
+      schema:
+        type: integer
   schemas:
     IngestRequest:
       type: object
@@ -244,16 +322,8 @@ components:
           type: array
           items:
             type: object
-            properties:
-              col1:
-                type: string
-                example: "foobar"
-              col2:
-                type: integer
-                example: 123
-              freeText:
-                type: string
-                example: "Some random free text with a code, the code is 777"
+            additionalProperties:
+              type: string
         infer:
           type: object
           properties:
@@ -261,16 +331,10 @@ components:
               type: array
               items:
                 type: object
-                properties:
-                  name:
-                    type: string
-                    example: "code"
-                  description:
-                    type: string
-                    example: "code present in the free text"
-                  deriveFrom:
-                    type: string
-                    example: "freeText"
+                additionalProperties:
+                  type: string
+          required:
+            - columns
         link:
           type: object
           properties:
@@ -281,37 +345,16 @@ components:
       required:
         - data
         - infer
+        - link
     OntologyRequest:
       type: string
       example: "OntologyObject(\"objectName\").get()"
       description: for details check [Querying data](/Querying_data)
-    LinksResponse:
+    IngestLinksResponse:
       type: array
       items:
-        type: object
-        properties:
-          destination:
-            type: string
-            example: "ri.user.examples.companies.other addresses"
-          origin:
-            type: string
-            example: "ri.user.examples.companies.nationalities"
-          linkType:
-            type: string
-            example: "ExactMatch"
-          matchType:
-            type: string
-            example: "ExactMatch"
-          hits:
-            type: integer
-            example: 5
-      example:
-        - destination: "ri.user.examples.companies.other addresses"
-          origin: "ri.user.examples.companies.nationalities"
-          linkType: "ExactMatch"
-          matchType: "ExactMatch"
-          hits: 5
-    LinksRequest:
+        $ref: '#/components/schemas/ApiLink'
+    IngestLinksRequest:
       type: object
       properties:
         data:
@@ -320,6 +363,28 @@ components:
             type: object
         link:
           type: object
+          properties:
+            ExactMatch:
+              type: object
+              properties:
+                minDistinct:
+                  type: number
+                minVariation:
+                  type: number
+              additionalProperties:
+                type: string
+            GeoMatch:
+              type: object
+              properties:
+                distance:
+                  type: number
+                distanceUnit:
+                  type: string
+              additionalProperties:
+                type: string
+      required:
+        - data
+        - link
       example:
         data:
           - name: "Braveheart"
@@ -333,55 +398,171 @@ components:
         link:
           ExactMatch: null
           GeoMatch: null
-    CreateDatasetResponse:
+    CreateDatasetRequest:
       type: object
       properties:
         isPrivate:
           type: boolean
           description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
           example: true
+          deprecated: true
+        visibility:
+          type: string
+          enum:
+            - Public
+            - Private
+          example: Private
+    ApiDatasetDescription:
+      type: object
+      properties:
+        user:
+          type: string
+          description: The username associated with the data.
+          deprecated: true
+        owner:
+          type: string
+          description: The username associated with the data.
+        nameWithNamespace:
+          type: string
+          description: The name concatenated with the namespace.
+          deprecated: true
+        name:
+          type: string
+          description: Dataset name
+        namespace:
+          type: string
+          description: Namespace name
+        visibility:
+          type: string
+          description: Indicates whether the data is public or private.
+          enum:
+            - Public
+            - Private
       required:
-        - isPrivate
-    DatasetsResponse:
-      type: array
-      items:
-        properties:
-          username:
-            type: string
-            description: The username associated with the data.
-          nameWithNamespace:
-            type: string
-            description: The name concatenated with the namespace.
-          public:
-            type: string
-            description: Indicates whether the data is public or private.
-            enum:
-              - Public
-              - Private
-    OntologyResponse:
-      type: array
+        - owner
+        - name
+        - namespace
+        - visibility
+    ApiLink:
+      type: object
       properties:
         destination:
           type: string
-        hits:
-          type: number
-        linkType:
-          type: string
-        matchType:
-          type: string
+          example: "ri.user.examples.companies.other addresses"
         origin:
           type: string
+          example: "ri.user.examples.companies.nationalities"
+        linkType:
+          type: string
+          example: "ExactMatch"
+        matchType:
+          type: string
+          example: "ExactMatch"
+        hits:
+          type: integer
+          format: int64
+          example: 5
+      required:
+        - destination
+        - origin
+        - hits
+        - matchType
       example:
         - "destination": "ri.user.examples.actor.name"
           "hits": 6
           "linkType": "ExactMatch"
           "matchType": "ExactMatch"
           "origin": "ri.user.examples.movies.director"
-
+    ModifyOntologyRequest:
+      type: object
+      properties:
+        add:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiLink'
+        remove:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiLink'
+    DatasetsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/ApiDatasetDescription'
+    OntologyResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/ApiLink'
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Missing authentication token"
+        error_code:
+          type: string
+          example: "UNAUTHORIZED"
+        error_message:
+          type: string
+          example: ""
+        sub_errors:
+          type: array
+          items:
+            type: object
+            properties:
+              message:
+                type: string
+              code:
+                type: string
+            required:
+              - message
+              - code
+      required:
+        - message
+        - error_code
+    CreateTokenRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        expires_at:
+          type: string
+      required:
+        - name
+    UserTokenResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/UserToken'
+    UserToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        created_at:
+          type: string
+        expires_at:
+          type: string
+        last_used_at:
+          type: string
+        token:
+          type: string
+          nullable: true
+      required:
+        - id
+        - name
+        - created_at
+        - expires_at
+        - token
 
   responses:
     Unauthorized:
       description: Unauthorized. This error occurs if the authentication token is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
     ListOfDatasets:
       description: Successful response containing data with namespace details.
       content:
@@ -395,3 +576,93 @@ components:
       description: |
         Use a Bearer token for authentication. Submit the token using the `Authorization` 
         header: `Authorization: Bearer <token>`.
+
+  examples:
+    moviesExample:
+      summary: movies
+      value:
+        data:
+          - name: Braveheart
+            year: 1995
+            budget: 72000000
+            director: Mel Gibson
+          - name: Argo
+            year: 2012
+            budget: 44500000
+            director: Ben Affleck
+          - name: A Quiet Place
+            year: 2018
+            budget: 17000000
+            director: John Krasinski
+          - name: Dances with Wolves
+            year: 1990
+            budget: 22000000
+            director: Kevin Costner
+          - name: Unforgiven
+            year: 1992
+            budget: 14000000
+            director: Clint Eastwood
+          - name: The Postman
+            year: 1997
+            budget: 80000000
+            director: Kevin Costner
+        infer:
+          columns: [ ]
+        link:
+          ExactMatch: null
+    actorsExample:
+      summary: actors
+      value:
+        data:
+          # Braveheart
+          - name: Mel Gibson
+            age: 68
+            nationality: American
+          - name: Sophie Marceau
+            age: 57
+            nationality: French
+
+          # Argo
+          - name: Ben Affleck
+            age: 52
+            nationality: American
+          - name: Bryan Cranston
+            age: 68
+            nationality: American
+
+          # A Quiet Place
+          - name: John Krasinski
+            age: 45
+            nationality: American
+          - name: Emily Blunt
+            age: 41
+            nationality: British
+
+          # Dances with Wolves
+          - name: Kevin Costner
+            age: 69
+            nationality: American
+          - name: Mary McDonnell
+            age: 72
+            nationality: American
+
+          # Unforgiven
+          - name: Clint Eastwood
+            age: 94
+            nationality: American
+          - name: Morgan Freeman
+            age: 86
+            nationality: American
+
+          # The Postman
+          - name: Kevin Costner
+            age: 69
+            nationality: American
+          - name: Will Patton
+            age: 70
+            nationality: American
+
+        infer:
+          columns: [ ]
+        link:
+          ExactMatch: null
