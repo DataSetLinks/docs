@@ -3,7 +3,7 @@ info:
   title: DataLinks
   version: 1.0.0
 servers:
-  - url: https://api.datasetlinks.com/api
+  - url: https://api.datalinks.com/api
     description: production server
 
 security:
