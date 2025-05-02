@@ -38,6 +38,7 @@ paths:
     post:
       summary: Create new dataset
       description: Creates a new dataset within a specified namespace.
+      operationId: createDataset
       tags:
         - ingest
         - datasets
@@ -103,9 +104,32 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
   /data/{username}/{namespace}/{objectName}:
+    get:
+      summary: Get dataset information
+      description: Allow to get dataset information
+      operationId: getDatasetInformation
+      tags:
+        - dataset
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          description: Successful return dataset information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetResponse'
+
+        '404':
+          description: Dataset not found
+        '400':
+          description: Bad request
     post:
       summary: Query data
       description: Execute ontology query
+      operationId: queryDataset
       tags:
         - query
       parameters:
@@ -136,6 +160,108 @@ paths:
                   type: object
         '401':
           $ref: '#/components/responses/Unauthorized'
+
+  /data/{username}/{namespace}/{objectName}/rename:
+    post:
+      summary: Rename a dataset
+      operationId: renameDataset
+      tags:
+        - dataset
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful rename of a dataset
+        '400':
+          description: Bad request
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Dataset not found or not allowed to modify
+
+  /data/{username}/{namespace}/{objectName}/query:
+    post:
+      summary: Query data
+      description: Execute ontology query
+      operationId: queryData
+      tags:
+        - query
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDataRequest'
+      responses:
+        '200':
+          description: Successful response with the ontology data object.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+
+  /data/{username}/{namespace}/{objectName}/inferDefinition:
+    put:
+      summary: Update infer definition
+      description: Allow to update saved infer
+      operationId: updateInferDefinition
+      tags:
+        - query
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiInferenceDefinition'
+      responses:
+        '201':
+          description: Successful created new infer defnintion
+        '404':
+          description: Dataset not found or not allowed to modify
+        '400':
+          description: Bad request
+
+  /data/{username}/{namespace}/{objectName}/balefire:
+    delete:
+      summary: Delete all data and metadata for a dataset (balefire)
+      description: Remove all data, links, and metadata for the specified dataset. This is irreversible.
+      operationId: balefireDataset
+      tags:
+        - dataset
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          description: Dataset and all related data deleted successfully.
+        '400':
+          description: Bad request
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Dataset not found or not allowed to modify
 
   /links/{username}/{namespace}/{objectName}:
     get:
@@ -234,6 +360,7 @@ paths:
   /user/tokens:
     get:
       description: list all user tokens
+      operationId: listTokens
       tags:
         - user
       responses:
@@ -248,6 +375,7 @@ paths:
   /user/token:
     post:
       description: add user token
+      operationId: addToken
       tags:
         - user
       requestBody:
@@ -401,17 +529,19 @@ components:
     CreateDatasetRequest:
       type: object
       properties:
-        isPrivate:
-          type: boolean
-          description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
-          example: true
-          deprecated: true
         visibility:
           type: string
           enum:
             - Public
             - Private
           example: Private
+        isPrivate:
+          type: boolean
+          description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
+          example: true
+          deprecated: true
+        inferDefinition:
+          $ref: "#/components/schemas/ApiInferenceDefinition"
     ApiDatasetDescription:
       type: object
       properties:
@@ -473,6 +603,16 @@ components:
           "linkType": "ExactMatch"
           "matchType": "ExactMatch"
           "origin": "ri.user.examples.movies.director"
+    QueryDataRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          default: ""
+        useNaturalLanguageQuery:
+          type: boolean
+          default: false
+
     ModifyOntologyRequest:
       type: object
       properties:
@@ -488,6 +628,15 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/ApiDatasetDescription'
+    DatasetResponse:
+      type: object
+      properties:
+        dataset:
+          $ref: "#/components/schemas/ApiDatasetDescription"
+        inferDefinition:
+          $ref: "#/components/schemas/ApiInferenceDefinition"
+      required:
+        - dataset
     OntologyResponse:
       type: array
       items:
@@ -555,6 +704,20 @@ components:
         - created_at
         - expires_at
         - token
+    ApiInferenceDefinition:
+      type: object
+      properties:
+        dataDescription:
+          type: string
+          description: Data description of the dataset.
+          maxLength: 10000
+        fieldDefinition:
+          type: string
+          description: Definition of the dataset fields.
+          maxLength: 10000
+      required:
+        - dataDescription
+        - fieldDefinition
 
   responses:
     Unauthorized:
