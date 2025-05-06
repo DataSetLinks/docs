@@ -24,14 +24,6 @@
               "Command_List"
             ],
             "icon": "file-lines"
-          },
-          {
-            "group": "Example Use Cases",
-            "pages": [
-              "UseCase1",
-              "UseCase2"
-            ],
-            "icon": "file-lines"
           }
         ]
       },
