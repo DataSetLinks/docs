@@ -2,18 +2,17 @@ openapi: 3.0.3
 info:
   title: DataLinks
   version: 1.0.0
+security:
+  - bearerAuth: []
 servers:
   - url: https://api.datalinks.com/api/v1
     description: production server
-
-security:
-  - bearerAuth: [ ]
 paths:
-
-  /data/:
+  /data:
     get:
       summary: Fetch datasets
       description: Retrieve all available datasets
+      operationId: getDatasets
       tags:
         - datasets
       responses:
@@ -25,6 +24,7 @@ paths:
     get:
       summary: Fetch datasets in namespace
       description: Retrieve dataset for a specific namespace.
+      operationId: getDatasetsInNamespace
       tags:
         - datasets
       parameters:
@@ -34,7 +34,7 @@ paths:
           $ref: '#/components/responses/ListOfDatasets'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /ingest/new/{namespace}/{objectName}:
+  /ingest/new/{namespace}/{datasetName}:
     post:
       summary: Create new dataset
       description: Creates a new dataset within a specified namespace.
@@ -44,7 +44,7 @@ paths:
         - datasets
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
       requestBody:
         required: true
         content:
@@ -56,15 +56,16 @@ paths:
           description: Dataset created successfully.
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /ingest/{namespace}/{objectName}:
+  /ingest/{namespace}/{datasetName}:
     post:
       summary: Ingest data
       description: Load data into specified dataset
+      operationId: ingestData
       tags:
         - ingest
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
       requestBody:
         required: true
         content:
@@ -85,6 +86,7 @@ paths:
     post:
       summary: Preview
       description: Process data like in ingest but don't save in dataset
+      operationId: previewInfer
       tags:
         - ingest
       requestBody:
@@ -103,7 +105,7 @@ paths:
           description: Success
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /data/{username}/{namespace}/{objectName}:
+  /data/{username}/{namespace}/{datasetName}:
     get:
       summary: Get dataset information
       description: Allow to get dataset information
@@ -112,7 +114,7 @@ paths:
         - dataset
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
         - $ref: '#/components/parameters/Username'
       responses:
         '200':
@@ -134,7 +136,7 @@ paths:
         - query
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
         - $ref: '#/components/parameters/Username'
       requestBody:
         required: false
@@ -160,8 +162,7 @@ paths:
                   type: object
         '401':
           $ref: '#/components/responses/Unauthorized'
-
-  /data/{username}/{namespace}/{objectName}/rename:
+  /data/{username}/{namespace}/{datasetName}/rename:
     post:
       summary: Rename a dataset
       operationId: renameDataset
@@ -169,7 +170,7 @@ paths:
         - dataset
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
         - $ref: '#/components/parameters/Username'
       requestBody:
         required: true
@@ -186,8 +187,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           description: Dataset not found or not allowed to modify
-
-  /data/{username}/{namespace}/{objectName}/query:
+  /data/{username}/{namespace}/{datasetName}/query:
     post:
       summary: Query data
       description: Execute ontology query
@@ -196,7 +196,7 @@ paths:
         - query
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
         - $ref: '#/components/parameters/Username'
       requestBody:
         required: false
@@ -215,9 +215,7 @@ paths:
                   type: object
         '401':
           $ref: '#/components/responses/Unauthorized'
-
-
-  /data/{username}/{namespace}/{objectName}/inferDefinition:
+  /data/{username}/{namespace}/{datasetName}/inferDefinition:
     put:
       summary: Update infer definition
       description: Allow to update saved infer
@@ -226,7 +224,7 @@ paths:
         - query
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
         - $ref: '#/components/parameters/Username'
       requestBody:
         required: true
@@ -236,13 +234,12 @@ paths:
               $ref: '#/components/schemas/ApiInferenceDefinition'
       responses:
         '201':
-          description: Successful created new infer defnintion
+          description: Successfully created new infer definition
         '404':
           description: Dataset not found or not allowed to modify
         '400':
           description: Bad request
-
-  /data/{username}/{namespace}/{objectName}/balefire:
+  /data/{username}/{namespace}/{datasetName}/balefire:
     delete:
       summary: Delete all data and metadata for a dataset (balefire)
       description: Remove all data, links, and metadata for the specified dataset. This is irreversible.
@@ -251,7 +248,7 @@ paths:
         - dataset
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
         - $ref: '#/components/parameters/Username'
       responses:
         '200':
@@ -262,16 +259,16 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           description: Dataset not found or not allowed to modify
-
-  /links/{username}/{namespace}/{objectName}:
+  /links/{username}/{namespace}/{datasetName}:
     get:
       summary: Load links
       description: Load links for specified dataset
+      operationId: getLinks
       tags:
         - links
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
         - $ref: '#/components/parameters/Username'
       responses:
         '200':
@@ -281,37 +278,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/IngestLinksResponse'
         '204':
-          description: There are no links assosiated with specified dataset
+          description: There are no links associated with specified dataset
         '401':
           $ref: '#/components/responses/Unauthorized'
     post:
       summary: "Rebuild links"
       description: "Recalculate links for specified dataset"
+      operationId: rebuildLinks
       tags:
         - links
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
-        - $ref: '#/components/parameters/Username'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IngestLinksRequest'
-      responses:
-        '200':
-          description: Success
-
-  /links/preview/{username}/{namespace}/{objectName}:
-    post:
-      summary: "Preview links"
-      description: "Show what recalulate would done"
-      tags:
-        - links
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
         - $ref: '#/components/parameters/Username'
       requestBody:
         required: true
@@ -326,15 +304,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IngestLinksResponse'
-
-  /ontology/{username}/{namespace}/{objectName}:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - User doesn't have access to the dataset
+  /links/preview/{username}/{namespace}/{datasetName}:
+    post:
+      summary: "Preview links"
+      description: "Show what recalculate would do"
+      operationId: previewLinks
+      tags:
+        - links
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestLinksRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngestLinksResponse'
+  /ontology/{username}/{namespace}/{datasetName}:
     get:
       description: load ontology
+      operationId: getConnectedLinks
       tags:
         - ontology
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
         - $ref: '#/components/parameters/Username'
       responses:
         '200':
@@ -347,16 +353,39 @@ paths:
           description: There is no ontology for specified dataset
     post:
       description: save ontology
+      operationId: saveConnections
       tags:
         - ontology
       parameters:
         - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/ObjectName'
+        - $ref: '#/components/parameters/DatasetName'
         - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifyOntologyRequest'
       responses:
         '200':
           description: Success
-
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /schema/namespace:
+    get:
+      summary: List namespaces
+      description: Retrieve all namespaces accessible to the authenticated user
+      operationId: listNamespaces
+      tags:
+        - schema
+        - namespaces
+      responses:
+        '200':
+          $ref: '#/components/responses/ListOfNamespaces'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
   /user/tokens:
     get:
       description: list all user tokens
@@ -370,8 +399,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserTokenResponse'
-
-
   /user/token:
     post:
       description: add user token
@@ -391,10 +418,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserToken'
-
   /user/token/{tokenId}:
     delete:
       description: delete user token
+      operationId: deleteToken
       tags:
         - user
       parameters:
@@ -405,19 +432,11 @@ paths:
 
 components:
   parameters:
-    Namespace:
-      name: namespace
+    DatasetName:
+      name: datasetName
       in: path
       required: true
-      description: Namespace for the dataset.
-      schema:
-        type: string
-      example: cinematografy
-    ObjectName:
-      name: objectName
-      in: path
-      required: true
-      description: Name of the new dataset.
+      description: Name of the dataset.
       schema:
         type: string
       examples:
@@ -427,7 +446,21 @@ components:
         actors:
           value: "actors"
           summary: "Actors"
-
+    Namespace:
+      name: namespace
+      in: path
+      required: true
+      description: Namespace for the dataset.
+      schema:
+        type: string
+      example: cinematography
+    TokenId:
+      name: tokenId
+      in: path
+      required: true
+      description: Token ID
+      schema:
+        type: integer
     Username:
       name: username
       in: path
@@ -435,49 +468,165 @@ components:
       description: The username associated with the request.
       schema:
         type: string
-    TokenId:
-      name: tokenId
-      in: path
-      required: true
-      description: Token id
-      schema:
-        type: integer
+
   schemas:
-    IngestRequest:
+    ApiDatasetDescription:
       type: object
       properties:
-        data:
+        name:
+          type: string
+          description: Dataset name
+        namespace:
+          type: string
+          description: Namespace name
+        nameWithNamespace:
+          type: string
+          description: The name concatenated with the namespace.
+          deprecated: true
+        owner:
+          type: string
+          description: The username associated with the data.
+        user:
+          type: string
+          description: The username associated with the data.
+          deprecated: true
+        visibility:
+          type: string
+          description: Indicates whether the data is public or private.
+          enum:
+            - Public
+            - Private
+      required:
+        - owner
+        - name
+        - namespace
+        - visibility
+    ApiInferenceDefinition:
+      type: object
+      properties:
+        dataDescription:
+          type: string
+          description: Data description of the dataset.
+          maxLength: 10000
+        fieldDefinition:
+          type: string
+          description: Definition of the dataset fields.
+          maxLength: 10000
+      required:
+        - dataDescription
+        - fieldDefinition
+    ApiLink:
+      type: object
+      properties:
+        destination:
+          type: string
+          example: "ri.user.examples.companies.other_addresses"
+        hits:
+          type: integer
+          format: int64
+          example: 5
+        matchType:
+          type: string
+          example: "ExactMatch"
+        origin:
+          type: string
+          example: "ri.user.examples.companies.nationalities"
+      required:
+        - destination
+        - origin
+        - hits
+        - matchType
+      example:
+        destination: "ri.user.examples.actor.name"
+        hits: 6
+        matchType: "ExactMatch"
+        origin: "ri.user.examples.movies.director"
+    ApiNamespace:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the namespace
+          example: 12345
+        name:
+          type: string
+          description: The name of the namespace
+          example: "cinematography"
+        owner:
+          type: string
+          format: uuid
+          description: UUID of the namespace owner
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      required:
+        - id
+        - name
+        - owner
+    CreateDatasetRequest:
+      type: object
+      properties:
+        inferDefinition:
+          $ref: '#/components/schemas/ApiInferenceDefinition'
+        isPrivate:
+          type: boolean
+          description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
+          example: true
+          deprecated: true
+        visibility:
+          type: string
+          enum:
+            - Public
+            - Private
+          example: Private
+    CreateTokenRequest:
+      type: object
+      properties:
+        expires_at:
+          type: string
+        name:
+          type: string
+      required:
+        - name
+    DatasetResponse:
+      type: object
+      properties:
+        dataset:
+          $ref: '#/components/schemas/ApiDatasetDescription'
+        inferDefinition:
+          $ref: '#/components/schemas/ApiInferenceDefinition'
+      required:
+        - dataset
+    DatasetsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/ApiDatasetDescription'
+    ErrorResponse:
+      type: object
+      properties:
+        error_code:
+          type: string
+          example: "UNAUTHORIZED"
+        error_message:
+          type: string
+          example: ""
+        message:
+          type: string
+          example: "Missing authentication token"
+        sub_errors:
           type: array
           items:
             type: object
-            additionalProperties:
-              type: string
-        infer:
-          type: object
-          properties:
-            columns:
-              type: array
-              items:
-                type: object
-                additionalProperties:
-                  type: string
-          required:
-            - columns
-        link:
-          type: object
-          properties:
-            ExactMatch:
-              type: string
-              nullable: true
-              example: null
+            properties:
+              code:
+                type: string
+              message:
+                type: string
+            required:
+              - message
+              - code
       required:
-        - data
-        - infer
-        - link
-    OntologyRequest:
-      type: string
-      example: "OntologyObject(\"objectName\").get()"
-      description: for details check [Querying data](/Querying_data)
+        - message
+        - error_code
     IngestLinksResponse:
       type: array
       items:
@@ -526,93 +675,37 @@ components:
         link:
           ExactMatch: null
           GeoMatch: null
-    CreateDatasetRequest:
+    IngestRequest:
       type: object
       properties:
-        visibility:
-          type: string
-          enum:
-            - Public
-            - Private
-          example: Private
-        isPrivate:
-          type: boolean
-          description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
-          example: true
-          deprecated: true
-        inferDefinition:
-          $ref: "#/components/schemas/ApiInferenceDefinition"
-    ApiDatasetDescription:
-      type: object
-      properties:
-        user:
-          type: string
-          description: The username associated with the data.
-          deprecated: true
-        owner:
-          type: string
-          description: The username associated with the data.
-        nameWithNamespace:
-          type: string
-          description: The name concatenated with the namespace.
-          deprecated: true
-        name:
-          type: string
-          description: Dataset name
-        namespace:
-          type: string
-          description: Namespace name
-        visibility:
-          type: string
-          description: Indicates whether the data is public or private.
-          enum:
-            - Public
-            - Private
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+        infer:
+          type: object
+          properties:
+            columns:
+              type: array
+              items:
+                type: object
+                additionalProperties:
+                  type: string
+          required:
+            - columns
+        link:
+          type: object
+          properties:
+            ExactMatch:
+              type: string
+              nullable: true
+              example: null
       required:
-        - owner
-        - name
-        - namespace
-        - visibility
-    ApiLink:
-      type: object
-      properties:
-        destination:
-          type: string
-          example: "ri.user.examples.companies.other addresses"
-        origin:
-          type: string
-          example: "ri.user.examples.companies.nationalities"
-        linkType:
-          type: string
-          example: "ExactMatch"
-        matchType:
-          type: string
-          example: "ExactMatch"
-        hits:
-          type: integer
-          format: int64
-          example: 5
-      required:
-        - destination
-        - origin
-        - hits
-        - matchType
-      example:
-        - "destination": "ri.user.examples.actor.name"
-          "hits": 6
-          "linkType": "ExactMatch"
-          "matchType": "ExactMatch"
-          "origin": "ri.user.examples.movies.director"
-    QueryDataRequest:
-      type: object
-      properties:
-        query:
-          type: string
-          default: ""
-        useNaturalLanguageQuery:
-          type: boolean
-          default: false
-
+        - data
+        - infer
+        - link
     ModifyOntologyRequest:
       type: object
       properties:
@@ -624,76 +717,36 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ApiLink'
-    DatasetsResponse:
-      type: array
-      items:
-        $ref: '#/components/schemas/ApiDatasetDescription'
-    DatasetResponse:
-      type: object
-      properties:
-        dataset:
-          $ref: "#/components/schemas/ApiDatasetDescription"
-        inferDefinition:
-          $ref: "#/components/schemas/ApiInferenceDefinition"
-      required:
-        - dataset
     OntologyResponse:
       type: array
       items:
         $ref: '#/components/schemas/ApiLink'
-    ErrorResponse:
+    OntologyRequest:
+      type: string
+      example: "OntologyObject(\"objectName\").get()"
+      description: for details check [Querying data](/Querying_data)
+    QueryDataRequest:
       type: object
       properties:
-        message:
+        query:
           type: string
-          example: "Missing authentication token"
-        error_code:
-          type: string
-          example: "UNAUTHORIZED"
-        error_message:
-          type: string
-          example: ""
-        sub_errors:
-          type: array
-          items:
-            type: object
-            properties:
-              message:
-                type: string
-              code:
-                type: string
-            required:
-              - message
-              - code
-      required:
-        - message
-        - error_code
-    CreateTokenRequest:
-      type: object
-      properties:
-        name:
-          type: string
-        expires_at:
-          type: string
-      required:
-        - name
-    UserTokenResponse:
-      type: array
-      items:
-        $ref: '#/components/schemas/UserToken'
+          default: ""
+        useNaturalLanguageQuery:
+          type: boolean
+          default: false
     UserToken:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
         created_at:
           type: string
         expires_at:
           type: string
+        id:
+          type: integer
+          format: int64
         last_used_at:
+          type: string
+        name:
           type: string
         token:
           type: string
@@ -704,24 +757,20 @@ components:
         - created_at
         - expires_at
         - token
-    ApiInferenceDefinition:
-      type: object
-      properties:
-        dataDescription:
-          type: string
-          description: Data description of the dataset.
-          maxLength: 10000
-        fieldDefinition:
-          type: string
-          description: Definition of the dataset fields.
-          maxLength: 10000
-      required:
-        - dataDescription
-        - fieldDefinition
+    UserTokenResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/UserToken'
 
   responses:
-    Unauthorized:
-      description: Unauthorized. This error occurs if the authentication token is missing or invalid.
+    BadRequest:
+      description: Bad request. The request was malformed or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Forbidden. User doesn't have access to this resource.
       content:
         application/json:
           schema:
@@ -732,6 +781,26 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/DatasetsResponse'
+    ListOfNamespaces:
+      description: Successful response containing list of namespaces accessible to the user.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ApiNamespace'
+    NotFound:
+      description: The requested resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized. This error occurs if the authentication token is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   securitySchemes:
     bearerAuth:
       type: http
@@ -770,7 +839,7 @@ components:
             budget: 80000000
             director: Kevin Costner
         infer:
-          columns: [ ]
+          columns: []
         link:
           ExactMatch: null
     actorsExample:
@@ -826,6 +895,6 @@ components:
             nationality: American
 
         infer:
-          columns: [ ]
+          columns: []
         link:
           ExactMatch: null
