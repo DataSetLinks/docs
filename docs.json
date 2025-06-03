@@ -20,7 +20,7 @@
               "Creating_a_dataset",
               "Uploading_data_into_a_dataset",
               "Querying_data",
-              "AI_Inference",
+              "ai_inference",
               "Command_List"
             ],
             "icon": "file-lines"
@@ -60,5 +60,13 @@
     "openapi": {
       "source": "api-reference/openapi.yml"
     }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ]
   }
 }
