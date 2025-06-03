@@ -4,6 +4,8 @@ title: "Query Language Command List"
 
 This page provides a reference for constructing queries in the ontology graph engine. Queries allow you to search, filter, and find data stored in interconnected schemas.
 
+## Language reference
+
 #### **`OntologyObject`**
 
 * **Description**: Initializes a query on a specific table/schema.
@@ -11,19 +13,18 @@ This page provides a reference for constructing queries in the ontology graph en
 * **Syntax**: `OntologyObject("TableName")` or `Ontology("TableName")`
 
 * **Example**:
-  `OntologyObject("Movies")`
+`OntologyObject("Movies")`
 
 #### **`filter`**
 
  * **Description**: Filters data based on conditions or free-text search.
 
  * **Syntax**:
-
-   * For conditions: `filter("field==value")`
+* For conditions: `filter("field==value")`
 
  * **Examples**:
-   * `OntologyObject("Movies").filter("year==2005")`
-   * `OntologyObject("Movies").filter("year"<=2005)`
+* `OntologyObject("Movies").filter("year==2005")`
+* `OntologyObject("Movies").filter("year"<=2005)`
 
 #### **`searchAround`**
 
@@ -32,7 +33,7 @@ This page provides a reference for constructing queries in the ontology graph en
 * **Syntax**: `searchAround([depth: n])`
 
 * **Example**:
-  `OntologyObject("Movies").filter("Inception").searchAround(2)`
+`OntologyObject("Movies").filter("Inception").searchAround(2)`
 
 #### **`find`**
 
@@ -41,7 +42,16 @@ This page provides a reference for constructing queries in the ontology graph en
 * **Syntax**: `find("TableName")`
 
 * **Example**:
-  `OntologyObject("Actor").searchAround().find("Movies")`
+`OntologyObject("Actor").searchAround().find("Movies")`
+
+#### **`follow`**
+
+* **Description**: Use only links connected to a specified column
+
+* **Syntax**: `follow("col1","col2")`
+
+* **Example**:
+`OntologyObject("Movies").searchAround().find("Actors").follow("director")`
 
 #### **`get`**
 
@@ -50,9 +60,9 @@ This page provides a reference for constructing queries in the ontology graph en
 * **Syntax**: `get()`
 
 * **Example**:
-  `OntologyObject("Movies").filter(title=="Inception").get()`
+`OntologyObject("Movies").filter(title=="Inception").get()`
 
-### **Error Handling**
+## **Error Handling**
 
 If a query returns unexpected results:
 
