@@ -1,44 +1,34 @@
 ---
-openapi: POST /data/{username}/{namespace}/{objectName}
+openapi: POST /data/{username}/{namespace}/{datasetName}
 ---
 For data querying, you can send expressive queries to the backend, enabling you to filter, perform searches, aggregations and more!
-
-```
- 1 curl -H "Authorization: Bearer token1234abcdefg"`
- 2      -X POST https://api.datalinks.com/api/data/username/namespace/objectname
- 3      --data 'OntologyObject("objectname").get()'
-```
-
 Analyzing the code line-by-line:
 
-**1** - You need to provide us with a Bearer token for your user. We don’t have a self service token generator yet, but you can ask the DataLinks team to give you one by reaching out to us -- [support@datasetlinks.com](mailto:support@datasetlinks.com).
 
-**2** - These three properties **username**/**namespace**/**objectname** can be found in the dataset URL path by clicking My Data on the left menu and navigating to the dataset you want to query.
-
-**3** - This line specifies the query you want to execute. The use of POST in this curl command allows you to include the query in the request body. Our query language continues to evolve. In the meantime, you can check all commands available to you in the [Query Language Command List](https://datalinks.mintlify.app/Command_List).
+Request body specifies the query you want to execute. Our query language continues to evolve. In the meantime, you can check all commands available to you in the [Query Language Command List](Command_List).
 
 Some examples can be found below:
 
 **Getting all data:**
 
 ```
-OntologyObject("objectname").get()
+OntologyObject("datasetName").get()
 ```
 
 **Filtering a column:**
 
 ```
-OntologyObject("objectname").filter("columnName==Foo").get()
+OntologyObject("datasetName").filter("columnName==Foo").get()
 ```
 
 **Filter with Logic expressions:**
 
 ```
-OntologyObject("objectname").filter("columnName==Foo && column2 > 2").get()
+OntologyObject("datasetName").filter("columnName==Foo && column2 > 2").get()
 ```
 
 **Following links:**
 
 ```
-OntologyObject("objectname").searchAround().find("otherObject").get()
+OntologyObject("datasetName").searchAround().find("otherObject").get()
 ```

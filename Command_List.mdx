@@ -8,51 +8,49 @@ This page provides a reference for constructing queries in the ontology graph en
 
 * **Description**: Initializes a query on a specific table/schema.
 
-* **Syntax**: `OntologyObject("TableName")`
+* **Syntax**: `OntologyObject("TableName")` or `Ontology("TableName")`
 
 * **Example**:
   `OntologyObject("Movies")`
 
 #### **`filter`**
 
-* **Description**: Filters data based on conditions or free-text search.
+ * **Description**: Filters data based on conditions or free-text search.
 
-* **Syntax**:
+ * **Syntax**:
 
-  * For conditions: `filter("field==value")`
+   * For conditions: `filter("field==value")`
 
-  * For free-text search: `filter("searchText")`
-
-* **Examples**:
-  `OntologyObject("Movies").filter("year==2005")`
-  `OntologyObject("Movies").filter("John Wick")`
+ * **Examples**:
+   * `OntologyObject("Movies").filter("year==2005")`
+   * `OntologyObject("Movies").filter("year"<=2005)`
 
 #### **`searchAround`**
 
 * **Description**: Searches objects connected to the current object, optionally specifying the depth of traversal.
 
-* **Syntax**: `searchAround({depth: n})`
+* **Syntax**: `searchAround([depth: n])`
 
 * **Example**:
-  `OntologyObject("Movies").filter("Inception").searchAround({depth: 2})`
+  `OntologyObject("Movies").filter("Inception").searchAround(2)`
 
 #### **`find`**
 
-* **Description**: Specifies the table/schema to traverse to.
+* **Description**: Specifies the table/schema to traverse to. Requires `.searchAround`
 
 * **Syntax**: `find("TableName")`
 
 * **Example**:
-  `OntologyObject("Actor").find("Movies")`
+  `OntologyObject("Actor").searchAround().find("Movies")`
 
 #### **`get`**
 
-* **Description**: Executes the query and retrieves the results.
+* **Description**: Executes the query and retrieves the results. `[optional]`
 
 * **Syntax**: `get()`
 
 * **Example**:
-  `OntologyObject("Movies").filter("Inception").get()`
+  `OntologyObject("Movies").filter(title=="Inception").get()`
 
 ### **Error Handling**
 

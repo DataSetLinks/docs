@@ -1,6 +1,10 @@
+---
+openapi: POST /ingest/{namespace}/{datasetName}
+---
+
 <Warning>
   Before uploading data to a dataset you first need to create it!
-  Please do so through [My Data](https://datalinks.tech/home/data), or find your datasets through the UI.
+  Please do so through [API](Creating_a_dataset), or find your datasets through the UI.
 </Warning>
 
 ### Uploading structured data
@@ -8,17 +12,3 @@
 Data can currently be uploaded by providing a structured JSON file. To upload data, you must have write permissions for the dataset. If it's a dataset you created, you automatically have these permissions. However, if the dataset belongs to someone else, you'll need to request write access.
 
 While this functionality is supported, there is no user interface available for it at the moment. Until the UI is implemented, you can contact the DataLinks team to enable sharing permissions on the backend.
-
-```
-1  curl -H "Authorization: Bearer token1234abcdefg"
-2       -X POST https://api.datalinks.com/api/ingest/namespace/objectname
-3       --data '{"data": [{"col1": 123, "col2": "foo"}, {"col1": 444, "col2": "bar"}] }'
-```
-
-Analyzing the code line-by-line:
-
-**1** - You will need to provide a Bearer token associated with your account. While we don't yet offer a self-service token generator, you can request a token by contacting the DataLinks team directly.
-
-**2** - The **namespace** is the name you want to group your datasets around. An **objectname** with the same name may exist in different namespaces, for example *companies* exists in both *sanctions* and in the *company registry*.
-
-**3** - In the body of your **POST** you need to pass a string with a JSON containing an array of rows within the property data. The example above sends two rows with the same columns.

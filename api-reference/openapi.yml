@@ -3,7 +3,7 @@ info:
   title: DataLinks
   version: 1.0.0
 security:
-  - bearerAuth: []
+  - bearerAuth: [ ]
 servers:
   - url: https://api.datalinks.com/api/v1
     description: production server
@@ -436,7 +436,7 @@ components:
       name: datasetName
       in: path
       required: true
-      description: Name of the dataset.
+      description: Name of the dataset. The same name may exist in different namespaces, for example  *companies*  exists in both  *sanctions*  and in the  *company registry*.
       schema:
         type: string
       examples:
@@ -450,7 +450,7 @@ components:
       name: namespace
       in: path
       required: true
-      description: Namespace for the dataset.
+      description: The `namespace` is the name you want to group your datasets around.
       schema:
         type: string
       example: cinematography
@@ -462,10 +462,10 @@ components:
       schema:
         type: integer
     Username:
-      name: username
+      name: owner
       in: path
       required: true
-      description: The username associated with the request.
+      description: username of the owner of a namespace
       schema:
         type: string
 
@@ -491,11 +491,7 @@ components:
           description: The username associated with the data.
           deprecated: true
         visibility:
-          type: string
-          description: Indicates whether the data is public or private.
-          enum:
-            - Public
-            - Private
+          $ref: '#/components/schemas/ApiInferenceDefinition'
       required:
         - owner
         - name
@@ -567,17 +563,20 @@ components:
       properties:
         inferDefinition:
           $ref: '#/components/schemas/ApiInferenceDefinition'
+        visibility:
+          $ref: '#/components/schemas/Visibility'
         isPrivate:
           type: boolean
           description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
           example: true
           deprecated: true
-        visibility:
-          type: string
-          enum:
-            - Public
-            - Private
-          example: Private
+    Visibility:
+      description: Indicates whether the data is public or private.
+      type: string
+      enum:
+        - Public
+        - Private
+      example: Private
     CreateTokenRequest:
       type: object
       properties:
@@ -723,7 +722,7 @@ components:
         $ref: '#/components/schemas/ApiLink'
     OntologyRequest:
       type: string
-      example: "OntologyObject(\"objectName\").get()"
+      example: "OntologyObject(\"datasetName\").get()"
       description: for details check [Querying data](/Querying_data)
     QueryDataRequest:
       type: object
@@ -807,7 +806,8 @@ components:
       scheme: bearer
       description: |
         Use a Bearer token for authentication. Submit the token using the `Authorization` 
-        header: `Authorization: Bearer <token>`.
+        header: `Authorization: Bearer <token>`. 
+        The token can be generated in [Settings](https://datalinks.com/dashboard/settings)
 
   examples:
     moviesExample:
@@ -839,7 +839,7 @@ components:
             budget: 80000000
             director: Kevin Costner
         infer:
-          columns: []
+          columns: [ ]
         link:
           ExactMatch: null
     actorsExample:
@@ -895,6 +895,6 @@ components:
             nationality: American
 
         infer:
-          columns: []
+          columns: [ ]
         link:
           ExactMatch: null
