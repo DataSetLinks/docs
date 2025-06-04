@@ -1,3 +1,5 @@
+# Introduction
+
 When uploading data, you can derive new columns from existing ones using our AI for automatic derivations. To do this, you'll need to specify the desired columns and the steps you want to execute. We support several steps including Table, Rows, Normalize, Validate, ReverseGeo, and column inference.
 
 ```shell
@@ -18,6 +20,8 @@ curl -H "Authorization: Bearer token1234abcdefg"
 * The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps such as **table**, **rows**, **normalize**, **validate**, and **reverseGeo**.
 
 * In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
+
+# Available steps
 
 ### Table extraction
 
