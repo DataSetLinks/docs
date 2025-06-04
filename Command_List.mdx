@@ -1,67 +1,281 @@
 ---
-title: "Query Language Command List"
+title: "Query Language"
 ---
 
-This page provides a reference for constructing queries in the ontology graph engine. Queries allow you to search, filter, and find data stored in interconnected schemas.
+## Introduction
 
-## Language reference
+The DataLinks Query Language is a powerful domain-specific language designed to query and manipulate datasets within the DataLinks ecosystem. It provides a flexible and intuitive way to access data, apply filters, establish relationships between datasets, and sort results.
 
-#### **`OntologyObject`**
+This language is particularly useful for:
+- Retrieving data from specific datasets
+- Filtering data based on various conditions
+- Discovering relationships between different datasets
+- Traversing complex data structures
+- Sorting and limiting result sets
 
-* **Description**: Initializes a query on a specific table/schema.
+## Basic Syntax
 
-* **Syntax**: `OntologyObject("TableName")` or `Ontology("TableName")`
+The query language follows a fluent interface pattern, where methods are chained together to build complex queries. The basic structure of a query is:
 
-* **Example**:
-`OntologyObject("Movies")`
+```js
+Ontology("<dataset>").<operation1>().<operation2>()...
+```
 
-#### **`filter`**
+or
 
- * **Description**: Filters data based on conditions or free-text search.
+```js
+OntologyObject("<dataset>").<operation1>().<operation2>()...
+```
 
- * **Syntax**:
-* For conditions: `filter("field==value")`
+Both `Ontology` and `OntologyObject` are valid entry points for creating a query.
 
- * **Examples**:
-* `OntologyObject("Movies").filter("year==2005")`
-* `OntologyObject("Movies").filter("year"<=2005)`
+## Querying Datasets
 
-#### **`searchAround`**
+### Basic Dataset Query
 
-* **Description**: Searches objects connected to the current object, optionally specifying the depth of traversal.
+To query a dataset, specify its name:
 
-* **Syntax**: `searchAround([depth: n])`
+```js
+Ontology("Movies")
+```
 
-* **Example**:
-`OntologyObject("Movies").filter("Inception").searchAround(2)`
+Dataset names are case-insensitive, so `Ontology("movies")` and `Ontology("Movies")` refer to the same dataset.
 
-#### **`find`**
+### Namespaced Datasets
 
-* **Description**: Specifies the table/schema to traverse to. Requires `.searchAround`
+Datasets can be organized in namespaces. To query a namespaced dataset, use the format:
 
-* **Syntax**: `find("TableName")`
+```js
+Ontology("Namespace/Dataset")
+```
 
-* **Example**:
-`OntologyObject("Actor").searchAround().find("Movies")`
+For example:
+```js
+Ontology("Companies/Orange")
+```
 
-#### **`follow`**
+If a dataset name is ambiguous (exists in multiple namespaces), you must specify the namespace to avoid errors.
 
-* **Description**: Use only links connected to a specified column
+## Filtering Data
 
-* **Syntax**: `follow("col1","col2")`
+### Basic Filtering
 
-* **Example**:
-`OntologyObject("Movies").searchAround().find("Actors").follow("director")`
+To filter data, use the `filter()` method with a comparison expression:
 
-#### **`get`**
+```js
+Ontology("Movies").filter(year == 2012)
+```
 
-* **Description**: Executes the query and retrieves the results. `[optional]`
+or
 
-* **Syntax**: `get()`
+```js
+Ontology("Movies").filter().column("year == 2012")
+```
 
-* **Example**:
-`OntologyObject("Movies").filter(title=="Inception").get()`
+### Comparison Operators
 
+The query language supports the following comparison operators:
+
+- `==` (equal to)
+- `!=` (not equal to)
+- `<` (less than)
+- `<=` (less than or equal to)
+- `>` (greater than)
+- `>=` (greater than or equal to)
+
+Examples:
+```js
+Ontology("Movies").filter(year < 2000)
+Ontology("Movies").filter(budget >= 10000000)
+Ontology("Movies").filter(name != "Titanic")
+```
+
+### Logical Operators
+
+Combine multiple conditions using logical operators:
+
+- `&&` (AND)
+- `||` (OR)
+
+Examples:
+```js
+Ontology("Movies").filter(year == 2005 && director == "Christopher Nolan")
+Ontology("Movies").filter(year == 2005 || year == 2006)
+```
+
+### Nested Conditions
+
+Use parentheses to create complex nested conditions:
+
+```js
+Ontology("Movies").filter(director == "Mark Osborne" && (year == 2005 || year == 2006))
+```
+### Filter Expression Syntax
+
+The query language provides flexible syntax for filter expressions:
+
+1. **Quoting Field Names**: Field names can be unquoted, single-quoted, or double-quoted:
+```js
+name == "value"
+"name" == "value"
+'name' == "value"
+   ```
+
+2. **Quoting Values**: String values can be unquoted (for simple strings) or quoted:
+```js
+title == dog
+title == "dog"
+title == 'dog'
+   ```
+
+3. **Multi-word Values**: Multi-word string values must be quoted:
+```js
+title == "The Matrix"
+   ```
+
+<Note>Note: Unquoted multi-word values (e.g., `title == The Matrix`) are not supported.</Note>
+
+
+## Linking Datasets
+
+### Searching Related Datasets
+
+To find related datasets, use the `searchAround()` and `find()` methods:
+
+```js
+Ontology("Movies").searchAround().find("Actor")
+```
+
+This searches for actors related to movies based on defined links between the datasets.
+
+### Specifying Search Depth
+
+You can specify the depth of the search (how many hops to traverse):
+
+```js
+Ontology("Movies").searchAround(2).find("Actor")
+```
+
+A depth of 2 means it will look for relationships that are two links away.
+
+### Following Specific Links
+
+To follow specific columns when linking datasets:
+
+```js
+Ontology("Movies").searchAround().find("Actor").follow("director")
+```
+
+This specifies that the link between Movies and Actor should be through the "director" column.
+
+You can specify multiple columns to follow:
+
+```js
+Ontology("Movies").searchAround().find("Actor").follow("director", "producer")
+```
+
+## Sorting and Limiting Results
+
+### Sorting Results
+
+Sort results in ascending or descending order:
+
+```js
+Ontology("Movies").sortAscending("year")
+Ontology("Movies").sortDescending("budget")
+```
+
+Alternative syntax:
+
+```js
+Ontology("Movies").sort("year", "ASC")
+Ontology("Movies").sort("budget", "DESC")
+```
+
+### Multiple Sort Criteria
+
+Sort by multiple fields:
+
+```js
+Ontology("Actor").sortDescending("nationality").sortAscending("age")
+```
+
+This sorts actors first by nationality in descending order, then by age in ascending order.
+
+### Limiting Results
+
+Limit the number of results returned:
+
+```js
+Ontology("Movies").limit(5)
+```
+
+You can also limit results at different stages of a complex query:
+
+```js
+Ontology("Movies").limit(10).searchAround().find("Actor").limit(5)
+```
+
+This limits the movies to 10 and the related actors to 5.
+
+## Natural Language Query Generation
+
+The system can generate queries from natural language questions. For example:
+
+Natural language: "What is the age of the director of Braveheart?"
+
+Generated query:
+```js
+OntologyObject("Movies").filter(name == "Braveheart").searchAround().find("Actor")
+```
+
+## Examples
+
+### Basic Query Examples
+
+1. Find all movies:
+```js
+Ontology("Movies")
+   ```
+
+2. Find a specific movie:
+```js
+Ontology("Movies").filter(name == "Argo")
+   ```
+
+3. Find movies released before 2000:
+```js
+Ontology("Movies").filter(year < 2000)
+   ```
+
+### Relationship Query Examples
+
+1. Find actors who directed movies:
+```js
+Ontology("Movies").searchAround().find("Actor")
+   ```
+
+2. Find movies directed by actors under 60:
+```js
+Ontology("Actor").filter(age < 60).searchAround().find("Movies")
+   ```
+
+3. Find actors who directed movies, then find other actors who worked with them:
+```js
+Ontology("Actor").filter(age < 60).searchAround().find("Movies").searchAround().find("Actor")
+   ```
+
+### Sorting and Limiting Examples
+
+1. Find the 3 oldest movies:
+```js
+Ontology("Movies").sortAscending("year").limit(3)
+   ```
+
+2. Find the 5 highest budget movies:
+```js
+Ontology("Movies").sortDescending("budget").limit(5)
+   ```
 ## **Error Handling**
 
 If a query returns unexpected results:
