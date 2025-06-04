@@ -2,13 +2,124 @@
 openapi: POST /ingest/{namespace}/{datasetName}
 ---
 
+# Uploading Data into a Dataset
+
+This guide explains how to upload data into your DataLinks dataset using our API.
+
 <Warning>
   Before uploading data to a dataset you first need to create it!
   Please do so through [API](Creating_a_dataset), or find your datasets through the UI.
 </Warning>
 
-### Uploading structured data
+## Overview
 
-Data can currently be uploaded by providing a structured JSON file. To upload data, you must have write permissions for the dataset. If it's a dataset you created, you automatically have these permissions. However, if the dataset belongs to someone else, you'll need to request write access.
+DataLinks supports uploading structured data in JSON format. Once uploaded, your data becomes available for querying and can be connected with other datasets through our Semantic Layer.
 
-While this functionality is supported, there is no user interface available for it at the moment. Until the UI is implemented, you can contact the DataLinks team to enable sharing permissions on the backend.
+## Prerequisites
+
+Before uploading data, ensure you have:
+- Created a dataset (see [Creating a Dataset](Creating_a_dataset))
+- Write permissions for the dataset
+- Prepared your data in a compatible JSON format
+- Your API authentication credentials
+
+## Data Upload Process
+
+### Uploading Structured Data
+
+Data can be uploaded by providing a structured JSON file. The JSON should contain an array of objects, where each object represents a row in your dataset.
+
+### Request Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `namespace` | The namespace where your dataset is located |
+| `datasetName` | The name of your dataset |
+
+### Request Body
+
+The request body should contain a JSON object with a `data` field that holds an array of data objects:
+
+```json
+{
+  "data": [
+    {
+      "id": "001",
+      "name": "Example Item 1",
+      "value": 42.5,
+      "category": "A"
+    },
+    {
+      "id": "002",
+      "name": "Example Item 2",
+      "value": 18.3,
+      "category": "B"
+    }
+  ]
+}
+```
+
+### Example Request
+
+```bash
+curl -X POST https://api.datalinks.com/api/v1/ingest/my-project/customer-data \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": [
+      {
+        "customer_id": "C1001",
+        "transaction_amount": 125.50,
+        "transaction_date": "2023-10-15"
+      },
+      {
+        "customer_id": "C1002",
+        "transaction_amount": 75.25,
+        "transaction_date": "2023-10-16"
+      }
+    ]
+  }'
+```
+
+### Response
+
+A successful upload will return a `200 OK` status code with a response body containing information about the ingested data.
+
+## Permissions
+
+To upload data, you must have write permissions for the dataset:
+- If it's a dataset you created, you automatically have these permissions
+- If the dataset belongs to someone else, you'll need to request write access
+
+<Note>
+  While permission management functionality is supported, there is no user interface available for it at the moment. Until the UI is implemented, you can contact the DataLinks team to enable sharing permissions on the backend.
+</Note>
+
+## Data Validation
+
+DataLinks performs validation on uploaded data to ensure it matches the schema defined when creating the dataset:
+- Fields must match the defined schema
+- Data types must be compatible
+- Required fields must be present
+
+If validation fails, you'll receive an error response with details about the validation issues.
+
+## Batch Uploading
+
+For large datasets, we recommend uploading data in batches of 1,000 to 5,000 records per request to optimize performance and avoid timeouts.
+
+## Using AI Features
+
+DataLinks provides AI capabilities to enhance your data during the upload process. You can use these features to:
+- Extract structured data from unstructured text
+- Normalize column names
+- Transform JSON data into tabular format
+
+For more information, see [AI Inference](ai_inference).
+
+## Next Steps
+
+After uploading your data, you can:
+- [Query your data](Querying_data) using our Semantic Layer
+- Connect your dataset with other datasets
+- Analyze relationships and extract insights

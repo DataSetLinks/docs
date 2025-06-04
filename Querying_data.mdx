@@ -1,34 +1,162 @@
 ---
 openapi: POST /data/{username}/{namespace}/{datasetName}
 ---
-For data querying, you can send expressive queries to the backend, enabling you to filter, perform searches, aggregations and more!
-Analyzing the code line-by-line:
 
+# Querying Data with DataLinks
 
-Request body specifies the query you want to execute. Our query language continues to evolve. In the meantime, you can check all commands available to you in the [Query Language Command List](Command_List).
+This guide explains how to query data in DataLinks using our powerful query language.
 
-Some examples can be found below:
+## Introduction to the Query Language
 
-**Getting all data:**
+DataLinks provides an expressive query language that enables you to:
+- Retrieve data from your datasets
+- Filter data based on conditions
+- Search for related data across connected datasets
+- Follow links between entities
+- Perform aggregations and transformations
+
+Our query language is designed to be intuitive and powerful, allowing you to express complex relationships and queries with simple syntax.
+
+## Query Structure
+
+A typical DataLinks query follows this pattern:
+
+1. Start with `OntologyObject()` to specify the dataset
+2. Add operations like `filter()`, `searchAround()`, or `find()`
+3. End with `get()` to execute the query and retrieve results
+
+## Basic Query Operations
+
+### Getting All Data
+
+To retrieve all data from a dataset:
 
 ```
 OntologyObject("datasetName").get()
 ```
 
-**Filtering a column:**
+This query returns all records from the specified dataset.
+
+### Filtering Data
+
+To filter data based on column values:
 
 ```
 OntologyObject("datasetName").filter("columnName==Foo").get()
 ```
 
-**Filter with Logic expressions:**
+This query returns only records where the column "columnName" has the value "Foo".
+
+### Using Logical Expressions
+
+You can use logical operators (`&&`, `||`, `!`) to create complex filter conditions:
 
 ```
 OntologyObject("datasetName").filter("columnName==Foo && column2 > 2").get()
 ```
 
-**Following links:**
+This query returns records where "columnName" equals "Foo" AND "column2" is greater than 2.
+
+### Comparison Operators
+
+The query language supports various comparison operators:
+
+| Operator | Description | Example |
+|----------|-------------|---------|
+| `==` | Equal to | `"year==2023"` |
+| `!=` | Not equal to | `"status!=pending"` |
+| `>` | Greater than | `"price>100"` |
+| `<` | Less than | `"quantity<10"` |
+| `>=` | Greater than or equal to | `"age>=18"` |
+| `<=` | Less than or equal to | `"discount<=50"` |
+
+## Advanced Query Operations
+
+### Following Links Between Datasets
+
+One of the most powerful features of DataLinks is the ability to follow links between datasets:
 
 ```
-OntologyObject("datasetName").searchAround().find("otherObject").get()
+OntologyObject("datasetName").searchAround().find("otherDataset").get()
 ```
+
+This query:
+1. Starts with the "datasetName" dataset
+2. Searches for connected entities using `searchAround()`
+3. Finds entities in the "otherDataset" dataset
+4. Returns the results
+
+### Specifying Search Depth
+
+You can specify how far to search for connections:
+
+```
+OntologyObject("datasetName").searchAround(2).find("otherDataset").get()
+```
+
+This limits the search to connections that are at most 2 steps away.
+
+### Following Specific Connections
+
+To follow only specific connections:
+
+```
+OntologyObject("Movies").searchAround().find("Actors").follow("director").get()
+```
+
+This query finds actors connected to movies, but only through the "director" relationship.
+
+## Example Queries
+
+### Finding Movies by a Specific Director
+
+```
+OntologyObject("Directors")
+  .filter("name=='Christopher Nolan'")
+  .searchAround()
+  .find("Movies")
+  .get()
+```
+
+### Finding Transactions Above a Certain Amount
+
+```
+OntologyObject("Transactions")
+  .filter("amount>1000 && date>='2023-01-01'")
+  .get()
+```
+
+### Finding Companies Connected to a Specific Person
+
+```
+OntologyObject("People")
+  .filter("name=='John Smith'")
+  .searchAround(3)
+  .find("Companies")
+  .get()
+```
+
+## Query Response
+
+The response to a query is a JSON object containing the matching records. The structure of the response depends on the query and the datasets involved.
+
+## Performance Considerations
+
+- Use specific filters to narrow down results
+- Limit search depth with `searchAround(n)` for better performance
+- For complex queries, consider breaking them into smaller parts
+
+## Debugging Queries
+
+If your query doesn't return the expected results:
+
+1. Start with simpler queries and gradually add complexity
+2. Check field names and relationships for correctness
+3. Ensure the search depth is sufficient for your query
+4. Verify that the data exists in the datasets you're querying
+
+## Next Steps
+
+- Explore the complete [Query Language Command List](Command_List) for more operations
+- Check out our [Use Cases](/archive/UseCase1) for real-world examples
+- Try combining different operations to create powerful queries

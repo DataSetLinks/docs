@@ -2,4 +2,107 @@
 openapi: POST /ingest/new/{namespace}/{datasetName}
 ---
 
+# Creating a Dataset
+
+Before you can upload and analyze data in DataLinks, you need to create a dataset. This page explains how to create a dataset using our API.
+
+## What is a Dataset?
+
+A dataset in DataLinks is a container for your data that:
+- Organizes your data within a namespace
+- Controls access permissions
+- Enables querying and analysis
+- Facilitates connections with other datasets
+
+## Prerequisites
+
+Before creating a dataset, ensure you have:
+- A valid DataLinks account
+- API authentication credentials
+- Decided on a namespace and dataset name
+
+## Creating a Dataset via API
+
 The API endpoint allows you to create a dataset under your account. It is required to create a dataset before uploading any data to it.
+
+### Request Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `namespace` | The namespace where your dataset will be created. Think of this as a project or organization name. |
+| `datasetName` | The name of your dataset. Use a descriptive name that reflects the data content. |
+
+### Request Body
+
+```json
+{
+  "description": "Optional description of your dataset",
+  "isPrivate": true,
+  "schema": {
+    "columns": [
+      {
+        "name": "id",
+        "type": "string",
+        "description": "Unique identifier"
+      },
+      {
+        "name": "value",
+        "type": "number",
+        "description": "Numeric value"
+      }
+    ]
+  }
+}
+```
+
+You can add more columns to the schema as needed for your specific dataset.
+
+### Example Request
+
+```bash
+curl -X POST https://api.datalinks.com/api/v1/ingest/new/my-project/customer-data \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Customer transaction data for 2023",
+    "isPrivate": true,
+    "schema": {
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "string",
+          "description": "Unique customer identifier"
+        },
+        {
+          "name": "transaction_amount",
+          "type": "number",
+          "description": "Transaction amount in USD"
+        },
+        {
+          "name": "transaction_date",
+          "type": "date",
+          "description": "Date of transaction"
+        }
+      ]
+    }
+  }'
+```
+
+### Response
+
+A successful request will return a `201 Created` status code, indicating that your dataset has been created.
+
+## Best Practices
+
+1. **Namespace Organization**: Create a separate namespace for each project or data domain.
+2. **Dataset Naming**: Use clear, descriptive names for your datasets.
+3. **Privacy Settings**: Set `isPrivate: true` unless you specifically want to share your dataset with others.
+4. **Schema Definition**: Define your schema upfront to ensure data consistency.
+5. **Documentation**: Include a detailed description of your dataset to help others understand its purpose.
+
+## Next Steps
+
+After creating your dataset, you can:
+- [Upload data to your dataset](Uploading_data_into_a_dataset)
+- Use [AI features](ai_inference) to automatically extract metadata
+- [Query your data](Querying_data) using our Semantic Layer
