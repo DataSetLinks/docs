@@ -1,62 +1,248 @@
-When uploading data, you can derive new columns from existing ones using our AI for automatic derivations. To do this, you’ll need to specify the desired columns and the steps you want to execute. Currently, we support three steps: Table, Rows, and Normalize.
+# AI-Powered Data Inference
 
-```shell
-curl -H "Authorization: Bearer token1234abcdefg"
-     -X POST https://api.datalinks.com/api/ingest/namespace/datasetName
+DataLinks provides powerful AI capabilities to automatically derive new columns, extract structured data from unstructured content, and normalize your data during the ingestion process.
+
+## Overview
+
+When uploading data to DataLinks, you can leverage our AI inference engine to:
+
+- Extract structured tables from text descriptions
+- Transform JSON data into tabular format
+- Normalize column names for consistency
+- Combine multiple transformation steps in a single request
+
+This guide explains how to use these AI features to enhance your data.
+
+## Inference Steps
+
+DataLinks supports three types of inference steps:
+
+1. **Table**: Extract structured data from unstructured text
+2. **Rows**: Transform JSON arrays into tabular data
+3. **Normalize**: Standardize column names and formats
+
+You can combine these steps in a single request to create powerful data transformation pipelines.
+
+## Basic Usage
+
+To use AI inference, include an `infer` object in your data upload request:
+
+```bash
+curl -H "Authorization: Bearer YOUR_API_TOKEN" \
+     -X POST https://api.datalinks.com/api/v1/ingest/my-namespace/my-dataset \
      --data '{
-               "data": [{"col1": 123, "col2": "foo", "colWithATable":                5                 "direction,size;up,large"}, {"col1": 444, "col2": "bar"}]
-                 "infer": {
-                   "steps": [{
-                      "type": "table"
-                      "deriveFrom": "colWithATable"
-                      "helperPrompt": "This text contains a table comma separated,
-                      but instead of line breaks we are using a &apos;;&apos;."
-                   }]
-                 }
-              }'
+       "data": [
+         {
+           "col1": 123,
+           "col2": "foo",
+           "colWithATable": "direction,size;up,large;down,small"
+         },
+         {
+           "col1": 444,
+           "col2": "bar"
+         }
+       ],
+       "infer": {
+         "steps": [
+           {
+             "type": "table",
+             "deriveFrom": "colWithATable",
+             "helperPrompt": "This text contains a table comma separated, but instead of line breaks we are using a semicolon."
+           }
+         ]
+       }
+     }'
 ```
 
-* The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps such as **table**, **rows**, **normalize**.
+This example extracts a table from the `colWithATable` column, creating new columns based on the structured data found in the text.
 
-* In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
+## Table Extraction
 
-### Table extraction
+### Description
 
-The Table Step is designed to extract a table from any text input, whether it’s free-form text such as a restaurant review, a flight log report, or a financial instrument notice. When used independently, this step may produce columns that are somewhat arbitrary and often require normalization afterward. It functions by extracting data to create new columns and appending them to the rows of the existing table.
+The Table step extracts structured data from unstructured text. It can identify tables in various formats, including:
 
-<Tip>
-  **Pro tip:** Calling an extraction with just the **table** step is a great way to see what kind of **structured** data can be generated from your unstructured data.
-</Tip>
+- Comma-separated values
+- Semicolon-separated records
+- Free-form text descriptions
+- Reports and documents
+
+### Configuration
 
 ```json
 {
   "type": "table",
-  "deriveFrom": "columnName from where the column should be derived from",
-  "helperPrompt": "This text contains a table comma separated, but instead of line breaks we are using a &apos;;&apos;."
+  "deriveFrom": "sourceColumnName",
+  "helperPrompt": "Optional guidance for the AI about the data format"
 }
 ```
 
-#### Rows
+### Parameters
 
-If a table is stored in JSON format within a column, you can directly transform it into a structured table. The JSON should consist of an array of objects, with each key in the objects mapped to a new column.
+| Parameter | Description |
+|-----------|-------------|
+| `type` | Must be set to `"table"` |
+| `deriveFrom` | The name of the column containing the text to analyze |
+| `helperPrompt` | Optional guidance to help the AI understand the data format |
+
+<Tip>
+  **Pro tip:** Calling an extraction with just the **table** step is a great way to see what kind of structured data can be generated from your unstructured data.
+</Tip>
+
+### Example
+
+If your data contains a column with text like:
+
+```
+product,price,quantity;laptop,999,5;smartphone,499,10
+```
+
+The Table step can extract this into structured columns:
+
+```json
+{
+  "product": "laptop",
+  "price": 999,
+  "quantity": 5
+}
+```
+
+## Rows Transformation
+
+### Description
+
+The Rows step transforms JSON arrays stored as strings in a column into structured tabular data. Each object in the array becomes a row, with object keys becoming column names.
+
+### Configuration
 
 ```json
 {
   "type": "rows",
-  "deriveFrom": "columnName from where the json content will be read"
+  "deriveFrom": "sourceColumnName"
 }
 ```
 
-#### Normalize names
+### Parameters
 
-Use the Normalize Names step to consolidate the schema or column space. In this step, specify the columns you want to include in the final table that will be indexed into DataLinks.
+| Parameter | Description |
+|-----------|-------------|
+| `type` | Must be set to `"rows"` |
+| `deriveFrom` | The name of the column containing the JSON array |
+
+### Example
+
+If your data contains a column with a JSON string like:
+
+```json
+[
+  {"name": "John", "age": 30},
+  {"name": "Alice", "age": 25}
+]
+```
+
+The Rows step will transform this into:
+
+```json
+{
+  "name": "John",
+  "age": 30
+}
+```
+
+and
+
+```json
+{
+  "name": "Alice",
+  "age": 25
+}
+```
+
+## Normalize Names
+
+### Description
+
+The Normalize step standardizes column names across your data. This is particularly useful after a Table extraction step, which might produce inconsistent column names.
+
+### Configuration
 
 ```json
 {
   "type": "normalize",
   "targetCols": {
-      "NameOfTheColumn": "Description for what this column is, which will enable the AI to automatically transform other names into the desired schema, you can have as many columns as you want"
+    "StandardColumnName": "Description of what this column represents",
+    "AnotherColumn": "Description of another column"
   },
-  "helperPrompt": "This prompt will help the llm understand what the domain you are operating under is. So that can correctly interpret the existing column names and the target columns."
+  "helperPrompt": "Optional context about the domain to help the AI understand the data"
 }
 ```
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `type` | Must be set to `"normalize"` |
+| `targetCols` | Object mapping desired column names to their descriptions |
+| `helperPrompt` | Optional context about the domain to help the AI understand the data |
+
+### Example
+
+If your data has inconsistent column names like "First Name", "fname", and "given_name", you can normalize them:
+
+```json
+{
+  "type": "normalize",
+  "targetCols": {
+    "firstName": "The person's first or given name"
+  },
+  "helperPrompt": "This is customer data with various name formats"
+}
+```
+
+## Combining Steps
+
+You can combine multiple inference steps to create powerful transformation pipelines:
+
+```json
+{
+  "infer": {
+    "steps": [
+      {
+        "type": "table",
+        "deriveFrom": "textDescription"
+      },
+      {
+        "type": "normalize",
+        "targetCols": {
+          "product": "Product name",
+          "price": "Product price in USD",
+          "quantity": "Available quantity"
+        }
+      }
+    ]
+  }
+}
+```
+
+This example first extracts a table from the "textDescription" column, then normalizes the resulting columns.
+
+## Best Practices
+
+1. **Start Simple**: Begin with a single inference step and add complexity as needed
+2. **Use Helper Prompts**: Provide context to improve AI accuracy
+3. **Normalize After Extraction**: Always normalize columns after table extraction
+4. **Test with Sample Data**: Try inference on a small dataset first
+5. **Review Results**: Check the output to ensure the AI correctly interpreted your data
+
+## Limitations
+
+- Very large text fields may be truncated
+- Complex nested structures might not be fully extracted
+- Highly domain-specific terminology may require detailed helper prompts
+
+## Next Steps
+
+After using AI inference to enhance your data:
+- [Query your enriched data](Querying_data) using our Semantic Layer
+- [Upload more data](Uploading_data_into_a_dataset) to expand your dataset
+- Explore connections between your enhanced data and other datasets
