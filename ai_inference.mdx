@@ -97,32 +97,3 @@ The ReverseGeo step adds geographical coordinates (latitude and longitude) based
 ```
 
 This step will add a new column named `{locationColumnName}_latlong` containing the coordinates.
-
-### Column Inference
-
-You can also infer new columns from existing text data without using steps. This is useful for extracting specific information from unstructured text.
-
-```json
-{
-  "infer": {
-    "columns": [
-      {
-        "name": "columnName",
-        "description": "Description of what to extract",
-        "deriveFrom": "sourceColumn",
-        "tableGenMode": "append|merge",
-        "explode": "true|false"
-      }
-    ]
-  }
-}
-```
-
-Parameters:
-- **name**: The name of the new column to create
-- **description**: Description to guide the AI in extracting the right information
-- **deriveFrom**: The source column containing the text to analyze
-- **tableGenMode**:
-  - **append**: Adds the inferred column as a new column
-  - **merge**: Merges the inferred values with existing values if the column already exists
-- **explode**: If set to "true", will create multiple rows when multiple values are extracted
