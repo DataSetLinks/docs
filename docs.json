@@ -34,13 +34,6 @@
           "source": "api-reference/openapi.yml",
           "directory": "api-reference"
         }
-      },
-      {
-        "tab": "Tariffs API",
-        "openapi": {
-          "source": "api-tariffs/openapi.yml",
-          "directory": "api-tariffs"
-        }
       }
     ]
   },

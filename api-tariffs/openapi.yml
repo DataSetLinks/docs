@@ -6,7 +6,7 @@ info:
 security:
   - bearerAuth: []
 servers:
-  - url: /api
+  - url: https://www.searchtariff.com/api
 paths:
   /query:
     get:
@@ -207,5 +207,6 @@ components:
       type: http
       scheme: bearer
       description: |
-        Use a Bearer token for authentication. Submit the token using the `Authorization` 
+        Use a Bearer token for authentication. [Check pricing](https://www.searchtariff.com/pricing)      
+        Submit the token using the `Authorization` 
         header: `Authorization: Bearer <token>`.
