@@ -1,0 +1,211 @@
+openapi: 3.0.3
+info:
+  title: DataLinks Tariffs API
+  version: 1.0.0
+  description: API for querying tariff information with usage-based billing
+security:
+  - bearerAuth: []
+servers:
+  - url: /api
+paths:
+  /query:
+    get:
+      summary: Query tariff information
+      description: |
+        Process a tariff query and return relevant tariff data. 
+        This operation charges the user's account and deducts from their balance.
+        If the user has insufficient balance, no charge is made, and an error response is returned.
+      operationId: queryTariffs
+      tags:
+        - tariffs
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: The tariff query string (e.g., "Import steel from Spain to the US")
+          schema:
+            type: string
+            example: "Import steel from Spain to the US"
+      responses:
+        "200":
+          description: Query processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessfulQueryResponse"
+        "400":
+          description: Bad request - missing query parameter
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Query parameter is required"
+        "401":
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missing_auth:
+                  summary: Missing authorization header
+                  value:
+                    error: "Authorization header is required"
+                invalid_token:
+                  summary: Invalid token format
+                  value:
+                    error: "Invalid token format"
+        "422":
+          description: Insufficient balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "Insufficient balance"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "An error occurred. Please try again later."
+
+components:
+  schemas:
+    SuccessfulQueryResponse:
+      type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            balance:
+              type: object
+              properties:
+                originalBalance:
+                  type: number
+                  description: Balance before the query
+                  example: 1000
+                newBalance:
+                  type: number
+                  description: Balance after the query
+                  example: 999
+              required:
+                - originalBalance
+                - newBalance
+            query:
+              type: string
+              description: The original query string
+              example: "Import steel from Spain to the US"
+            total:
+              type: number
+              description: Total number of tariff records found
+              example: 15
+          required:
+            - balance
+            - query
+            - total
+        data:
+          type: array
+          description: Array of tariff data matching the query
+          items:
+            $ref: "#/components/schemas/TariffItem"
+      required:
+        - metadata
+
+    TariffItem:
+      type: object
+      properties:
+        source:
+          type: string
+          description: Source of the tariff data
+          example: "US Trade Representative"
+        description:
+          type: string
+          description: Description of the tariff
+          example: "Steel products from Spain"
+        build_date:
+          type: string
+          description: Date when the tariff data was built
+          example: "2025-01-15"
+        effective_date:
+          type: string
+          description: Date when the tariff becomes effective
+          example: "2025-02-01"
+        tariff:
+          type: string
+          description: Tariff rate or percentage
+          example: "25%"
+        __metadata:
+          $ref: "#/components/schemas/TariffMetadata"
+        from:
+          type: array
+          items:
+            type: string
+          description: Origin countries or regions
+          example: ["ES", "EU"]
+        publishing_authority:
+          type: string
+          description: Authority that published the tariff
+          example: "US Customs and Border Protection"
+        product:
+          type: string
+          description: Product category or description
+          example: "Steel products"
+        to:
+          type: array
+          items:
+            type: string
+          description: Destination countries or regions
+          example: ["US"]
+        code:
+          type: string
+          description: Tariff classification code
+          example: "7208.10.00"
+        last_update:
+          type: string
+          description: Date of last update
+          example: "2025-01-20"
+      required:
+        - source
+        - description
+        - build_date
+        - effective_date
+        - tariff
+        - __metadata
+        - from
+        - publishing_authority
+        - product
+        - to
+        - code
+        - last_update
+
+    TariffMetadata:
+      type: object
+      properties:
+        score:
+          type: number
+          description: Relevance score for the tariff match
+          example: 0.95
+      required:
+        - score
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+          example: "Query parameter is required"
+      required:
+        - error
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Use a Bearer token for authentication. Submit the token using the `Authorization` 
+        header: `Authorization: Bearer <token>`.

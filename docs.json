@@ -21,7 +21,8 @@
               "Uploading_data_into_a_dataset",
               "Querying_data",
               "ai_inference",
-              "Command_List"
+              "Command_List",
+              "Usecase_tariffs"
             ],
             "icon": "file-lines"
           }
@@ -32,6 +33,13 @@
         "openapi": {
           "source": "api-reference/openapi.yml",
           "directory": "api-reference"
+        }
+      },
+      {
+        "tab": "Tariffs API",
+        "openapi": {
+          "source": "api-tariffs/openapi.yml",
+          "directory": "api-tariffs"
         }
       }
     ]

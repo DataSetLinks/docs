@@ -1,0 +1,71 @@
+---
+title: "Usecase - tariffs"
+---
+
+### Use Case: Querying Tariff Information for International Trade
+
+**Objective**: This use case demonstrates how to use the DataLinks platform to query tariff information for international trade. The service provides up-to-date tariff rates, regulations, and related information to help businesses make informed decisions about importing and exporting goods.
+
+### **Example Query**
+
+You can query tariff information using natural language. For example:
+
+```
+"Import steel from Spain to the US"
+```
+
+This query will return relevant tariff information for steel products being imported from Spain to the United States.
+
+### **How It Works**
+
+The tariff service uses the DataLinks platform to:
+
+1. Process natural language queries about tariffs
+2. Search through comprehensive tariff databases
+3. Return relevant, up-to-date tariff information
+4. Charge users based on usage (per query)
+
+### **API Integration**
+
+The service is available through a REST API:
+
+```
+GET /api/query?q=Import%20steel%20from%20Spain%20to%20the%20US
+```
+
+Authentication is required using a Bearer token:
+
+```
+Authorization: Bearer <your_token>
+```
+
+### **Output Example**
+
+The query results provide detailed tariff information:
+
+| Field | Description | Example |
+| ----- | ----------- | ------- |
+| Source | Source of the tariff data | US Trade Representative |
+| Description | Description of the tariff | Steel products from Spain |
+| Effective Date | Date when the tariff becomes effective | 2025-02-01 |
+| Tariff | Tariff rate or percentage | 25% |
+| From | Origin countries or regions | ES, EU |
+| To | Destination countries or regions | US |
+| Product | Product category or description | Steel products |
+| Code | Tariff classification code | 7208.10.00 |
+| Publishing Authority | Authority that published the tariff | US Customs and Border Protection |
+
+### **Billing Information**
+
+The service uses a usage-based billing model:
+- Each query deducts from your account balance
+- The response includes your original and new balance
+- If you have insufficient balance, the query will not be processed
+
+### **Use Cases**
+
+This service is valuable for:
+- Import/export businesses planning international shipments
+- Logistics companies calculating shipping costs
+- Trade compliance departments ensuring regulatory adherence
+- Market researchers analyzing trade barriers
