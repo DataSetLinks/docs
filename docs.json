@@ -21,10 +21,15 @@
               "Uploading_data_into_a_dataset",
               "Querying_data",
               "ai_inference",
-              "Command_List",
-              "Usecase_tariffs"
+              "Command_List"
             ],
             "icon": "file-lines"
+          },
+          {
+            "group": "Use-cases",
+            "pages": [
+              "use-cases/tariffs"
+            ]
           }
         ]
       },
