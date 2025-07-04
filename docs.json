@@ -47,11 +47,16 @@
     "dark": "/logo/DATALINKS logo_white.svg"
   },
   "navbar": {
-    "primary": {
-      "type": "button",
-      "label": "My Data",
-      "href": "https://datalinks.com/home/data"
-    }
+    "links": [
+      {
+        "href": "https://datalinks.com",
+        "label": "Website"
+      },
+      {
+        "href": "https://datalinks.com/blog",
+        "label": "Blog"
+      }
+    ]
   },
   "footer": {
     "socials": {
