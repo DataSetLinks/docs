@@ -80,5 +80,10 @@
       "chatgpt",
       "claude"
     ]
+  },
+  "integrations": {
+    "gtm": {
+      "tagId": "GTM-M2TM5387"
+    }
   }
 }
