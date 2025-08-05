@@ -39,6 +39,15 @@
           "source": "api-reference/openapi.yml",
           "directory": "api-reference"
         }
+      },
+      {
+        "tab": "Python SDK",
+        "icon": "code",
+        "pages": [
+          "python-sdk/index",
+          "python-sdk/datalinks",
+          "python-sdk/modules"
+        ]
       }
     ]
   },
