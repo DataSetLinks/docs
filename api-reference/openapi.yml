@@ -102,7 +102,11 @@ paths:
                 $ref: '#/components/examples/actorsExample'
       responses:
         '200':
-          description: Success
+          description: Successful preview response with processed data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngestPreviewResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /data/{username}/{namespace}/{datasetName}:
@@ -371,6 +375,19 @@ paths:
           description: Success
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /schema/datasets/all:
+    get:
+      summary: List all datasets
+      description: Retrieve all datasets visible to the authenticated user
+      operationId: listAllDatasets
+      tags:
+        - schema
+        - datasets
+      responses:
+        '200':
+          $ref: '#/components/responses/ListOfDatasets'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /schema/namespace:
     get:
       summary: List namespaces
@@ -386,6 +403,54 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '400':
           $ref: '#/components/responses/BadRequest'
+
+  /schema/{user}/namespaces:
+    get:
+      summary: List user namespaces
+      description: Retrieve namespaces for a specific user (use 'self' for current user)
+      operationId: listUserNamespaces
+      tags:
+        - schema
+        - namespaces
+      parameters:
+        - name: user
+          in: path
+          required: true
+          description: Username or 'self' for current user
+          schema:
+            type: string
+          example: self
+      responses:
+        '200':
+          $ref: '#/components/responses/ListOfNamespaces'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User not found
+  /schema/{user}/{namespace}/datasets:
+    get:
+      summary: List datasets within namespace
+      description: Retrieve datasets within a specific namespace for a user
+      operationId: listDatasetsWithinNamespace
+      tags:
+        - schema
+        - datasets
+      parameters:
+        - name: user
+          in: path
+          required: true
+          description: Username or 'self' for current user
+          schema:
+            type: string
+          example: self
+        - $ref: '#/components/parameters/Namespace'
+      responses:
+        '200':
+          $ref: '#/components/responses/ListOfDatasets'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: User or namespace not found
   /user/tokens:
     get:
       description: list all user tokens
@@ -436,7 +501,7 @@ components:
       name: datasetName
       in: path
       required: true
-      description: Name of the dataset. The same name may exist in different namespaces, for example  *companies*  exists in both  *sanctions*  and in the  *company registry*.
+      description: Name of the dataset.
       schema:
         type: string
       examples:
@@ -450,7 +515,7 @@ components:
       name: namespace
       in: path
       required: true
-      description: The `namespace` is the name you want to group your datasets around.
+      description: Namespace for the dataset.
       schema:
         type: string
       example: cinematography
@@ -462,10 +527,10 @@ components:
       schema:
         type: integer
     Username:
-      name: owner
+      name: username
       in: path
       required: true
-      description: username of the owner of a namespace
+      description: The username associated with the request.
       schema:
         type: string
 
@@ -491,7 +556,11 @@ components:
           description: The username associated with the data.
           deprecated: true
         visibility:
-          $ref: '#/components/schemas/ApiInferenceDefinition'
+          type: string
+          description: Indicates whether the data is public or private.
+          enum:
+            - Public
+            - Private
       required:
         - owner
         - name
@@ -511,6 +580,15 @@ components:
       required:
         - dataDescription
         - fieldDefinition
+    ApiDatasetMetadata:
+      type: object
+      properties:
+        rowCount:
+          type: integer
+          format: int64
+          description: Number of rows in dataset.
+      required:
+        - rowCount
     ApiLink:
       type: object
       properties:
@@ -540,11 +618,6 @@ components:
     ApiNamespace:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-          description: Unique identifier for the namespace
-          example: 12345
         name:
           type: string
           description: The name of the namespace
@@ -555,7 +628,6 @@ components:
           description: UUID of the namespace owner
           example: "550e8400-e29b-41d4-a716-446655440000"
       required:
-        - id
         - name
         - owner
     CreateDatasetRequest:
@@ -563,20 +635,17 @@ components:
       properties:
         inferDefinition:
           $ref: '#/components/schemas/ApiInferenceDefinition'
-        visibility:
-          $ref: '#/components/schemas/Visibility'
         isPrivate:
           type: boolean
           description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
           example: true
           deprecated: true
-    Visibility:
-      description: Indicates whether the data is public or private.
-      type: string
-      enum:
-        - Public
-        - Private
-      example: Private
+        visibility:
+          type: string
+          enum:
+            - Public
+            - Private
+          example: Private
     CreateTokenRequest:
       type: object
       properties:
@@ -593,8 +662,11 @@ components:
           $ref: '#/components/schemas/ApiDatasetDescription'
         inferDefinition:
           $ref: '#/components/schemas/ApiInferenceDefinition'
+        metadata:
+          $ref: '#/components/schemas/ApiDatasetMetadata'
       required:
         - dataset
+        - metadata
     DatasetsResponse:
       type: array
       items:
@@ -686,14 +758,15 @@ components:
         infer:
           type: object
           properties:
-            columns:
+            steps:
               type: array
               items:
-                type: object
-                additionalProperties:
-                  type: string
-          required:
-            - columns
+                oneOf:
+                  - $ref: '#/components/schemas/TableStep'
+                  - $ref: '#/components/schemas/RowsStep'
+                  - $ref: '#/components/schemas/NormaliseStep'
+                  - $ref: '#/components/schemas/ValidateStep'
+                  - $ref: '#/components/schemas/ReverseGeoStep'
         link:
           type: object
           properties:
@@ -703,8 +776,37 @@ components:
               example: null
       required:
         - data
-        - infer
-        - link
+    IngestPreviewResponse:
+      type: array
+      items:
+        type: object
+        additionalProperties: true
+        description: |
+          Each object represents a processed row with dynamic properties based on the inference steps.
+          May include metadata fields prefixed with '__metadata_'.
+      example:
+        - id: "001"
+          __metadata_textToTable: "name -> John Smith, age -> 28, department -> Engineering"
+          name: "John Smith"
+          age: "28"
+          gender: "Male"
+          department: "Engineering"
+          location: "New York"
+        - id: "002"
+          __metadata_textToTable: "name -> Sarah Johnson, age -> 32, department -> Marketing"
+          name: "Sarah Johnson"
+          age: "32"
+          gender: "Female"
+          department: "Marketing"
+          location: "California"
+        - id: "003"
+          name: "Michael Brown"
+          age: "45"
+          gender: "Male"
+          department: "Finance"
+          location: "Texas"
+          __metadata_normalize: "Normalized department field from 'Fin Dept' to 'Finance'"
+
     ModifyOntologyRequest:
       type: object
       properties:
@@ -716,13 +818,37 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ApiLink'
+
+    NormaliseStep:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [ normalise ]
+        mode:
+          type: string
+          enum: [ all-in-one, field-by-field, embeddings ]
+          description: Normalisation mode
+        targetCols:
+          type: object
+          additionalProperties:
+            type: string
+          description: Target columns with their descriptions
+        helperPrompt:
+          type: string
+          description: Prompt to help the LLM understand the domain
+      required:
+        - type
+        - mode
+        - targetCols
+
     OntologyResponse:
       type: array
       items:
         $ref: '#/components/schemas/ApiLink'
     OntologyRequest:
       type: string
-      example: "OntologyObject(\"datasetName\").get()"
+      example: "OntologyObject(\"objectName\").get()"
       description: for details check [Querying data](/Querying_data)
     QueryDataRequest:
       type: object
@@ -733,6 +859,54 @@ components:
         useNaturalLanguageQuery:
           type: boolean
           default: false
+        model:
+          type: string
+        provider:
+          type: string
+
+    ReverseGeoStep:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [reverseGeo]
+        deriveFrom:
+          type: string
+          description: Location column name
+      required:
+        - type
+        - deriveFrom
+
+    RowsStep:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [ rows ]
+        deriveFrom:
+          type: string
+          description: Column name from where the json content will be read
+      required:
+        - type
+        - deriveFrom
+
+    TableStep:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [ table ]
+        deriveFrom:
+          type: string
+          description: Column name from where the column should be derived from
+        helperPrompt:
+          type: string
+          description: Prompt to guide the AI system for higher accuracy during extraction
+          example: "This text contains a table comma separated, but instead of line breaks we are using a ';'."
+      required:
+        - type
+        - deriveFrom
+
     UserToken:
       type: object
       properties:
@@ -760,6 +934,26 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/UserToken'
+
+    ValidateStep:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [ validate ]
+        mode:
+          type: string
+          enum: [ regex, rows, fields ]
+          description: Validation mode
+        columns:
+          type: array
+          items:
+            type: string
+          description: Columns to validate
+      required:
+        - type
+        - mode
+        - columns
 
   responses:
     BadRequest:
@@ -806,8 +1000,7 @@ components:
       scheme: bearer
       description: |
         Use a Bearer token for authentication. Submit the token using the `Authorization` 
-        header: `Authorization: Bearer <token>`. 
-        The token can be generated in [Settings](https://datalinks.com/dashboard/settings)
+        header: `Authorization: Bearer <token>`.
 
   examples:
     moviesExample:
@@ -838,8 +1031,6 @@ components:
             year: 1997
             budget: 80000000
             director: Kevin Costner
-        infer:
-          columns: [ ]
         link:
           ExactMatch: null
     actorsExample:
@@ -894,7 +1085,5 @@ components:
             age: 70
             nationality: American
 
-        infer:
-          columns: [ ]
         link:
           ExactMatch: null
