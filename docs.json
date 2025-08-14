@@ -11,7 +11,7 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Reference",
+        "tab": "Getting Started",
         "groups": [
           {
             "group": "DataLinks",
@@ -34,7 +34,7 @@
         ]
       },
       {
-        "tab": "API v1",
+        "tab": "API Reference",
         "openapi": {
           "source": "api-reference/openapi.yml",
           "directory": "api-reference"
