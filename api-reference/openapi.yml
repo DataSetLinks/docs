@@ -824,7 +824,7 @@ components:
       properties:
         type:
           type: string
-          enum: [ normalise ]
+          enum: [ normalise,normalize ]
         mode:
           type: string
           enum: [ all-in-one, field-by-field, embeddings ]
@@ -869,7 +869,7 @@ components:
       properties:
         type:
           type: string
-          enum: [reverseGeo]
+          enum: [ reverseGeo ]
         deriveFrom:
           type: string
           description: Location column name
