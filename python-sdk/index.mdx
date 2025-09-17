@@ -1,24 +1,18 @@
-<!-- DataLinks Python SDK documentation master file, created by
-sphinx-quickstart on Tue Feb 18 15:59:39 2025.
-You can adapt this file completely to your liking, but it should at least
-contain the root `toctree` directive. -->
+---
+title: "Overview"
+sidebarTitle: "Overview"
+---
 
-# DataLinks Python SDK documentation
+Reference
 
-# Reference:
+* [datalinks](/python-SDK/modules)
+  * [datalinks package](/python-SDK/datalinks)
 
-* [datalinks](modules.mdx)
-  * [datalinks package](datalinks.mdx)
-    * [Submodules](datalinks.mdx#submodules)
-    * [datalinks.api module](datalinks.mdx#module-datalinks.api)
-    * [datalinks.cli module](datalinks.mdx#module-datalinks.cli)
-    * [datalinks.links module](datalinks.mdx#module-datalinks.links)
-    * [datalinks.loaders module](datalinks.mdx#module-datalinks.loaders)
-    * [datalinks.pipeline module](datalinks.mdx#module-datalinks.pipeline)
+# Quick Start
 
-## DataLinks Python SDK
+Visit [DataLinks](https://www.datalinks.com)
 
-### Overview
+## Overview
 
 The **DataLinks Python SDK** is designed to simplify data ingestion, normalization, linking, and querying processes with DataLinks.
 It integrates with the DataLinks API to provide a seamless development experience for managing data workflows, including entity resolution and inference steps, with robust configuration options.
@@ -27,7 +21,7 @@ This SDK is designed to accelerate the development of applications with DataLink
 
 ---
 
-### Features
+## Features
 
 - **Ingestion API**: Easily ingest data into namespaces with built-in batching and retry mechanisms.
 - **Inference Workflow Management**: Define custom chains of inference and validation steps.
@@ -39,7 +33,7 @@ This SDK is designed to accelerate the development of applications with DataLink
 
 ---
 
-### Installation
+## Installation
 
 To install the SDK, simply use `pip`:
 
@@ -59,7 +53,7 @@ pip install -e .
 
 ---
 
-### Quick Start
+## Quick Start
 
 Here’s how to get started with the DataLinks SDK:
 
@@ -99,13 +93,13 @@ datalinks-client [-h] --verbose <input-folder>
 
 ---
 
-### Components
+## Components
 
-#### 1. **DLConfig**
+### 1. **DLConfig**
 
 `DLConfig` reads configurations (e.g., API keys) via environment variables or `.env` files. This enables dynamic adaptation across deployment environments.
 
-#### 2. **DataLinksAPI**
+### 2. **DataLinksAPI**
 
 `DataLinksAPI` handles interactions with the API. You can:
 
@@ -113,7 +107,7 @@ datalinks-client [-h] --verbose <input-folder>
 - Query or retrieve data with complex parameters.
 - Manage namespaces.
 
-#### 3. **Inference Workflow**
+### 3. **Inference Workflow**
 
 Use a chain of inference and validation steps defined through classes like `ProcessUnstructured`, `Normalize`, and `Validate` to automate data preparation workflows.
 
@@ -128,7 +122,7 @@ inference_steps = Pipeline(
 )
 ```
 
-#### 4. **Entity Resolution**
+### 4. **Entity Resolution**
 
 Supports multiple resolution strategies, configurable via `MatchTypeConfig`:
 
@@ -136,15 +130,16 @@ Supports multiple resolution strategies, configurable via `MatchTypeConfig`:
 from datalinks.links import MatchTypeConfig, ExactMatch
 
 entity_resolution = MatchTypeConfig(
+   # parameters are optional
     exact_match=ExactMatch(minVariation=0.2, minDistinct=0.3)
 )
 ```
 
-#### 5. **Loaders**
+### 5. **Loaders**
 
 Abstract base loaders (e.g., `JSONLoader`) allow seamless data ingestion from custom file formats like `.json`.
 
-#### 6. **Parametrize LLms**
+### 6. **Parametrize LLms**
 
 You can choose the model and provider to be used in inference steps (eg.: `ProcessUnstructured`, `Normalize`, `Validate`).
 
@@ -164,7 +159,7 @@ steps = Pipeline(
 
 ---
 
-### Run Unit Tests
+## Run Unit Tests
 
 Run tests to verify your implementation:
 
@@ -174,12 +169,12 @@ tox
 
 ---
 
-### License
+## License
 
 **DataLinks Python SDK** is licensed under the MIT License. See the [LICENSE]() file for more details.
 
 ---
 
-### Support
+## Support
 
 For questions or support, please [contact us](https://datalinks.com/newsletter).
