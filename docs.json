@@ -48,15 +48,15 @@
             "group": "Getting Started",
             "expanded": true,
             "pages": [
-              "python-SDK/index"
+              "pythonsdk/index"
             ],
             "icon": "notebook"
           },
           {
             "group": "Library",
             "pages": [
-              "python-sdk/modules",
-              "python-SDK/datalinks"
+              "pythonsdk/modules",
+              "pythonsdk/datalinks"
             ],
             "icon": "books"
           }
