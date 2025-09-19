@@ -39,6 +39,28 @@
           "source": "api-reference/openapi.yml",
           "directory": "api-reference"
         }
+      },
+      {
+        "tab": "Python SDK",
+        "icon": "code",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "expanded": true,
+            "pages": [
+              "pythonsdk/index"
+            ],
+            "icon": "notebook"
+          },
+          {
+            "group": "Library",
+            "pages": [
+              "pythonsdk/modules",
+              "pythonsdk/datalinks"
+            ],
+            "icon": "books"
+          }
+        ]
       }
     ]
   },
