@@ -1,10 +1,15 @@
+---
+title: "Reference"
+sidebarTitle: "Reference"
+---
+
 # datalinks package
 
 ## Submodules
 
 ## datalinks.api module
 
-### *class* datalinks.api.DLConfig(host, apikey, index, namespace, objectname='')
+### *class* datalinks.api.DLConfig(host, apikey, index, namespace, objectname)
 
 Bases: `object`
 
@@ -31,9 +36,11 @@ and namespace details required to communicate with DataLinks.
 
 #### namespace *: `str`*
 
-#### objectname *: `str`* *= ''*
+#### objectname *: `str`*
 
 #### *classmethod* from_env(load_dotenv=True)
+
+<br/>
 
 ### *class* datalinks.api.IngestionResult(successful, failed)
 
@@ -55,9 +62,13 @@ enabling users to track and handle both cases effectively.
 
 #### failed *: `List`[`Dict`[`str`, `Any`]]*
 
+<br/>
+
 ### *exception* datalinks.api.DataLinksRequestError(endpoint, e)
 
 Bases: `Exception`
+
+<br/>
 
 ### *class* datalinks.api.DataLinksAPI(config=None)
 
@@ -128,7 +139,7 @@ Retrieves the list of datasets for the user, optionally filtered by a specific n
 * **Return type:**
   List[Dict] | None
 
-#### query_data(query='\*', model=None, provider=None, include_metadata=False)
+#### query_data(query=None, model=None, provider=None, include_metadata=False)
 
 Queries data from a specified data source and processes the response.
 
@@ -177,6 +188,9 @@ identified by key names starting with an underscore.
   **requests.exceptions.RequestException** – If a request-related error
   occurs during querying.
 
+
+---
+
 ## datalinks.cli module
 
 ### *class* datalinks.cli.StandardCLI(name='datalinks-client', description='Infer and link your data!')
@@ -199,15 +213,26 @@ customization through user-defined groups.
 * **Return type:**
   `Namespace`
 
+
+---
+
 ## datalinks.links module
 
-### *class* datalinks.links.MatchType
+### *class* datalinks.links.MatchType(targetColumns=None)
 
 Bases: `object`
 
-Base class for the match types used in entity resilution.
+The base type for entity resolution operators.
 
-### *class* datalinks.links.ExactMatch(minVariation=None, minDistinct=None)
+* **Variables:**
+  **targetColumns** – A list of column names that are the target for matching. If
+  None, all columns are used for entity resolution.
+
+#### targetColumns *: `Optional`[`List`[`str`]]* *= None*
+
+<br/>
+
+### *class* datalinks.links.ExactMatch(targetColumns=None, minVariation=None, minDistinct=None)
 
 Bases: [`MatchType`](#datalinks.links.MatchType)
 
@@ -224,7 +249,9 @@ for the data values.
 
 #### minDistinct *: `Optional`[`float`]* *= None*
 
-### *class* datalinks.links.GeoMatch(distance=None, distanceUnit=None)
+<br/>
+
+### *class* datalinks.links.GeoMatch(targetColumns=None, distance=None, distanceUnit=None)
 
 Bases: [`MatchType`](#datalinks.links.MatchType)
 
@@ -240,7 +267,9 @@ attributes.
 
 #### distanceUnit *: `Optional`[`str`]* *= None*
 
-### *class* datalinks.links.EntityResolutionTypes(value, names=<not given>, \*values, module=None, qualname=None, type=None, start=1, boundary=None)
+<br/>
+
+### *class* datalinks.links.EntityResolutionTypes
 
 Bases: `StrEnum`
 
@@ -259,6 +288,8 @@ entity equivalence or correspondence.
 
 #### GeoMatch *= 'GeoMatch'*
 
+<br/>
+
 ### *class* datalinks.links.MatchTypeConfig(exact_match=None, geo_match=None)
 
 Bases: `object`
@@ -276,6 +307,9 @@ in dictionary format.
 
 #### *property* config *: Dict[str, Dict] | None*
 
+
+---
+
 ## datalinks.loaders module
 
 ### *class* datalinks.loaders.Loader(folder)
@@ -290,6 +324,8 @@ while maintaining consistency across different implementations.
   **folder** – Path to the folder from which resources will be loaded.
 
 #### *abstract* load_from_folder()
+
+<br/>
 
 ### *class* datalinks.loaders.JSONLoader(folder)
 
@@ -315,9 +351,12 @@ a standardized format using the load_item method.
 * **Return type:**
   `Dict`[`str`, `str`]
 
+
+---
+
 ## datalinks.pipeline module
 
-### *class* datalinks.pipeline.StepTypes(value, names=<not given>, \*values, module=None, qualname=None, type=None, start=1, boundary=None)
+### *class* datalinks.pipeline.StepTypes
 
 Bases: `Enum`
 
@@ -337,7 +376,9 @@ stage in the broader data-processing pipeline.
 
 #### REVERSE_GEO *= 'reverseGeo'*
 
-### *class* datalinks.pipeline.NormalizeModes(value, names=<not given>, \*values, module=None, qualname=None, type=None, start=1, boundary=None)
+<br/>
+
+### *class* datalinks.pipeline.NormalizeModes
 
 Bases: `Enum`
 
@@ -362,7 +403,9 @@ for column-wise normalization.
 
 #### FIELD_BY_FIELD *= 'field-by-field'*
 
-### *class* datalinks.pipeline.ValidateModes(value, names=<not given>, \*values, module=None, qualname=None, type=None, start=1, boundary=None)
+<br/>
+
+### *class* datalinks.pipeline.ValidateModes
 
 Bases: `Enum`
 
@@ -382,6 +425,8 @@ expressions, and fields.
 #### REGEX *= 'regex'*
 
 #### FIELDS *= 'fields'*
+
+<br/>
 
 ### *class* datalinks.pipeline.BaseStep
 
@@ -404,6 +449,8 @@ rules for attributes of Enum type. It is primarily designed as a metaclass.
 * **Return type:**
   `dict`
 
+<br/>
+
 ### *class* datalinks.pipeline.LlmStep(model, provider)
 
 Bases: [`BaseStep`](#datalinks.pipeline.BaseStep)
@@ -418,6 +465,8 @@ Common class for pipeline steps that rely on LLM inference.
 
 #### provider *: `Optional`[`str`]*
 
+<br/>
+
 ### *class* datalinks.pipeline.InferenceStep(derive_from)
 
 Bases: [`BaseStep`](#datalinks.pipeline.BaseStep)
@@ -428,6 +477,8 @@ Represents the ‘infer’ step in the DataLinks workflow.
   **derive_from** – The identifier of the source field used in the inference step.
 
 #### derive_from *: `str`*
+
+<br/>
 
 ### *class* datalinks.pipeline.ProcessUnstructured(derive_from, model, provider, helper_prompt='')
 
@@ -444,6 +495,8 @@ Use this step to infer a table from unstructured data.
 
 #### helper_prompt *: `str`* *= ''*
 
+<br/>
+
 ### *class* datalinks.pipeline.ProcessStructured(derive_from)
 
 Bases: [`InferenceStep`](#datalinks.pipeline.InferenceStep)
@@ -452,6 +505,8 @@ Use this step to extract data that is already in tabular format (eg.: CSV).
 
 #### step_type *: `ClassVar`[[`StepTypes`](#datalinks.pipeline.StepTypes)]* *= 'rows'*
 
+<br/>
+
 ### *class* datalinks.pipeline.ReverseGeo(derive_from)
 
 Bases: [`InferenceStep`](#datalinks.pipeline.InferenceStep)
@@ -459,6 +514,8 @@ Bases: [`InferenceStep`](#datalinks.pipeline.InferenceStep)
 Use this step to perform reverse geolocation based on the source field.
 
 #### step_type *: `ClassVar`[[`StepTypes`](#datalinks.pipeline.StepTypes)]* *= 'reverseGeo'*
+
+<br/>
 
 ### *class* datalinks.pipeline.Normalize(model, provider, target_cols, mode, helper_prompt='')
 
@@ -486,6 +543,8 @@ helper prompts to provide further instructions or context.
 
 #### helper_prompt *: `str`* *= ''*
 
+<br/>
+
 ### *class* datalinks.pipeline.Validate(model, provider, mode, columns)
 
 Bases: [`LlmStep`](#datalinks.pipeline.LlmStep)
@@ -501,6 +560,8 @@ Use this step to add data validation to the inference pipeline.
 #### mode *: [`ValidateModes`](#datalinks.pipeline.ValidateModes)*
 
 #### columns *: `List`[`str`]*
+
+<br/>
 
 ### *class* datalinks.pipeline.Pipeline(\*steps)
 
