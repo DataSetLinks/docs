@@ -43,10 +43,23 @@
       {
         "tab": "Python SDK",
         "icon": "code",
-        "pages": [
-          "python-SDK/index",
-          "python-sdk/modules",
-          "python-SDK/datalinks"
+        "groups": [
+          {
+            "group": "Getting Started",
+            "expanded": true,
+            "pages": [
+              "python-SDK/index"
+            ],
+            "icon": "notebook"
+          },
+          {
+            "group": "Library",
+            "pages": [
+              "python-sdk/modules",
+              "python-SDK/datalinks"
+            ],
+            "icon": "books"
+          }
         ]
       }
     ]
