@@ -82,6 +82,27 @@ paths:
           description: Successful ingestion response.
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /ingest/new-from-query/{namespace}/{datasetName}:
+    post:
+      summary: Query and Ingest data
+      description: Execute the ontology query, and merge all data in the lineage to create a new dataset.
+      operationId: queryAndIngest
+      tags:
+        - ingest
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDataRequest'
+      responses:
+        '200':
+          description: Successful ingestion response.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /infer/preview:
     post:
       summary: Preview
@@ -243,6 +264,26 @@ paths:
           description: Dataset not found or not allowed to modify
         '400':
           description: Bad request
+  /data/{username}/{namespace}/{datasetName}/clear:
+    post:
+      summary: Clear all data for a dataset
+      description: Remove all data, links from the specified dataset. This is irreversible.
+      operationId: clearDataset
+      tags:
+        - dataset
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          description: Dataset data removed successfully.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Dataset not found or not allowed to modify
   /data/{username}/{namespace}/{datasetName}/balefire:
     delete:
       summary: Delete all data and metadata for a dataset (balefire)
@@ -257,10 +298,10 @@ paths:
       responses:
         '200':
           description: Dataset and all related data deleted successfully.
-        '400':
-          description: Bad request
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           description: Dataset not found or not allowed to modify
   /links/{username}/{namespace}/{datasetName}:
@@ -388,22 +429,6 @@ paths:
           $ref: '#/components/responses/ListOfDatasets'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /schema/namespace:
-    get:
-      summary: List namespaces
-      description: Retrieve all namespaces accessible to the authenticated user
-      operationId: listNamespaces
-      tags:
-        - schema
-        - namespaces
-      responses:
-        '200':
-          $ref: '#/components/responses/ListOfNamespaces'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-
   /schema/{user}/namespaces:
     get:
       summary: List user namespaces
@@ -494,7 +519,65 @@ paths:
       responses:
         '200':
           description: Success
-
+  /links/add:
+    post:
+      summary: Add a new link
+      description: Create a new link between two dataset columns
+      operationId: addLink
+      tags:
+        - links
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddLinkRequest'
+            examples:
+              exactMatch:
+                summary: Exact match between movie datasets
+                value:
+                  from:
+                    username: "johndoe"
+                    namespace: "cinematography"
+                    dataset: "movies"
+                    columnName: "director"
+                  to:
+                    username: "janedoe"
+                    namespace: "entertainment"
+                    dataset: "films"
+                    columnName: "director_name"
+                  matchType: "ExactMatch"
+              geoMatch:
+                summary: Geographic match between location datasets
+                value:
+                  from:
+                    username: "alice"
+                    namespace: "geography"
+                    dataset: "cities"
+                    columnName: "coordinates"
+                  to:
+                    username: "bob"
+                    namespace: "mapping"
+                    dataset: "locations"
+                    columnName: "gps_coords"
+                  matchType: "GeoMatch"
+      responses:
+        '200':
+          description: Link existed, no creation required.
+        '201':
+          description: Link created successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Source or target dataset not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   parameters:
     DatasetName:
@@ -535,6 +618,39 @@ components:
         type: string
 
   schemas:
+    AddLinkRequest:
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/ApiStringColumnIdentifier'
+          example:
+            username: "johndoe"
+            namespace: "cinematography"
+            dataset: "movies"
+            columnName: "director"
+        to:
+          $ref: '#/components/schemas/ApiStringColumnIdentifier'
+          example:
+            username: "janedoe"
+            namespace: "entertainment"
+            dataset: "films"
+            columnName: "director_name"
+        options:
+          type: object
+          additionalProperties:
+            type: string
+          description: Flexible options map for match configuration
+        matchType:
+          type: string
+          description: Type of match to create between the columns
+          enum:
+            - ExactMatch
+            - GeoMatch
+          example: "ExactMatch"
+      required:
+        - from
+        - to
+        - matchType
     ApiDatasetDescription:
       type: object
       properties:
@@ -573,22 +689,50 @@ components:
           type: string
           description: Data description of the dataset.
           maxLength: 10000
+          example: "Employee dataset containing demographics and compensation."
         fieldDefinition:
           type: string
           description: Definition of the dataset fields.
           maxLength: 10000
+          example: |
+            id=unique employee identifier
+            name=full employee name
+            age=employee age in years
+            department=work department
+            salary=annual salary in USD
       required:
         - dataDescription
         - fieldDefinition
     ApiDatasetMetadata:
       type: object
       properties:
+        columnNames:
+          type: array
+          items: { type: string }
+          description: List of dataset column names.
+          example: ["id","name","age","department","salary"]
+
+        inferDefinition:
+          description: Inference definition for dataset.
+          allOf:
+            - $ref: "#/components/schemas/ApiInferenceDefinition"
+          example:
+            dataDescription: "Employee dataset containing demographics and compensation."
+            fieldDefinition: |
+              id=unique employee identifier
+              name=full employee name
+              age=employee age in years
+              department=work department
+              salary=annual salary in USD
+
         rowCount:
           type: integer
           format: int64
           description: Number of rows in dataset.
+          example: 1250
       required:
         - rowCount
+        - columnNames
     ApiLink:
       type: object
       properties:
@@ -662,11 +806,42 @@ components:
           $ref: '#/components/schemas/ApiDatasetDescription'
         inferDefinition:
           $ref: '#/components/schemas/ApiInferenceDefinition'
+          deprecated: true
+          description: "This field is deprecated and will be removed in a future version. Please use `metadata.inferDefinition` instead."
         metadata:
           $ref: '#/components/schemas/ApiDatasetMetadata'
       required:
         - dataset
         - metadata
+    ApiStringColumnIdentifier:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Username who owns the dataset
+          example: "johndoe"
+        namespace:
+          type: string
+          description: Namespace of the dataset
+          example: "cinematography"
+        dataset:
+          type: string
+          description: Name of the dataset
+          example: "movies"
+        columnName:
+          type: string
+          description: Column name in the dataset
+          example: "director"
+      required:
+        - username
+        - namespace
+        - dataset
+        - columnName
+      example:
+        - username: "username"
+        - namespace: "namespace"
+        - dataset: "dataset"
+        - columnName: "columnName"
     DatasetsResponse:
       type: array
       items:
@@ -954,7 +1129,7 @@ components:
         - type
         - mode
         - columns
-
+  
   responses:
     BadRequest:
       description: Bad request. The request was malformed or invalid.
