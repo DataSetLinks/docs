@@ -82,6 +82,27 @@ paths:
           description: Successful ingestion response.
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /ingest/new-from-query/{namespace}/{datasetName}:
+    post:
+      summary: Query and Ingest data
+      description: Execute the ontology query, and merge all data in the lineage to create a new dataset.
+      operationId: queryAndIngest
+      tags:
+        - ingest
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDataRequest'
+      responses:
+        '200':
+          description: Successful ingestion response.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /infer/preview:
     post:
       summary: Preview
