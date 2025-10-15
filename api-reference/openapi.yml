@@ -5,8 +5,7 @@ info:
 security:
   - bearerAuth: [ ]
 servers:
-  - url: https://api.datalinks.com/api/v1
-    description: production server
+  - url: /api/v1
 paths:
   /data:
     get:
@@ -240,6 +239,33 @@ paths:
                   type: object
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /data/{username}/{namespace}/query:
+    post:
+      summary: Query data
+      description: Execute ontology query
+      operationId: queryNamespace
+      tags:
+        - query
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDataRequest'
+      responses:
+        '200':
+          description: Successful response with the ontology data object.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /data/{username}/{namespace}/{datasetName}/inferDefinition:
     put:
       summary: Update infer definition
@@ -304,6 +330,30 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           description: Dataset not found or not allowed to modify
+  /data/{username}/{namespace}/autorag:
+    post:
+      summary: Run AutoRAG agent over all data
+      description: Uses the AutoRAG agent to answer a question about any data that the user can access.
+      operationId: autorag
+      tags:
+        - autorag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoRagRequest'
+      responses:
+        '200':
+          description: Successful response from the agent.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Llamanade!"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
   /links/{username}/{namespace}/{datasetName}:
     get:
       summary: Load links
@@ -416,6 +466,11 @@ paths:
           description: Success
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /schema/datasets/all:
     get:
       summary: List all datasets
@@ -1038,6 +1093,19 @@ components:
           type: string
         provider:
           type: string
+
+    AutoRagRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          example: "What do llamas drink to cool themselves down?"
+        model:
+          type: string
+        provider:
+          type: string
+      required:
+        - query
 
     ReverseGeoStep:
       type: object
