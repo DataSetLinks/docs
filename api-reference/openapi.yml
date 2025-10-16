@@ -3,7 +3,7 @@ info:
   title: DataLinks
   version: 1.0.0
 security:
-  - bearerAuth: [ ]
+  - bearerAuth: []
 servers:
   - url: https://api.datalinks.com/api/v1
     description: production server
@@ -148,45 +148,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetResponse'
-
         '404':
           description: Dataset not found
         '400':
           description: Bad request
-    post:
-      summary: Query data
-      description: Execute ontology query
-      operationId: queryDataset
-      tags:
-        - query
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-        - $ref: '#/components/parameters/Username'
-      requestBody:
-        required: false
-        content:
-          text/plain:
-            schema:
-              $ref: '#/components/schemas/OntologyRequest'
-            examples:
-              WilliamWallace:
-                value: "OntologyObject(\"movies\").filter(name==\"Braveheart\").searchAround().find(\"actors\").filter(name==\"Mel Gibson\")"
-              EarliestMovie:
-                value: "OntologyObject(\"movies\").sortDescending(\"year\").limit(1)"
-              empty:
-                value: ""
-      responses:
-        '200':
-          description: Successful response with the ontology data object.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-        '401':
-          $ref: '#/components/responses/Unauthorized'
   /data/{username}/{namespace}/{datasetName}/rename:
     post:
       summary: Rename a dataset
@@ -212,34 +177,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           description: Dataset not found or not allowed to modify
-  /data/{username}/{namespace}/{datasetName}/query:
-    post:
-      summary: Query data
-      description: Execute ontology query
-      operationId: queryData
-      tags:
-        - query
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-        - $ref: '#/components/parameters/Username'
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryDataRequest'
-      responses:
-        '200':
-          description: Successful response with the ontology data object.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-        '401':
-          $ref: '#/components/responses/Unauthorized'
   /data/{username}/{namespace}/{datasetName}/inferDefinition:
     put:
       summary: Update infer definition
@@ -304,6 +241,87 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           description: Dataset not found or not allowed to modify
+  /query/{username}/{namespace}/{datasetName}:
+    post:
+      summary: Query data
+      description: Execute ontology query
+      operationId: queryData
+      tags:
+        - query
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDataRequest'
+      responses:
+        '200':
+          description: Successful response with the ontology data object.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /query/{username}/{namespace}:
+    post:
+      summary: Query data
+      description: Execute ontology query
+      operationId: queryNamespace
+      tags:
+        - query
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDataRequest'
+      responses:
+        '200':
+          description: Successful response with the ontology data object.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /query/autorag/{username}/{namespace}:
+    post:
+      summary: Run AutoRAG agent over all data
+      description: Uses the AutoRAG agent to answer a question about any data that the user can access.
+      operationId: autorag
+      tags:
+        - autorag
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoRagRequest'
+      responses:
+        '200':
+          description: Successful response from the agent.
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Llamanade!"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /links/{username}/{namespace}/{datasetName}:
     get:
       summary: Load links
@@ -416,6 +434,10 @@ paths:
           description: Success
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /schema/datasets/all:
     get:
       summary: List all datasets
@@ -616,7 +638,6 @@ components:
       description: The username associated with the request.
       schema:
         type: string
-
   schemas:
     AddLinkRequest:
       type: object
@@ -708,10 +729,9 @@ components:
       properties:
         columnNames:
           type: array
-          items: { type: string }
+          items: {type: string}
           description: List of dataset column names.
-          example: ["id","name","age","department","salary"]
-
+          example: ["id", "name", "age", "department", "salary"]
         inferDefinition:
           description: Inference definition for dataset.
           allOf:
@@ -724,7 +744,6 @@ components:
               age=employee age in years
               department=work department
               salary=annual salary in USD
-
         rowCount:
           type: integer
           format: int64
@@ -981,7 +1000,6 @@ components:
           department: "Finance"
           location: "Texas"
           __metadata_normalize: "Normalized department field from 'Fin Dept' to 'Finance'"
-
     ModifyOntologyRequest:
       type: object
       properties:
@@ -993,16 +1011,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ApiLink'
-
     NormaliseStep:
       type: object
       properties:
         type:
           type: string
-          enum: [ normalise,normalize ]
+          enum: [normalise, normalize]
         mode:
           type: string
-          enum: [ all-in-one, field-by-field, embeddings ]
+          enum: [all-in-one, field-by-field, embeddings]
           description: Normalisation mode
         targetCols:
           type: object
@@ -1016,7 +1033,6 @@ components:
         - type
         - mode
         - targetCols
-
     OntologyResponse:
       type: array
       items:
@@ -1038,39 +1054,48 @@ components:
           type: string
         provider:
           type: string
-
+    AutoRagRequest:
+      type: object
+      properties:
+        query:
+          type: string
+          example: "What do llamas drink to cool themselves down?"
+        model:
+          type: string
+        provider:
+          type: string
+      required:
+        - query
     ReverseGeoStep:
       type: object
       properties:
         type:
           type: string
-          enum: [ reverseGeo ]
+          enum: [reverseGeo]
         deriveFrom:
           type: string
           description: Location column name
       required:
         - type
         - deriveFrom
-
     RowsStep:
       type: object
       properties:
         type:
           type: string
-          enum: [ rows ]
+          enum: [rows]
         deriveFrom:
           type: string
           description: Column name from where the json content will be read
       required:
         - type
         - deriveFrom
-
     TableStep:
       type: object
       properties:
         type:
           type: string
-          enum: [ table ]
+          enum: [table]
         deriveFrom:
           type: string
           description: Column name from where the column should be derived from
@@ -1081,7 +1106,6 @@ components:
       required:
         - type
         - deriveFrom
-
     UserToken:
       type: object
       properties:
@@ -1109,16 +1133,15 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/UserToken'
-
     ValidateStep:
       type: object
       properties:
         type:
           type: string
-          enum: [ validate ]
+          enum: [validate]
         mode:
           type: string
-          enum: [ regex, rows, fields ]
+          enum: [regex, rows, fields]
           description: Validation mode
         columns:
           type: array
@@ -1129,7 +1152,6 @@ components:
         - type
         - mode
         - columns
-  
   responses:
     BadRequest:
       description: Bad request. The request was malformed or invalid.
@@ -1173,10 +1195,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      description: |
-        Use a Bearer token for authentication. Submit the token using the `Authorization` 
-        header: `Authorization: Bearer <token>`.
-
+      description: "Use a Bearer token for authentication. Submit the token using the `Authorization` \nheader: `Authorization: Bearer <token>`.\n"
   examples:
     moviesExample:
       summary: movies
@@ -1219,7 +1238,6 @@ components:
           - name: Sophie Marceau
             age: 57
             nationality: French
-
           # Argo
           - name: Ben Affleck
             age: 52
@@ -1227,7 +1245,6 @@ components:
           - name: Bryan Cranston
             age: 68
             nationality: American
-
           # A Quiet Place
           - name: John Krasinski
             age: 45
@@ -1235,7 +1252,6 @@ components:
           - name: Emily Blunt
             age: 41
             nationality: British
-
           # Dances with Wolves
           - name: Kevin Costner
             age: 69
@@ -1243,7 +1259,6 @@ components:
           - name: Mary McDonnell
             age: 72
             nationality: American
-
           # Unforgiven
           - name: Clint Eastwood
             age: 94
@@ -1251,7 +1266,6 @@ components:
           - name: Morgan Freeman
             age: 86
             nationality: American
-
           # The Postman
           - name: Kevin Costner
             age: 69
@@ -1259,6 +1273,5 @@ components:
           - name: Will Patton
             age: 70
             nationality: American
-
         link:
           ExactMatch: null
