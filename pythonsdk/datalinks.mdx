@@ -105,7 +105,7 @@ is retried up to a maximum number of attempts.
   An IngestionResult object containing lists of successfully ingested data blocks and
   data blocks that failed to be ingested.
 
-#### create_space(is_private=True)
+#### create_space(is_private=True, data_description='', field_definitions='')
 
 Creates a new space with the specified privacy settings. This function sends a
 POST request to create a namespace with the given privacy status. Information
@@ -164,7 +164,7 @@ identified by key names starting with an underscore.
   **requests.exceptions.RequestException** – If a request-related error
   occurs during querying.
 
-#### ask(query, model=None, provider=None, include_metadata=False)
+#### ask(query, model=None, provider=None)
 
 Queries data from a specified data source using natural language and processes the response.
 
@@ -177,13 +177,10 @@ identified by key names starting with an underscore.
   * **query** (*str*) – The natural language query to use for fetching data.
   * **model** (*str*) – The model name to use for inference.
   * **provider** (*str*) – The provider of the LLM model (ollama, openai, etc)
-  * **include_metadata** (*bool*) – Specifies whether to include metadata fields in
-    the returned data. Defaults to False.
 * **Returns:**
-  A list of records represented as dictionaries, or None if the query
-  fails or an exception occurs during the request.
+  A string with json response from the API
 * **Return type:**
-  List[Dict] | None
+  Any
 * **Raises:**
   **requests.exceptions.RequestException** – If a request-related error
   occurs during querying.
