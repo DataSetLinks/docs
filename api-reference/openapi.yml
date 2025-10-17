@@ -798,17 +798,14 @@ components:
       properties:
         inferDefinition:
           $ref: '#/components/schemas/ApiInferenceDefinition'
-        isPrivate:
-          type: boolean
-          description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
-          example: true
-          deprecated: true
         visibility:
           type: string
           enum:
             - Public
             - Private
           example: Private
+      required:
+        - visibility
     CreateTokenRequest:
       type: object
       properties:
