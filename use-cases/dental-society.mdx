@@ -8,31 +8,31 @@ sidebarTitle: "Sales Prospecting"
 
 ## Introduction
 
-This guide shows you how to connect two data sources using Datalinks to uncover new sales opportunities through your existing relationships. By completing the steps yourself, you’ll learn how to create namespaces and datasets, use the SDK kit, and work within the Datalinks web platform to turn scattered data into actionable sales insights.
+This guide walks you through how to connect two data sources in Datalinks to uncover new sales opportunities using the relationships you already have. As you follow the steps, you’ll learn how to create namespaces and datasets, work with the SDK, and use the Datalinks web platform to transform unstructured data into meaningful sales insights.
 
 ### Scenario
 
-Imagine you work in dental sales and want to expand your reach by connecting with new clinics or potential partners. Rather than cold outreach, you want to discover which of your current customers are already connected to influential members of the dental community.
+Let’s say you work in dental sales and want to reach new clinics or partners. Instead of relying on cold outreach, you’d like to find out which of your existing customers are already connected to key members of the dental community.
 
-In this exercise, you’ll upload a structured customer list from your CRM, extract member details from a public dental society website, link the two datasets, and generate an overlap list. This list shows which of your existing customers are also society members, helping you identify people who can naturally introduce you to new contacts or opportunities within their professional network.
+In this exercise, you’ll upload a structured customer list, extract member details from a public dental society website, and link the two datasets. The result will reveal which of your current customers are also society members, showing you who might naturally introduce you to new contacts or business opportunities within their professional network.
 
 ### Outcome
 
-By the end of this guide, you’ll have a table showing all customers who are also members of the dental society. You can view this list directly in Datalinks or download it as a CSV file for your records.
+By the end of this guide, you’ll have a table listing all customers who are also members of the dental society. You can view this list directly in Datalinks or export it as a CSV file for your records.
 
 ## Prerequisites
 
 To follow along on your machine and execute the steps in the guide, you’ll need a few things first:
 
-4. To download a copy of this guide's [example script and data files](#).
-1. A Datalinks account you can log into to obtain an API token. 
+1. To download a copy of this guide's [example script and data files](#).
+2. A Datalinks account you can log into to obtain an API token. 
 
    <Info>
      Don't have an account? Contact [who](#) to request one. 
    </Info>
-2. Python installed on your local machine and the package-manager pip available. To download Python, see[ the official website](https://www.python.org/downloads/).
-3. The Datalinks SDK installed on your machine. To install, use the following command: `pip install datalinks`.
-4. A code editor to work in, such as Microsoft Visual Studio Code, which is [free to download on Windows, Linux, or Mac](https://code.visualstudio.com/download).
+3. Python installed on your local machine and the package-manager pip available. To download Python, see[ the official website](https://www.python.org/downloads/).
+4. The Datalinks SDK installed on your machine. To install, use the following command: `pip install datalinks`.
+5. A code editor to work in, such as Microsoft Visual Studio Code, which is [free to download on Windows, Linux, or Mac](https://code.visualstudio.com/download).
 
    <Info>
      To learn more, see the official [Datalinks SDK Installation Steps](/pythonsdk#installation).
