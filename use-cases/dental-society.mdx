@@ -5,7 +5,7 @@ description: "Connect structured and unstructured data to identify new sales opp
 
 ## Introduction
 
-This guide shows you how to connect two data sources to uncover new sales opportunities through your existing relationships. By completing the steps yourself, you’ll learn how to create namespaces and datasets, use the SDK kit, and work within the Datalinks web platform to turn scattered data into actionable insights.
+This guide shows you how to connect two data sources using Datalinks to uncover new sales opportunities through your existing relationships. By completing the steps yourself, you’ll learn how to create namespaces and datasets, use the SDK kit, and work within the Datalinks web platform to turn scattered data into actionable sales insights.
 
 ### Scenario
 
@@ -13,27 +13,24 @@ Imagine you work in dental sales and want to expand your reach by connecting wit
 
 In this exercise, you’ll upload a structured customer list from your CRM, extract member details from a public dental society website, link the two datasets, and generate an overlap list. This list shows which of your existing customers are also society members, helping you identify people who can naturally introduce you to new contacts or opportunities within their professional network.
 
-### Prerequisites
-
-To follow along on your machine and execute the steps in the guide, you’ll need a few things:
-
-1. A Datalinks account you can log into to obtain an API key.
-2. Python installed on your local machine.
-3. The Datalinks SDK installed on your machine.
-
-### Why this matters
-
-Customer information often lives in CRMs or spreadsheets, while influential industry contacts are stored in other sources like society rosters or event programs. Datalinks helps you connect these scattered sources, revealing where your existing customers and key industry members intersect.
-
 ### Outcome
 
 By the end of this guide, you’ll have a table showing all customers who are also members of the dental society. You can view this list directly in Datalinks or download it as a CSV file for your records.
+
+## Prerequisites
+
+To follow along on your machine and execute the steps in the guide, you’ll need a few things:
+
+1. A Datalinks account you can log into to obtain an API token. If you don't have one, contact **WHO?**
+2. You’ll need to have Python installed on your local machine and the package-manager pip available. To download Python, see[ the official website](https://www.python.org/downloads/). 
+3. The Datalinks SDK installed on your machine. To install, follow our official [Datalinks SDK Installation Steps](/pythonsdk#installation). 
+4. To download [these script and data files](#). 
 
 ## Part 1: Create your namespace and first dataset
 
 1. Sign in to the Datalinks dashboard.
 2. Click **Create New Dataset**.
-3. Enter dataset name `sonia_data`. 
+3. Enter the following dataset name: `sonia_data`.
 
    <Info>
      Use underscores, not spaces, when naming your datasets.
@@ -43,43 +40,37 @@ By the end of this guide, you’ll have a table showing all customers who are al
 6. Click **Create dataset and upload data**.
 
 <Check>
-  An empty `sonia_data` dataset inside the `Demo_sonia` namespace is created.
+  Result: You've created an empty `sonia_data` dataset inside the `Demo_sonia` namespace.
 </Check>
 
-## Part 2. Upload the structured customer list
+## Part 2: Upload the structured customer list
+
+Now that you've created an empty dataset, you need to populate it with data. To do so, follow these steps:
 
 1. Click anywhere in the **Click to upload** area to open the file explorer.
-2. Select your downloaded copy of the `sonia_synt.json` file, then click **Open**.
+2. Click the `sonia_synt.json` file you downloaded, then click **Open**.
 3. Wait while Datalinks ingests your data.
 4. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
 5. Scroll down to the bottom of the page, then click **Upload data**.
+6. Click **Append** to confirm.
 
-\<aside\> ✅
+<Check>
+  Result: You're taken to the Dataset Overview page, showing the Preview & Query tab.
+</Check>
 
-Result: You are taken to dataset overview page, where you can now preview and query your customer data, view connections, append new data, or open the Data explorer.
-
-\</aside\>
-
-## Part 3. Create a TXT file with unstructured data
-
-In this step, you’ll use publicly-available unstructured data from a dental society website to create a structured table that you can then work with.
-
-1. In a new browser window, open the following website: https://www.dgoi.info/die-dgoi/mitglieder
-2. Use your mouse to select all the society member information on the left side of the screen, then **copy** it.
-3. Create a new TXT file on your local machine and name it `date-dgoi.txt`.
-4. **Paste** the society member data into the file and save it somewhere convenient.
-
-## Part 4. Obtain your Datalinks API key.
+## Part 3: Create your Datalinks API token.
 
 1. Log in to your Datalinks account.
 2. Click **Settings** in the left navigation menu.
 3. Click **\+ Add a new** token.
-4. Enter the name `Sonia` and set an expiration date for the token.
+4. Enter the name `Sonia` and set an expiration date for the token (for example, one month).
 5. Click **\+ Create token**.
 6. Copy and save your token. (You’ll need in later steps.)
 7. Click **I’ve copied the token** to close.
 
-## Part 5. Use a Python script with a Datalinks API key to structure the data
+## Part 4: Use a Python script with a Datalinks API key to structure the data
+
+Included in the package you
 
 1. Download the following `.py` file to your local machine:
 2. In your working python folder, add it to the src folder.
@@ -88,4 +79,4 @@ In this step, you’ll use publicly-available unstructured data from a dental so
    1. On Line z, change x to y
    2. On Line z, change x to y
    3. On Line z, change x to y
-5. When everything is entered, run the script.
+1. When everything is entered, run the script.
