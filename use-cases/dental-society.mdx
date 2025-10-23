@@ -19,12 +19,23 @@ By the end of this guide, you’ll have a table showing all customers who are al
 
 ## Prerequisites
 
-To follow along on your machine and execute the steps in the guide, you’ll need a few things:
+To follow along on your machine and execute the steps in the guide, you’ll need a few things first:
 
-1. A Datalinks account you can log into to obtain an API token. If you don't have one, contact **WHO?**
-2. You’ll need to have Python installed on your local machine and the package-manager pip available. To download Python, see[ the official website](https://www.python.org/downloads/). 
-3. The Datalinks SDK installed on your machine. To install, follow our official [Datalinks SDK Installation Steps](/pythonsdk#installation). 
-4. To download [these script and data files](#). 
+4. To download a copy of this guide's [example script and data files](#).
+1. A Datalinks account you can log into to obtain an API token. 
+
+   <Info>
+     Don't have an account? Contact [who](#) to request one. 
+   </Info>
+2. Python installed on your local machine and the package-manager pip available. To download Python, see[ the official website](https://www.python.org/downloads/).
+3. The Datalinks SDK installed on your machine. To install, use the following command: `pip install datalinks`.
+4. A code editor to work in, such as Microsoft Visual Studio Code, which is [free to download on Windows, Linux, or Mac](https://code.visualstudio.com/download).
+
+   <Info>
+     To learn more, see the official [Datalinks SDK Installation Steps](/pythonsdk#installation).
+   </Info>
+
+With these four things in place, you're ready to get started!
 
 ## Part 1: Create your namespace and first dataset
 
@@ -55,7 +66,7 @@ Now that you've created an empty dataset, you need to populate it with data. To 
 6. Click **Append** to confirm.
 
 <Check>
-  Result: You're taken to the Dataset Overview page, showing the Preview & Query tab.
+  Result: You've now populated your `sonia_data` dataset with data.
 </Check>
 
 ## Part 3: Create your Datalinks API token.
@@ -70,13 +81,40 @@ Now that you've created an empty dataset, you need to populate it with data. To 
 
 ## Part 4: Use a Python script with a Datalinks API key to structure the data
 
-Included in the package you
+For the structured data you uploaded via the Datalinks web platform, you first created the dataset (Part 1), then uploaded the data for the dataset (Part 2). For the unstructured data you're working with in this section, we'll create your new dataset at the same time we upload the data into it, using a python script. 
 
-1. Download the following `.py` file to your local machine:
-2. In your working python folder, add it to the src folder.
-3. Take the text file you created in Part 3 and place it in the data folder.
-4. Open the `infer_tabular_SONIA` file and make the following changes:
-   1. On Line z, change x to y
-   2. On Line z, change x to y
-   3. On Line z, change x to y
-1. When everything is entered, run the script.
+1. Open the `infer_tabular_SONIA.py`file you downloaded earlier in your code editor.
+1. Add the following information to the file:
+   - On line 25, paste in your API token.
+   - On line 27, enter the namespace you're using (`Demo_sonia`)
+   - On line 28, enter the name for the new dataset you're creating (`Society`)
+   - On line 34, update the location of the `20251009_dgoi_full.txt` if you've moved it out of the `what-name` folder your running your script from. 
+   - On line 49, paste in the following prompt: 
+
+     ```
+     This is the data contained within a html from the society's DGOI page (https://www.dgoi.info/die-dgoi/mitglieder/), where the names of members (dental practices), the addresses, the phone numbers, and the websites, are included. The file contains thousands of entries. 
+     # **Instructions**
+     * Extract **all data** provided. 
+     * **Do not skip any entry.**
+     
+     Whenever possible abide to the follwing schema:
+     
+     MemberName = this is the set of names that are used to define the member entity, which may be a person, or may be an entity like and institution, business, etc. Do the import without academic titles such as "Dr." for Doctor, "Prof." for professor and similar, and without personal honorifics like "Ms.", "Mr.", "Frau", "Herr", and extensions of these like "Miss".
+     
+     AcademicTitle = this is a Academic honorific (e.g. "Dr." for Doctor, "Prof." for professor) that can be extracted before the name.
+     
+     Address = this is the street address belonging to the member name.
+     
+     city = this is the name of the city to which the address belongs to.
+     
+     Country = this is the name of the country to which the address belongs to. Normalize all names to English.
+     
+     Geo = these are the geographical coordinates that you need to calculate from the Address. These include latitude and longitude.
+     
+     Phone = this is the phone number associated with the member name. If it does not contain the country code (+XX) add the respective country code based on country of member. Pay attention to which country we are dealing with and substitute the leading 0 by the country code when appropriate.
+     
+     WebSite = this is the web address associated with the member name.
+     ```
+3. Verify everything looks correct, then save your file.
+4. Run your python program. (In Visual Studio Code, press the play icon in the top-right corner of your screen.)
+5. Wait for the data to finish uploading. This may take 10-20 minutes.
