@@ -12,13 +12,13 @@ This guide walks you through how to connect two data sources in Datalinks to unc
 
 **Scenario**
 
-Let’s say you work in dental sales and want to reach new clinics or partners. Instead of relying on cold outreach, you’d like to find out which of your existing customers are already connected to key members of the dental community.
+Let’s say you work in dental sales and want to reach new clinics or partners. Instead of relying on cold outreach, you’d like to find out which of your existing customers are already connected to key members of the dental community who are members of the _Deutsche Gesellschaft für Orale Implantologie_ (DGOI), which translates to the _German Society for Oral Implantology_.
 
-In this exercise, you’ll upload a structured customer list, extract member details from a public dental society website, and link the two datasets. The result will reveal which of your current customers are also society members, showing you who might naturally introduce you to new contacts or business opportunities within their professional network.
+In this exercise, you’ll upload a structured customer list, extract member details from a public DGOI website, and link the two datasets. The result will reveal which of your current customers are also society members, showing you who might naturally introduce you to new contacts or business opportunities within their professional network.
 
 **Outcome**
 
-By the end of this guide, you’ll have a table listing all customers who are also members of the dental society. You can view this list directly in Datalinks or export it as a CSV file for your records.
+By the end of this guide, you’ll have a table listing all of your existing customers who are also DGOI members. You can view this list directly in the Datalinks web platform or export it as a CSV file.
 
 ## Prerequisites
 
@@ -84,7 +84,9 @@ Now that you've created an empty dataset, you need to populate it with data. To 
 
 ## Part 4: Use a script to upload and transform unstructured data
 
-For the structured data you uploaded via the Datalinks web platform, you first created the dataset (Part 1), then uploaded the data for the dataset (Part 2). For the unstructured data you're working with in this section, we'll create your new dataset at the same time we upload the data into it, using a python script.
+For the structured data you uploaded through the Datalinks web platform, you first created a dataset (Part 1) and then uploaded data into it (Part 2). For the unstructured data in this section, you’ll create and populate the dataset at the same time using a Python script.
+
+The unstructured data file you’ll use is a simple text file created by copying and pasting the list of society members directly from the [Deutsche Gesellschaft für Orale Implantologie (DGOI) website](https://www.dgoi.info/die-dgoi/mitglieder). This is the 
 
 1. Open the `infer_tabular_SONIA.py`file you downloaded earlier in your code editor.
 1. Add the following information to the file:
