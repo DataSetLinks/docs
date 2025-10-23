@@ -42,7 +42,7 @@ With these things in place, you're ready to get started!
 
 ## Part 1: Create your namespace and first dataset
 
-1. Sign in to the Datalinks dashboard.
+1. Log in to the Datalinks platform.
 2. Click **Create New Dataset**.
 3. Enter the following dataset name: `sonia_data`.
 
@@ -74,7 +74,7 @@ Now that you've created an empty dataset, you need to populate it with data. To 
 
 ## Part 3: Create your Datalinks API token.
 
-1. Log in to your Datalinks account.
+1. Log in to the Datalinks platform.
 2. Click **Settings** in the left navigation menu.
 3. Click **\+ Add a new** token.
 4. Enter the name `Sonia` and set an expiration date for the token (for example, one month).
@@ -125,3 +125,28 @@ To upload and transform your data, follow the steps below:
 3. Verify everything looks correct, then save your file.
 4. Run your python program. (In Visual Studio Code, press the **play icon** in the top-right corner of your screen.)
 5. Wait for the data to finish uploading. This may take 10-20 minutes.
+
+## Part 5: View and save data connections 
+
+1. Log in to the Datalinks platform.
+1. Click the **sonia_data** dataset.
+1. Click the **Connections** tab.
+1. In the Active Links section in the bottom-right of your screen, click **Select all**, then **Save connections**.
+1. Click the **demo_sonia/society** connection.
+1. Under Suggested links, select the relevant links (`data_full_name`, `society_member_name`), then click **Save connections**.
+
+## Part 6: Query your data to create a list of sales prospects
+
+1. In the **sonia_data** dataset, Click the **Preview & Query** tab.
+1. In the Query your data section on the right side of your screen, enter the following prompt: `List members that can be found in both the sonia_data and Society datasets.`
+1. Click the **send icon**.
+1. Review the table that is created showing all of your customers that are also belong to the DGOI.
+1. Click **Export CSV** in the top-right of your screen to download a CSV copy of the data. 
+
+## Next steps
+
+Congratulations! You've used structured and unstructured data to find a list of prospects.
+
+Thank you for taking the time to try this guide.
+
+To learn more about DataLinks and how we can help your organization, contact [who?](#). 
