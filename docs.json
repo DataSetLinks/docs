@@ -28,7 +28,7 @@
           {
             "group": "Use-cases",
             "pages": [
-              "uses-cases/dental-society",
+              "use-cases/dental-society",
               "use-cases/tariffs"
             ]
           }
