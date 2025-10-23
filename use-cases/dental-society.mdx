@@ -22,23 +22,23 @@ By the end of this guide, you’ll have a table listing all customers who are al
 
 ## Prerequisites
 
-To follow along on your machine and execute the steps in the guide, you’ll need a few things first:
+To follow along on your machine and complete the steps in this guide, make sure you have the following ready:
 
-1. To download a copy of this guide's [example script and data files](#).
-2. A Datalinks account you can log into to obtain an API token. 
+1. A copy of this guide's [example script and data files](#).
+2. Access to a Datalinks account you can log into to obtain an API token.
 
    <Info>
-     Don't have an account? Contact [who](#) to request one. 
+     Don't have an account? Contact [who](#) to request one.
    </Info>
 3. Python installed on your local machine and the package-manager pip available. To download Python, see[ the official website](https://www.python.org/downloads/).
-4. The Datalinks SDK installed on your machine. To install, use the following command: `pip install datalinks`.
-5. A code editor to work in, such as Microsoft Visual Studio Code, which is [free to download on Windows, Linux, or Mac](https://code.visualstudio.com/download).
+4. The Datalinks SDK installed on your machine. You can install it with the command: `pip install datalinks`. 
 
    <Info>
      To learn more, see the official [Datalinks SDK Installation Steps](/pythonsdk#installation).
    </Info>
+5. A code editor such as Microsoft Visual Studio Code, which is [free to download on Windows, Linux, or Mac](https://code.visualstudio.com/download).
 
-With these four things in place, you're ready to get started!
+With these things in place, you're ready to get started!
 
 ## Part 1: Create your namespace and first dataset
 
@@ -84,15 +84,15 @@ Now that you've created an empty dataset, you need to populate it with data. To 
 
 ## Part 4: Use a Python script with a Datalinks API key to structure the data
 
-For the structured data you uploaded via the Datalinks web platform, you first created the dataset (Part 1), then uploaded the data for the dataset (Part 2). For the unstructured data you're working with in this section, we'll create your new dataset at the same time we upload the data into it, using a python script. 
+For the structured data you uploaded via the Datalinks web platform, you first created the dataset (Part 1), then uploaded the data for the dataset (Part 2). For the unstructured data you're working with in this section, we'll create your new dataset at the same time we upload the data into it, using a python script.
 
 1. Open the `infer_tabular_SONIA.py`file you downloaded earlier in your code editor.
 1. Add the following information to the file:
    - On line 25, paste in your API token.
    - On line 27, enter the namespace you're using (`Demo_sonia`)
    - On line 28, enter the name for the new dataset you're creating (`Society`)
-   - On line 34, update the location of the `20251009_dgoi_full.txt` if you've moved it out of the `what-name` folder your running your script from. 
-   - On line 49, paste in the following prompt: 
+   - On line 34, update the location of the `20251009_dgoi_full.txt` if you've moved it out of the `what-name` folder your running your script from.
+   - On line 49, paste in the following prompt:
 
      ```
      This is the data contained within a html from the society's DGOI page (https://www.dgoi.info/die-dgoi/mitglieder/), where the names of members (dental practices), the addresses, the phone numbers, and the websites, are included. The file contains thousands of entries. 
