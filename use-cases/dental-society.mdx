@@ -18,23 +18,23 @@ In this exercise, you will upload a structured list of your existing customers, 
 
 **Outcome**
 
-By the end of this guide, you’ll have a table listing all of your existing customers who are also DGOI society members. You can view this list directly in the Datalinks web platform or export it as a CSV file.
+By the end of this guide, you’ll have a table listing all of your existing customers who are also DGOI society members. You can view this list directly in the DataLinks web platform or export it as a CSV file.
 
 ## Prerequisites
 
 To follow along on your machine and complete the steps in this guide, make sure you have the following ready:
 
 1. A downloaded copy of this guide's [example script and data files](#).
-2. Access to a Datalinks account you can log into to obtain an API token.
+2. Access to a DataLinks account you can log into to obtain an API token.
 
    <Info>
      Don't have an account? Contact [who](#) to request one.
    </Info>
 3. Python installed on your local machine and the package-manager pip available. To download Python, see[ the official website](https://www.python.org/downloads/).
-4. The Datalinks SDK installed on your machine. You can install it with the command: `pip install datalinks`. 
+4. The DataLinks SDK installed on your machine. You can install it with the command: `pip install datalinks`. 
 
    <Info>
-     To learn more, see the official [Datalinks SDK Installation Steps](/pythonsdk#installation).
+     To learn more, see the official [DataLinks SDK Installation Steps](/pythonsdk#installation).
    </Info>
 5. A code editor such as Microsoft Visual Studio Code, which is [free to download on Windows, Linux, or Mac](https://code.visualstudio.com/download).
 
@@ -42,7 +42,7 @@ With these things in place, you're ready to get started!
 
 ## Part 1: Create your namespace and first dataset
 
-1. Log in to the Datalinks platform.
+1. Log in to the DataLinks platform.
 2. Click **Create New Dataset**.
 3. Enter the following dataset name: `sonia_data`.
 
@@ -63,7 +63,7 @@ Now that you've created an empty dataset, you need to populate it with data. To 
 
 1. Click anywhere in the **Click to upload** area to open the file explorer.
 2. Click the `sonia_synt.json` file you downloaded, then click **Open**.
-3. Wait while Datalinks ingests your data.
+3. Wait while DataLinks ingests your data.
 4. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
 5. Scroll down to the bottom of the page, then click **Upload data**.
 6. Click **Append** to confirm.
@@ -72,9 +72,9 @@ Now that you've created an empty dataset, you need to populate it with data. To 
   Result: You've now populated your `sonia_data` dataset with data.
 </Check>
 
-## Part 3: Create your Datalinks API token.
+## Part 3: Create your DataLinks API token.
 
-1. Log in to the Datalinks platform.
+1. Log in to the DataLinks platform.
 2. Click **Settings** in the left navigation menu.
 3. Click **\+ Add a new** token.
 4. Enter the name `Sonia` and set an expiration date for the token (for example, one month).
@@ -84,7 +84,7 @@ Now that you've created an empty dataset, you need to populate it with data. To 
 
 ## Part 4: Use a script to upload and transform unstructured data
 
-For the structured data you uploaded through the Datalinks web platform, you first created a dataset (Part 1) and then uploaded data into it (Part 2). For the unstructured data in this section, you’ll create and populate the dataset at the same time using a Python script.
+For the structured data you uploaded through the DataLinks web platform, you first created a dataset (Part 1) and then uploaded data into it (Part 2). For the unstructured data in this section, you’ll create and populate the dataset at the same time using a Python script.
 
 The unstructured data file you’ll use is a simple text file created by copying and pasting the list of society members directly from the [Deutsche Gesellschaft für Orale Implantologie (DGOI) website](https://www.dgoi.info/die-dgoi/mitglieder). This is the `20251009_dgoi_full.txt`file.
 
@@ -128,7 +128,7 @@ To upload and transform your data, follow the steps below:
 
 ## Part 5: View and save data connections 
 
-1. Log in to the Datalinks platform.
+1. Log in to the DataLinks platform.
 1. Click the **sonia_data** dataset.
 1. Click the **Connections** tab.
 1. In the Active Links section in the bottom-right of your screen, click **Select all**, then **Save connections**.
