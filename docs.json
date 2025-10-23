@@ -28,6 +28,7 @@
           {
             "group": "Use-cases",
             "pages": [
+              "uses-cases/dental-society.mdx",
               "use-cases/tariffs"
             ]
           }
