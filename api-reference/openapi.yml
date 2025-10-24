@@ -4,6 +4,7 @@ info:
   version: 1.0.0
 security:
   - bearerAuth: []
+  - openId: [implicit]
 servers:
   - url: https://api.datalinks.com/api/v1
     description: production server
@@ -77,27 +78,6 @@ paths:
                 $ref: '#/components/examples/moviesExample'
               actors:
                 $ref: '#/components/examples/actorsExample'
-      responses:
-        '200':
-          description: Successful ingestion response.
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-  /ingest/new-from-query/{namespace}/{datasetName}:
-    post:
-      summary: Query and Ingest data
-      description: Execute the ontology query, and merge all data in the lineage to create a new dataset.
-      operationId: queryAndIngest
-      tags:
-        - ingest
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryDataRequest'
       responses:
         '200':
           description: Successful ingestion response.
@@ -183,7 +163,7 @@ paths:
       description: Allow to update saved infer
       operationId: updateInferDefinition
       tags:
-        - query
+        - dataset
       parameters:
         - $ref: '#/components/parameters/Namespace'
         - $ref: '#/components/parameters/DatasetName'
@@ -201,6 +181,34 @@ paths:
           description: Dataset not found or not allowed to modify
         '400':
           description: Bad request
+  /schema/{username}/{namespace}/{datasetName}/sort-order:
+    put:
+      summary: Update dataset sort order
+      description: Update the sort order of columns in a dataset
+      operationId: updateSortOrder
+      tags:
+        - dataset
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSortOrderRequest'
+      responses:
+        '200':
+          description: Successfully reordered columns
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Dataset not found or not accessible
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
   /data/{username}/{namespace}/{datasetName}/clear:
     post:
       summary: Clear all data for a dataset
@@ -241,44 +249,13 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           description: Dataset not found or not allowed to modify
-  /query/{username}/{namespace}/{datasetName}:
+  /query:
     post:
       summary: Query data
       description: Execute ontology query
       operationId: queryData
       tags:
         - query
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-        - $ref: '#/components/parameters/Username'
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryDataRequest'
-      responses:
-        '200':
-          description: Successful response with the ontology data object.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-  /query/{username}/{namespace}:
-    post:
-      summary: Query data
-      description: Execute ontology query
-      operationId: queryNamespace
-      tags:
-        - query
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/Username'
       requestBody:
         required: true
         content:
@@ -296,16 +273,13 @@ paths:
                   type: object
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /query/autorag/{username}/{namespace}:
+  /query/autorag:
     post:
       summary: Run AutoRAG agent over all data
       description: Uses the AutoRAG agent to answer a question about any data that the user can access.
       operationId: autorag
       tags:
         - autorag
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/Username'
       requestBody:
         required: true
         content:
@@ -600,6 +574,100 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /upload/multipart/{username}/{namespace}/{datasetName}/prepare:
+    post:
+      summary: Prepare multipart upload
+      description: Initiate a multipart upload and get presigned URLs for all parts
+      operationId: prepareMultipartUpload
+      tags:
+        - multipart-upload
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrepareMultipartRequest'
+      responses:
+        '200':
+          description: Multipart upload prepared successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrepareMultipartResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Failed to prepare multipart upload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /upload/multipart/{username}/{namespace}/{datasetName}/finish:
+    post:
+      summary: Finish multipart upload
+      description: Finish a multipart upload by providing all part ETags
+      operationId: finishMultipartUpload
+      tags:
+        - multipart-upload
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinishedMultipartRequest'
+      responses:
+        '200':
+          description: Multipart upload completed successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Failed to complete multipart upload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /upload/multipart/{username}/{namespace}/{datasetName}/abort:
+    post:
+      summary: Abort multipart upload
+      description: Abort a multipart upload and clean up partial data
+      operationId: abortMultipartUpload
+      tags:
+        - multipart-upload
+      parameters:
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbortMultipartRequest'
+      responses:
+        '200':
+          description: Multipart upload aborted successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          description: Failed to abort multipart upload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   parameters:
     DatasetName:
@@ -630,7 +698,7 @@ components:
       required: true
       description: Token ID
       schema:
-        type: integer
+        type: string
     Username:
       name: username
       in: path
@@ -798,17 +866,14 @@ components:
       properties:
         inferDefinition:
           $ref: '#/components/schemas/ApiInferenceDefinition'
-        isPrivate:
-          type: boolean
-          description: Sets the privacy status of the dataset. Set it to `true` for private datasets.
-          example: true
-          deprecated: true
         visibility:
           type: string
           enum:
             - Public
             - Private
           example: Private
+      required:
+        - visibility
     CreateTokenRequest:
       type: object
       properties:
@@ -1000,6 +1065,17 @@ components:
           department: "Finance"
           location: "Texas"
           __metadata_normalize: "Normalized department field from 'Fin Dept' to 'Finance'"
+    UpdateSortOrderRequest:
+      type: object
+      properties:
+        order:
+          type: array
+          items:
+            type: string
+          description: Ordered list of all column names in desired sequence
+          example: ["id", "name", "age", "department", "location"]
+      required:
+        - order
     ModifyOntologyRequest:
       type: object
       properties:
@@ -1044,19 +1120,31 @@ components:
     QueryDataRequest:
       type: object
       properties:
+        username:
+          type: string
+        namespace:
+          type: string
+        dataset:
+          type: string
         query:
           type: string
           default: ""
-        useNaturalLanguageQuery:
-          type: boolean
-          default: false
+        naturalLanguageQuery:
+          type: string
         model:
           type: string
         provider:
           type: string
+      required:
+        - username
+        - namespace
     AutoRagRequest:
       type: object
       properties:
+        username:
+          type: string
+        namespace:
+          type: string
         query:
           type: string
           example: "What do llamas drink to cool themselves down?"
@@ -1065,6 +1153,8 @@ components:
         provider:
           type: string
       required:
+        - username
+        - namespace
         - query
     ReverseGeoStep:
       type: object
@@ -1114,8 +1204,7 @@ components:
         expires_at:
           type: string
         id:
-          type: integer
-          format: int64
+          type: string
         last_used_at:
           type: string
         name:
@@ -1152,6 +1241,107 @@ components:
         - type
         - mode
         - columns
+    PrepareMultipartRequest:
+      type: object
+      properties:
+        filename:
+          type: string
+          description: 'Name of the file being uploaded'
+          example: 'large-data.csv'
+        size:
+          type: integer
+          format: int64
+          description: 'Size of the file in bytes'
+          example: 73473457
+      required:
+        - filename
+        - size
+    PrepareMultipartResponse:
+      type: object
+      properties:
+        uploadId:
+          type: string
+          description: Unique identifier for the multipart upload session
+          example: '2~VmxqYXRlRDZWfjJrRWRiZ2FEQXk3dHI4DGhGLygtTmQNXEZPQXFzMVZOZTUgdEdrXCEyNStkQUp3U3Q2RjJqSkV4MFNBOWxJCk0yIHEkfcQ'
+        key:
+          type: string
+          description: Generated S3 object key
+          example: 'uploads/data/20240301-143022-uuid.json'
+        partSize:
+          type: integer
+          format: int64
+          description: Size of each part in bytes (8MB)
+          example: 8388608
+        presignedUrls:
+          type: array
+          items:
+            $ref: "#/components/schemas/PresignedUrlItem"
+          description: Array of presigned URLs for multipart upload
+          minItems: 1
+          maxItems: 10000
+      required:
+        - uploadId
+        - key
+        - partSize
+        - presignedUrls
+    PresignedUrlItem:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Presigned URL for uploading this part
+          example: 'https://my-data-bucket.s3.amazonaws.com/uploads/data/20240301-143022-uuid.json?partNumber=1&uploadId=...'
+      required:
+        - url
+    FinishedMultipartRequest:
+      type: object
+      properties:
+        uploadId:
+          type: string
+          description: Upload ID from the prepare response
+          example: '2~VmxqYXRlRDZWfjJrRWRiZ2FEQXk3dHI4DGhGLygtTmQNXEZPQXFzMVZOZTUgdEdrXCEyNStkQUp3U3Q2RjJqSkV4MFNBOWxJCk0yIHEkfcQ'
+        key:
+          type: string
+          description: S3 object key from the prepare response
+          example: 'uploads/data/20240301-143022-uuid.json'
+        parts:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinishedMultipartItem"
+          description: Array of completed parts with their ETags
+          minItems: 1
+      required:
+        - uploadId
+        - key
+        - parts
+    FinishedMultipartItem:
+      type: object
+      properties:
+        partNumber:
+          type: integer
+          description: Part number (1-based)
+          example: 1
+        etag:
+          type: string
+          description: ETag returned by S3 after uploading the part
+          example: 'd41d8cd98f00b204e9800998ecf8427e'
+      required:
+        - partNumber
+        - etag
+    AbortMultipartRequest:
+      type: object
+      properties:
+        uploadId:
+          type: string
+          description: Upload ID to abort
+          example: '2~VmxqYXRlRDZWfjJrRWRiZ2FEQXk3dHI4DGhGLygtTmQNXEZPQXFzMVZOZTUgdEdrXCEyNStkQUp3U3Q2RjJqSkV4MFNBOWxJCk0yIHEkfcQ'
+        key:
+          type: string
+          description: S3 object key to abort
+          example: 'uploads/data/20240301-143022-uuid.json'
+      required:
+        - uploadId
+        - key
   responses:
     BadRequest:
       description: Bad request. The request was malformed or invalid.
@@ -1191,11 +1381,26 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableContent:
+      description: Unable to process request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-      description: "Use a Bearer token for authentication. Submit the token using the `Authorization` \nheader: `Authorization: Bearer <token>`.\n"
+      description: |
+        Use a Bearer token for authentication. Submit the token using the `Authorization`
+        header: `Authorization: Bearer <token>`.
+    openId:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://login.datalinks.com/realms/datalinks-realm/protocol/openid-connect/auth
+          scopes:
+            openid: openid
   examples:
     moviesExample:
       summary: movies
