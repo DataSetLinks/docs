@@ -31,7 +31,7 @@ To follow along on your machine and complete the steps in this guide, make sure 
      Don't have an account? Contact [who](#) to request one.
    </Info>
 3. Python installed on your local machine and the package-manager pip available. To download Python, see[ the official website](https://www.python.org/downloads/).
-4. The DataLinks SDK installed on your machine. You can install it with the command: `pip install datalinks`. 
+4. The DataLinks SDK installed on your machine. You can install it with the command: `pip install datalinks`.
 
    <Info>
      To learn more, see the official [DataLinks SDK Installation Steps](/pythonsdk#installation).
@@ -62,7 +62,7 @@ With these things in place, you're ready to get started!
 Now that you've created an empty dataset, you need to populate it with data. To do so, follow these steps:
 
 1. Click anywhere in the **Click to upload** area to open the file explorer.
-2. Click the `sonia_synt.json` file you downloaded, then click **Open**.
+2. Click the `Demo_synt.json` file you downloaded, then click **Open**.
 3. Wait while DataLinks ingests your data.
 4. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
 5. Scroll down to the bottom of the page, then click **Upload data**.
@@ -77,7 +77,7 @@ Now that you've created an empty dataset, you need to populate it with data. To 
 1. Log in to the DataLinks platform.
 2. Click **Settings** in the left navigation menu.
 3. Click **\+ Add a new** token.
-4. Enter the name `Sonia` and set an expiration date for the token (for example, one month).
+4. Enter the name `Name?` and set an expiration date for the token (for example, one month).
 5. Click **\+ Create token**.
 6. Copy and save your token. (You’ll need in later steps.)
 7. Click **I’ve copied the token** to close.
@@ -93,8 +93,8 @@ To upload and transform your data, follow the steps below:
 1. Open the `infer_tabular_SONIA.py`file in your code editor.
 1. Add the following information to the file:
    - On line 25, paste in your API token.
-   - On line 27, enter the namespace you're using (`Demo_sonia`)
-   - On line 28, enter the name for the new dataset you're creating (`Society`)
+   - On line 27, enter the namespace you're using (`Demo_?`)
+   - On line 28, enter the name for the new dataset you're creating (`Society?`)
    - On line 34, update the location of the `20251009_dgoi_full.txt` if you've moved it out of the `what-name` folder your running your script from.
    - On line 49, paste in the following prompt:
 
@@ -126,7 +126,7 @@ To upload and transform your data, follow the steps below:
 4. Run your python program. (In Visual Studio Code, press the **play icon** in the top-right corner of your screen.)
 5. Wait for the data to finish uploading. This may take 10-20 minutes.
 
-## Part 5: View and save data connections 
+## Part 5: View and save data connections
 
 1. Log in to the DataLinks platform.
 1. Click the **sonia_data** dataset.
@@ -141,7 +141,7 @@ To upload and transform your data, follow the steps below:
 1. In the Query your data section on the right side of your screen, enter the following prompt: `List members that can be found in both the sonia_data and Society datasets.`
 1. Click the **send icon**.
 1. Review the table that is created showing all of your customers that are also belong to the DGOI.
-1. Click **Export CSV** in the top-right of your screen to download a CSV copy of the data. 
+1. Click **Export CSV** in the top-right of your screen to download a CSV copy of the data.
 
 ## Next steps
 
@@ -149,4 +149,4 @@ Congratulations! You've used structured and unstructured data to find a list of 
 
 Thank you for taking the time to try this guide.
 
-To learn more about DataLinks and how we can help your organization, contact [who?](#). 
+To learn more about DataLinks and how we can help your organization, contact [who?](#).
