@@ -12,6 +12,7 @@
     "tabs": [
       {
         "tab": "Docs",
+        "icon": "file-lines",
         "groups": [
           {
             "group": "Get Started",
