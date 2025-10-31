@@ -11,12 +11,12 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Getting Started",
+        "tab": "Docs",
         "groups": [
           {
-            "group": "DataLinks",
+            "group": "Getting Started",
             "pages": [
-              "Welcome",
+              "get-started/intro-datalinks",
               "Creating_a_dataset",
               "Uploading_data_into_a_dataset",
               "Querying_data",
