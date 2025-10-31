@@ -34,9 +34,9 @@ Datasets are the foundation of all downstream actions in DataLinks. They feed th
 
 When using the API, you can view and manage datasets using:
 
-- [GET Fetch datasets](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/datasets/fetch-datasets)
-- [GET Fetch datasets in namespace](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/datasets/fetch-datasets-in-namespace?utm_source=chatgpt.com)
-- [GET Get dataset information](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/get-dataset-information)
+- [GET Fetch datasets](/api-reference/datasets/fetch-datasets)
+- [GET Fetch datasets in namespace](/api-reference/datasets/fetch-datasets-in-namespace?utm_source=chatgpt.com)
+- [GET Get dataset information](/api-reference/dataset/get-dataset-information)
 
 ## How namespaces and datasets work together
 
@@ -49,6 +49,10 @@ Namespaces prevent naming conflicts between teams while allowing easy sharing ac
 ## Creating namespaces and datasets
 
 You can create and manage both namespaces and datasets through the web platform or through the API (and SDK).
+
+<Info>
+  For step-by-step instructions, see [How To Create a Namespace](/how-to/create-namespace) and [How To Create a Dataset](/how-to/create-dataset).
+</Info>
 
 ### Using the web platform
 
@@ -64,11 +68,11 @@ This method is ideal for quick setup or when you want to explore data interactiv
 
 For automated workflows or large-scale operations, the API (and SDK) is the preferred option. The key endpoints include:
 
-- [POST Create new dataset](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ingest/create-new-dataset)
-- [POST Ingest data](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ingest/ingest-data)
-- [POST Preview](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ingest/preview)
-- [POST Rename a dataset](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/rename-a-dataset)
-- [PUT Update infer definition](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/update-infer-definition)
+- [POST Create new dataset](/api-reference/ingest/create-new-dataset)
+- [POST Ingest data](/api-reference/ingest/ingest-data)
+- [POST Preview](/api-reference/ingest/preview)
+- [POST Rename a dataset](/api-reference/dataset/rename-a-dataset)
+- [PUT Update infer definition](/api-reference/dataset/update-infer-definition)
 
 When you create a dataset through the API, you specify the target namespace in the request. Once the dataset exists, you can ingest data directly into it, preview results, or adjust its structure programmatically.
 
@@ -78,9 +82,9 @@ The SDK provides helper methods to simplify these steps, allowing developers to 
 
 Over time, you may need to adjust your namespace and dataset configuration. The following endpoints support maintenance and cleanup:
 
-- [PUT Update dataset sort order](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/update-dataset-sort-order)
-- [POST Clear all data for a dataset](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/clear-all-data-for-a-dataset)
-- [DEL Delete all data and metadata for a dataset (balefire)](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/delete-all-data-and-metadata-for-a-dataset-balefire)
+- [PUT Update dataset sort order](/api-reference/dataset/update-dataset-sort-order)
+- [POST Clear all data for a dataset](/api-reference/dataset/clear-all-data-for-a-dataset)
+- [DEL Delete all data and metadata for a dataset (balefire)](/api-reference/dataset/delete-all-data-and-metadata-for-a-dataset-balefire)
 
 These ensure your workspace stays organized and that older or redundant data can be removed safely without affecting other namespaces.
 
