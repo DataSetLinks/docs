@@ -17,14 +17,32 @@
             "group": "Get Started",
             "pages": [
               "get-started/intro-datalinks",
-              "Creating_a_dataset",
-              "Uploading_data_into_a_dataset",
-              "Querying_data",
-              "ai_inference",
-              "Command_List"
+              "get-started/interface",
+              "get-started/quickstart",
+              "get-started/quickstart-api"
             ],
             "icon": "rocket"
           },
+          {
+            "group": "Concepts",
+            "pages": [
+              "concepts/datasets-namespaces",
+              "concepts/ingest-clean",
+              "concepts/interconnection",
+              "concepts/query-insights"
+            ],
+            "icon": "lightbulb"
+          },
+          {
+            "group": "How-To Guides",
+            "pages": [
+              "how-to/create-dataset",
+              "how-to/create-namespace",
+              "how-to/manage-connections",
+              "how-to/query-data"
+            ],
+            "icon": "computer-mouse"
+          }, 
           {
             "group": "Use-cases",
             "pages": [
