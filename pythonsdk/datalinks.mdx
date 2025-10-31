@@ -139,7 +139,7 @@ Retrieves the list of datasets for the user, optionally filtered by a specific n
 * **Return type:**
   List[Dict] | None
 
-#### query_data(query=None, model=None, provider=None, include_metadata=False)
+#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False)
 
 Queries data from a specified data source and processes the response.
 
@@ -164,21 +164,20 @@ identified by key names starting with an underscore.
   **requests.exceptions.RequestException** – If a request-related error
   occurs during querying.
 
-#### ask(query, model=None, provider=None)
+#### ask(query, model=None, provider=None, include_reasoning=False)
 
-Queries data from a specified data source using natural language and processes the response.
+Talk to your data with natural language using DataLinks AutoRAG agent.
 
-The method allows querying with a natural language string (that will be translated into
-a datalinks query). The response from the query can be filtered to exclude
-metadata fields if include_metadata is set to False. Metadata fields are
-identified by key names starting with an underscore.
+The method allows asking a question with natural language using our AutoRAG agent. The
+question will be processed into the necessary steps to answer it.
 
 * **Parameters:**
   * **query** (*str*) – The natural language query to use for fetching data.
   * **model** (*str*) – The model name to use for inference.
   * **provider** (*str*) – The provider of the LLM model (ollama, openai, etc)
+  * **include_reasoning** (*bool*) – Whether to include the reasoning steps in the response.
 * **Returns:**
-  A string with json response from the API
+  A tuple with the agent response and the reasoning steps (dict) if include_reasoning is True, or just the response otherwise.
 * **Return type:**
   Any
 * **Raises:**
