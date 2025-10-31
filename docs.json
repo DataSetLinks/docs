@@ -46,6 +46,14 @@
               "how-to/query-data"
             ],
             "icon": "computer-mouse"
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/ai_inference",
+              "reference/query_commands"
+            ],
+            "icon": "computer-mouse"
           }, 
           {
             "group": "Use-Cases",
