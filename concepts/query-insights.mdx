@@ -2,3 +2,81 @@
 title: "Querying Data and Insights"
 sidebarTitle: "Querying and Insights"
 ---
+
+Once data is ingested and cleaned, then connected into knowledge maps, the next step is understanding it. Querying is how users turn structured data into clear, actionable insights.
+
+In traditional systems, querying requires technical skill and a precise knowledge of where data lives. At DataLinks, this process is transformed. The platform combines the power of structured data with the reasoning ability of large language models (LLMs) so that anyone can ask questions and get accurate, meaningful answers.
+
+## From data to questions
+
+Most enterprise data is too complex for manual exploration. Each table might contain thousands of rows, dozens of columns, and connections across multiple datasets. Writing SQL to join and filter all of that is time-consuming and error-prone.
+
+DataLinks bridges that gap by using LLMs to interpret questions and generate the right structure automatically. When a user types a question, for example, _“Show me all suppliers who serve both our European and Asian operations”_ , the system translates that intent into an optimized SQL query that runs across the connected datasets.
+
+This is not just keyword matching. The model understands context, recognizes relevant entities, and uses the knowledge map to locate the necessary tables and fields. It can reason about relationships such as _companies → shareholders → regions_ and construct multi-step queries that would otherwise require a data analyst.
+
+## How querying works in DataLinks
+
+Querying is built into both the **web platform** and the **API**, giving flexibility to business users, analysts, and developers alike.
+
+1. **Web Platform**
+
+   Through the Preview & Query interface, users can type natural language prompts or manually write SQL. The platform runs the query, displays results, and highlights the underlying datasets and links used.
+2. **API**
+
+   Developers can submit queries directly using:
+   - [POST Query data](/api-reference/query/query-data)
+
+   This endpoint accepts structured query requests and returns results as JSON, which can be integrated into dashboards, reports, or applications.
+
+## The role of the LLM in structuring queries
+
+At the core of DataLinks querying is the LLM-powered reasoning engine. Its role is not to replace databases but to make them more accessible and intelligent.
+
+Unlike generic chat-based LLM systems that generate freeform answers, DataLinks uses its models to reason _within_ the boundaries of verified enterprise data. Every answer is grounded in facts that come directly from your connected datasets.
+
+Here is how the process works:
+
+- **Interpretation:** The model reads your natural language question and identifies the relevant entities and metrics.
+- **Translation:** It converts that intent into query syntax, joining the correct datasets within the namespace.
+- **Optimization:** It selects the most efficient path through the knowledge map, prioritizing the strongest or most relevant links.
+
+### How hallucinations are mitigated
+
+Because the LLM operates on top of DataLinks’ structured semantic layer, it cannot produce results outside of what the data actually contains. The model does not “guess” or fill in gaps. Instead, it constructs queries that are executed against real, verified data.
+
+This design eliminates the most common cause of hallucination in AI-driven analytics: freeform generation without grounding.
+
+The system ensures reliability in several ways:
+
+- **Grounded reasoning:** The model only references information that exists in connected datasets.
+- **Schema awareness:** It understands dataset structure and field names, which significantly minimizes the risk of it inventing nonexistent columns or relationships.
+- **Query validation:** Every LLM-generated query is checked against the schema and executed through the database, guaranteeing factual output.
+- **Traceability:** Users can always view the generated SQL query, giving full transparency into how the result was produced.
+
+By grounding the model in enterprise data and maintaining full transparency, DataLinks gives organizations the power of natural language querying without the risk of misinformation or hallucinated results.
+
+## From queries to business insights
+
+Once data can be queried naturally, insight becomes immediate. Executives and analysts no longer need to wait for data teams to prepare reports. Instead, they can explore information directly, following their questions where they lead.
+
+Some examples of the insights that can be unlocked include:
+
+- **Compliance and risk:** Identify indirect links between entities and sanctioned organizations.
+- **Procurement optimization:** Discover overlapping suppliers across business units to consolidate spend.
+- **Financial intelligence:** Correlate company performance metrics with supply chain dependencies.
+- **Operational monitoring:** Surface anomalies, trends, and relationships across regions or product lines.
+
+These insights come from structured connections between datasets, not isolated tables. The LLM simply makes navigating those connections fast and intuitive.
+
+## Why this matters
+
+Enterprises spend millions each year trying to extract value from data, but the bottleneck often lies between _knowing what to ask_ and _how to ask it_. DataLinks removes that barrier by allowing anyone, not just SQL experts, to query their data through plain language.
+
+Because the platform understands both the structure and the meaning of the data, it can generate high-quality queries that reflect real business logic. This combination of semantic structure and LLM interpretation turns querying into an intelligent conversation with your data.
+
+## The foundation of data-driven decision making
+
+When querying works at this level, AI becomes more than a tool for analysis, it becomes a partner in reasoning. Clean, connected, and well-structured data combined with LLM-driven querying gives organizations the ability to move from static reports to continuous discovery.
+
+With DataLinks, insight is no longer locked behind technical barriers. It becomes a shared capability across the enterprise, available to every team and every question.
