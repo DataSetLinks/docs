@@ -97,12 +97,7 @@
     }
   },
   "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude"
-    ]
+    "options": []
   },
   "integrations": {
     "gtm": {
