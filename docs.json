@@ -44,7 +44,7 @@
             "icon": "computer-mouse"
           }, 
           {
-            "group": "Use-cases",
+            "group": "Use-Cases",
             "pages": [
               "use-cases/tariffs"
             ]
@@ -53,6 +53,7 @@
       },
       {
         "tab": "API Reference",
+        "icon": "code",
         "openapi": {
           "source": "api-reference/openapi.yml",
           "directory": "api-reference"
@@ -60,7 +61,7 @@
       },
       {
         "tab": "Python SDK",
-        "icon": "code",
+        "icon": "python",
         "groups": [
           {
             "group": "Getting Started",
