@@ -264,13 +264,7 @@ paths:
               $ref: '#/components/schemas/QueryDataRequest'
       responses:
         '200':
-          description: Successful response with the ontology data object.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
+          $ref: '#/components/responses/QueryResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /query/autorag:
@@ -288,12 +282,7 @@ paths:
               $ref: '#/components/schemas/AutoRagRequest'
       responses:
         '200':
-          description: Successful response from the agent.
-          content:
-            application/json:
-              schema:
-                type: string
-                example: "Llamanade!"
+          $ref: '#/components/responses/AutoRagResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /links/{username}/{namespace}/{datasetName}:
@@ -707,6 +696,12 @@ components:
       schema:
         type: string
   schemas:
+    DataArray:
+      type: array
+      description: Array of ontology data objects retrieved from queries.
+      items:
+        type: object
+        additionalProperties: true
     AddLinkRequest:
       type: object
       properties:
@@ -1342,7 +1337,71 @@ components:
       required:
         - uploadId
         - key
+    QueryResponseMetadata:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Number of results returned
+        executedQuery:
+          type: string
+          description: The actual query that was executed
+        originalQuery:
+          type: string
+          description: The original query provided by the user
+        sourceObject:
+          type: string
+          description: The source object queried
+    QueryResponseData:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/DataArray'
+        metadata:
+          $ref: '#/components/schemas/QueryResponseMetadata'
+      required:
+        - data
+        - metadata
+    AutoRagResponseData:
+      type: object
+      properties:
+        response:
+          type: string
+          description: Final response generated for the user's question.
+        steps:
+          type: array
+          description: List of steps executed during the AutoRAG process.
+          items:
+            type: object
+            properties:
+              instruction:
+                type: string
+                description: The instruction generated and executed for this step.
+              query:
+                type: string
+                description: The query derived from the instruction.
+              data:
+                $ref: '#/components/schemas/DataArray'
+            required:
+              - instruction
+              - query
+              - data
+      required:
+        - response
+        - steps
   responses:
+    QueryResponse:
+      description: Successful response with the ontology data object.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/QueryResponseData'
+    AutoRagResponse:
+      description: Response containing step-by-step RAG execution results and the final answer.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AutoRagResponseData'
     BadRequest:
       description: Bad request. The request was malformed or invalid.
       content:
