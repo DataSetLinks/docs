@@ -53,7 +53,7 @@
               "reference/ai_inference",
               "reference/query_commands"
             ],
-            "icon": "computer-mouse"
+            "icon": "file-lines"
           }, 
           {
             "group": "Use-Cases",
