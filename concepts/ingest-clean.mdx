@@ -52,17 +52,17 @@ DataLinks combines ingestion, cleaning, and validation through so that every dat
 
 The ingestion process begins by defining where data will live. You use the **Create new dataset** endpoint
 
-([POST Create new dataset](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ingest/create-new-dataset))
+([POST Create new dataset](/api-reference/ingest/create-new-dataset))
 
 to register a dataset within a namespace. This step establishes ownership, visibility, and a consistent place for data to be ingested.
 
 You can review existing datasets or namespaces using:
 
-- [GET Fetch datasets](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/datasets/fetch-datasets)
-- [GET Fetch datasets in namespace](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/datasets/fetch-datasets-in-namespace?utm_source=chatgpt.com)
-- [GET List all datasets](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/schema/list-all-datasets)
-- [GET List user namespaces](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/schema/list-user-namespaces)
-- [GET List datasets within namespace](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/schema/list-datasets-within-namespace)
+- [GET Fetch datasets](/api-reference/datasets/fetch-datasets)
+- [GET Fetch datasets in namespace](/api-reference/datasets/fetch-datasets-in-namespace?utm_source=chatgpt.com)
+- [GET List all datasets](/api-reference/schema/list-all-datasets)
+- [GET List user namespaces](/api-reference/schema/list-user-namespaces)
+- [GET List datasets within namespace](/api-reference/schema/list-datasets-within-namespace)
 
 These endpoints ensure teams know exactly where each dataset lives before ingestion begins.
 
@@ -70,7 +70,7 @@ These endpoints ensure teams know exactly where each dataset lives before ingest
 
 Before uploading large or complex files, you can use the
 
-[POST Preview](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ingest/preview)
+[POST Preview](/api-reference/ingest/preview)
 
 endpoint to inspect a sample. This confirms that fields, headers, and formats look correct before the full load.
 
@@ -80,7 +80,7 @@ If data requires cleaning instructions, you can add prompts or definitions at th
 
 Once the dataset and preview look correct, use the
 
-[POST Ingest data](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ingest/ingest-data)
+[POST Ingest data](/api-reference/ingest/ingest-data)
 
 endpoint to bring data into the platform.
 
@@ -93,9 +93,9 @@ During ingestion, DataLinks automatically:
 
 For larger files, the multipart upload APIs allow you to manage ingestion safely:
 
-- [POST Prepare multipart upload](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/multipart-upload/prepare-multipart-upload)
-- [POST Finish multipart upload](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/multipart-upload/finish-multipart-upload)
-- [POST Abort multipart upload](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/multipart-upload/abort-multipart-upload)
+- [POST Prepare multipart upload](/api-reference/multipart-upload/prepare-multipart-upload)
+- [POST Finish multipart upload](/api-reference/multipart-upload/finish-multipart-upload)
+- [POST Abort multipart upload](/api-reference/multipart-upload/abort-multipart-upload)
 
 Together, these endpoints ensure reliable ingestion even for large or incremental data loads.
 
@@ -103,25 +103,25 @@ Together, these endpoints ensure reliable ingestion even for large or incrementa
 
 Once data is ingested, it can be inspected and maintained through several dataset-level APIs:
 
-- [GET Get dataset information](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/get-dataset-information)
+- [GET Get dataset information](/api-reference/dataset/get-dataset-information)
 
   Retrieves full metadata, including owner, namespace, and visibility.
-- [POST Rename a dataset](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/rename-a-dataset)
+- [POST Rename a dataset](/api-reference/dataset/rename-a-dataset)
 
   Updates dataset names without recreating them.
-- [PUT Update infer definition](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/update-infer-definition)
+- [PUT Update infer definition](/api-reference/dataset/update-infer-definition)
 
   Refines schema definitions and field interpretations based on new data.
-- [PUT Update dataset sort order](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/update-dataset-sort-order)
+- [PUT Update dataset sort order](/api-reference/dataset/update-dataset-sort-order)
 
   Adjusts how data is displayed or accessed in structured views.
 
 If cleaning requires a full reset, two endpoints handle dataset clearing or deletion:
 
-- [POST Clear all data for a dataset](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/clear-all-data-for-a-dataset)
+- [POST Clear all data for a dataset](/api-reference/dataset/clear-all-data-for-a-dataset)
 
   Empties a dataset while keeping its metadata.
-- [DEL Delete all data and metadata for a dataset (balefire)](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/delete-all-data-and-metadata-for-a-dataset-balefire)
+- [DEL Delete all data and metadata for a dataset (balefire)](/api-reference/dataset/delete-all-data-and-metadata-for-a-dataset-balefire)
 
   Completely removes a dataset and its associated records.
 
@@ -129,10 +129,10 @@ If cleaning requires a full reset, two endpoints handle dataset clearing or dele
 
 After ingestion, data can be validated or enriched through additional API actions.
 
-- [POST Query data](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/query/query-data)
+- [POST Query data](/api-reference/query/query-data)
 
   Allows teams to verify field integrity or check for duplicates and missing values.
-- [POST Run AutoRAG agent over all data](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/autorag/run-autorag-agent-over-all-data)
+- [POST Run AutoRAG agent over all data](/api-reference/autorag/run-autorag-agent-over-all-data)
 
   Uses the AutoRAG agent to answer a question about any data that the user can access.
 
@@ -142,12 +142,12 @@ These steps ensure that datasets remain clean and meaningful after ingestion.
 
 While link creation and ontology management are covered in later articles, ingestion depends on their foundations. For reference, related endpoints include:
 
-- [GET Load links](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/links/load-links)
-- [POST Rebuild links](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/links/rebuild-links)
-- [POST Preview links](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/links/preview-links)
-- [POST Add a new link](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/links/add-a-new-link)
-- [GET Get ontology](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ontology/get-ontology-)
-- [POST Post ontology](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ontology/post-ontology-)
+- [GET Load links](/api-reference/links/load-links)
+- [POST Rebuild links](/api-reference/links/rebuild-links)
+- [POST Preview links](/api-reference/links/preview-links)
+- [POST Add a new link](/api-reference/links/add-a-new-link)
+- [GET Get ontology](/api-reference/ontology/get-ontology-)
+- [POST Post ontology](/api-reference/ontology/post-ontology-)
 
 These interfaces are how ingested and cleaned data later become connected and semantically rich.
 
@@ -155,9 +155,9 @@ These interfaces are how ingested and cleaned data later become connected and se
 
 All API operations use token-based authentication. Tokens are managed through:
 
-- [GET Get usertokens](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/user/get-usertokens)
-- [POST Post usertoken](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/user/post-usertoken)
-- [DEL Delete usertoken](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/user/delete-usertoken)
+- [GET Get usertokens](/api-reference/user/get-usertokens)
+- [POST Post usertoken](/api-reference/user/post-usertoken)
+- [DEL Delete usertoken](/api-reference/user/delete-usertoken)
 
 These endpoints allow secure access while keeping control in the hands of dataset owners.
 
