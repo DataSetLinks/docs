@@ -13,7 +13,9 @@
       {
         "tab": "Docs",
         "icon": "file-lines",
-        "href": "index",
+        "pages": [
+            "index"
+          ],
         "groups": [
           {
             "group": "Get Started",
