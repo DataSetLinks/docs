@@ -2,3 +2,90 @@
 title: "Datasets and Namespaces"
 sidebarTitle: "Datasets and Namespaces"
 ---
+
+In DataLinks, all information lives within a simple and flexible structure built around **namespaces** and **datasets**. Together, they organize your data, define ownership, and make it easier to manage access and relationships across the platform.
+
+Understanding how namespaces and datasets fit together is the first step in working effectively with DataLinks, whether you use the web platform, the API, or the SDK.
+
+## What a namespace is
+
+A **namespace** is a logical container that **groups datasets** under a shared context. It defines _who_ the data belongs to and _where_ it lives inside your workspace.
+
+You can think of a namespace as the digital equivalent of a project or folder. Each user can have multiple namespaces. Within them, datasets can be organized by department, use case, or business function.
+
+Namespaces are also used to manage access and visibility. A dataset in a private namespace is visible only to its owner or designated users, while a dataset in a public namespace can be viewed and connected to by anyone on the DataLinks platform.
+
+Namespaces can be listed and reviewed using the API:
+
+- [GET List user namespaces](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/schema/list-user-namespaces)
+- [GET List datasets within namespace](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/schema/list-datasets-within-namespace)
+
+## What a dataset is
+
+A **dataset** is a structured collection of data stored within a namespace. It can contain information that was ingested from a file, a database export, an API feed, or even unstructured text that has been cleaned and structured by the DataLinks Magic Layer.
+
+Every dataset has:
+
+- A dataset **name** (unique within its namespace)
+- A **namespace** that the dataset sits in
+- A **visibility level** (private or public)
+
+Datasets are the foundation of all downstream actions in DataLinks. They feed the linking process that connects related information and they serve as the building blocks for AI-driven queries.
+
+When using the API, you can view and manage datasets using:
+
+- [GET Fetch datasets](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/datasets/fetch-datasets)
+- [GET Fetch datasets in namespace](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/datasets/fetch-datasets-in-namespace?utm_source=chatgpt.com)
+- [GET Get dataset information](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/get-dataset-information)
+
+## How namespaces and datasets work together
+
+Namespaces organize datasets, and datasets give structure to the data itself.
+
+When you create a dataset, you must specify which namespace it belongs to. This ensures that ownership, permissions, and context are always clear. A single namespace might contain several datasets, for example, `finance_revenue`, `finance_expenses`, and `finance_forecasts`.
+
+Namespaces prevent naming conflicts between teams while allowing easy sharing across a shared environment. They also make it possible to apply consistent access controls and data governance rules.
+
+## Creating namespaces and datasets
+
+You can create and manage both namespaces and datasets through the web platform or through the API (and SDK).
+
+### Using the web platform
+
+The DataLinks web platform provides a visual interface for creating namespaces and datasets. From the dashboard, you can:
+
+- Create a new namespace and set its visibility
+- Add datasets within that namespace
+- Upload data files directly or start ingestion through the interface
+
+This method is ideal for quick setup or when you want to explore data interactively.
+
+### Using the API or SDK
+
+For automated workflows or large-scale operations, the API (and SDK) is the preferred option. The key endpoints include:
+
+- [POST Create new dataset](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ingest/create-new-dataset)
+- [POST Ingest data](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ingest/ingest-data)
+- [POST Preview](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/ingest/preview)
+- [POST Rename a dataset](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/rename-a-dataset)
+- [PUT Update infer definition](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/update-infer-definition)
+
+When you create a dataset through the API, you specify the target namespace in the request. Once the dataset exists, you can ingest data directly into it, preview results, or adjust its structure programmatically.
+
+The SDK provides helper methods to simplify these steps, allowing developers to script ingestion and cleaning using Python without manually handling requests.
+
+## Managing and maintaining your structure
+
+Over time, you may need to adjust your namespace and dataset configuration. The following endpoints support maintenance and cleanup:
+
+- [PUT Update dataset sort order](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/update-dataset-sort-order)
+- [POST Clear all data for a dataset](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/clear-all-data-for-a-dataset)
+- [DEL Delete all data and metadata for a dataset (balefire)](https://datalinks-d7c3bacc-navigation-reconfigure.mintlify.app/api-reference/dataset/delete-all-data-and-metadata-for-a-dataset-balefire)
+
+These ensure your workspace stays organized and that older or redundant data can be removed safely without affecting other namespaces.
+
+## Why namespaces and datasets matter
+
+Namespaces and datasets bring clarity to complex data environments. They provide consistent organization, clear ownership, and a path for controlled sharing.
+
+Whether you use the web platform for simplicity or the API for scale, namespaces and datasets are the foundation for everything that happens in DataLinks, from ingestion to interconnection to inquiry.
