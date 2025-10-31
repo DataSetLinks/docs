@@ -13,6 +13,7 @@
       {
         "tab": "Docs",
         "icon": "file-lines",
+        "href": "index",
         "groups": [
           {
             "group": "Get Started",
