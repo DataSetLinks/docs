@@ -14,7 +14,7 @@
         "tab": "Docs",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Get Started",
             "pages": [
               "get-started/intro-datalinks",
               "Creating_a_dataset",
