@@ -9,7 +9,7 @@ sidebarTitle: "QuickStart Web Guide"
 This guide shows you how to use the DataLinks web platform to find shared opportunities across two North American data sources. You will learn by doing: uploading files, connecting records, and exploring the results directly in the platform.
 
 <Info>
-  This guide focuses on the web platform only. If you'd like to learn about using the DataLinks API and SDK kit, you can try our [API/SDK QuickStart guide](/get-started/quickstart-api) instead. 
+  This guide focuses on the web platform only. If you'd like to learn about using the DataLinks API and SDK kit, you can try our [API/SDK QuickStart guide](/get-started/quickstart-api) instead.
 </Info>
 
 ## Scenario
@@ -33,7 +33,9 @@ This exercise helps you practice the full workflow in DataLinks: importing data,
 
 To follow along on your machine and complete the steps in this guide, make sure you have the following ready:
 
-2. Access to a DataLinks account.
+1. Access to a DataLinks account.
+
+
 1. The example customer list and society list downloaded.
 
    <Info>
@@ -74,70 +76,11 @@ Now that you've created an empty dataset, you need to populate it with data. To 
   Result: You've now populated your `sonia_data` dataset with data.
 </Check>
 
-## Part 3: Create your DataLinks API token.
+## Part 3: Create a second dataset and upload the unstructured data
 
-1. Log in to the DataLinks platform.
-2. Click **Settings** in the left navigation menu.
-3. Click **\+ Add a new** token.
-4. Enter the name `Name?` and set an expiration date for the token (for example, one month).
-5. Click **\+ Create token**.
-6. Copy and save your token. (You’ll need in later steps.)
-7. Click **I’ve copied the token** to close.
+Now that you have your customer list uploaded, you need to upload 
 
-## Part 4: Use a script to upload and transform unstructured data
-
-For the structured data you uploaded through the DataLinks web platform, you first created a dataset (Part 1) and then uploaded data into it (Part 2). For the unstructured data in this section, you’ll create and populate the dataset at the same time using a Python script.
-
-The unstructured data file you’ll use is a simple text file created by copying and pasting the list of society members directly from the [Deutsche Gesellschaft für Orale Implantologie (DGOI) website](https://www.dgoi.info/die-dgoi/mitglieder). This is the `20251009_dgoi_full.txt`file.
-
-To upload and transform your data, follow the steps below:
-
-1. Open the `infer_tabular_SONIA.py`file in your code editor.
-1. Add the following information to the file:
-   - On line 25, paste in your API token.
-   - On line 27, enter the namespace you're using (`Demo_?`)
-   - On line 28, enter the name for the new dataset you're creating (`Society?`)
-   - On line 34, update the location of the `20251009_dgoi_full.txt` if you've moved it out of the `what-name` folder your running your script from.
-   - On line 49, paste in the following prompt:
-
-     ```
-     This is the data contained within a html from the society's DGOI page (https://www.dgoi.info/die-dgoi/mitglieder/), where the names of members (dental practices), the addresses, the phone numbers, and the websites, are included. The file contains thousands of entries. 
-     # **Instructions**
-     * Extract **all data** provided. 
-     * **Do not skip any entry.**
-     
-     Whenever possible abide to the follwing schema:
-     
-     MemberName = this is the set of names that are used to define the member entity, which may be a person, or may be an entity like and institution, business, etc. Do the import without academic titles such as "Dr." for Doctor, "Prof." for professor and similar, and without personal honorifics like "Ms.", "Mr.", "Frau", "Herr", and extensions of these like "Miss".
-     
-     AcademicTitle = this is a Academic honorific (e.g. "Dr." for Doctor, "Prof." for professor) that can be extracted before the name.
-     
-     Address = this is the street address belonging to the member name.
-     
-     city = this is the name of the city to which the address belongs to.
-     
-     Country = this is the name of the country to which the address belongs to. Normalize all names to English.
-     
-     Geo = these are the geographical coordinates that you need to calculate from the Address. These include latitude and longitude.
-     
-     Phone = this is the phone number associated with the member name. If it does not contain the country code (+XX) add the respective country code based on country of member. Pay attention to which country we are dealing with and substitute the leading 0 by the country code when appropriate.
-     
-     WebSite = this is the web address associated with the member name.
-     ```
-3. Verify everything looks correct, then save your file.
-4. Run your python program. (In Visual Studio Code, press the **play icon** in the top-right corner of your screen.)
-5. Wait for the data to finish uploading. This may take 10-20 minutes.
-
-## Part 5: View and save data connections
-
-1. Log in to the DataLinks platform.
-1. Click the **sonia_data** dataset.
-1. Click the **Connections** tab.
-1. In the Active Links section in the bottom-right of your screen, click **Select all**, then **Save connections**.
-1. Click the **demo_sonia/society** connection.
-1. Under Suggested links, select the relevant links (`data_full_name`, `society_member_name`), then click **Save connections**.
-
-## Part 6: Query your data to create a list of sales prospects
+## Part 4: Query your data to create a list of sales prospects
 
 1. In the **sonia_data** dataset, Click the **Preview & Query** tab.
 1. In the Query your data section on the right side of your screen, enter the following prompt: `List members that can be found in both the sonia_data and Society datasets.`
