@@ -3,3 +3,51 @@ title: "How To Query Your Data"
 sidebarTitle: "Query Your Data"
 ---
 
+Querying in DataLinks lets you turn cleaned, connected datasets into clear answers. You can query through the API or SDK for automation at scale, or use the web platform for an interactive experience.
+
+<Info>
+  If you are new to the concepts behind querying in DataLinks, start with: [Ingest](/concepts/ingest-clean), [Interconnect](/concepts/interconnection), and [Inquire](/concepts/query-insights).
+</Info>
+
+## Before you begin
+
+- You have at least one dataset created and ingested with data.
+- You know which namespace your dataset belongs to.
+- Optional but helpful: you understand that active links can allow queries to traverse to related datasets.
+
+## Query with the API or SDK
+
+Use this route for production workflows, scheduled jobs, or large result sets.
+
+- **API endpoint:** **POST Query data**
+
+  See: `Query data` in the API reference.
+- **What it does:** accepts a structured request, runs the query across your dataset or namespace, and returns JSON.
+- **Using the SDK:** the SDK wraps the same API and is the simplest way to integrate natural language to query translation inside scripts or services.
+- **Why choose this:** best for automation, reproducibility, and integrating results into dashboards or applications.
+
+## Query in the Web Platform
+
+Use this route for fast exploration and team demos.
+
+1. Log in to your DataLinks account.
+2. Open the dataset you want to explore.
+3. Go to the **Preview & Query** tab.
+4. On the right panel, in **Query your data**, choose one of two modes:
+   - **Natural language:** type a plain English question. DataLinks uses an LLM to translate your request into a structured query, then runs it against real data for grounded results.
+   - **Query language:** click the **Query** tab to write or paste a structured query. The syntax is designed to be readable and close to English.
+
+     Reference: **Query Language Command List** at `https://docs.datalinks.com/Command_List`.
+5. Run the query and review the results in the table view.
+
+### Tips
+
+- If results look wider than expected, check if your dataset has active links that allow access to related datasets.
+- To refine results, add filters or select specific fields in the Query tab.
+- If you have applied a previous query, clear or remove it before running a new one to avoid confusion.
+
+## How DataLinks keeps answers grounded
+
+- Natural language is translated to a structured query which is executed on your actual data.
+- Results are always subsets of your stored datasets.
+- This approach reduces hallucination risk because the model does not invent rows or fields.
