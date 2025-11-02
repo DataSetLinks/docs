@@ -18,8 +18,8 @@ You're a sales manager for a dental products company in North America. Your goal
 
 You'll work with two datasets:
 
-- A JSON file that contains your current customers, including names, locations, and contact details — customer_list.json
-- A dental society member list that includes dentists and clinic owners across the United States and Canada — society_list_api.txt
+- A JSON file that contains your current customers, including names, locations, and contact details 
+- A dental society member list that includes dentists and clinic owners across the United States and Canada
 
 Using the DataLinks web platform, you'll ingest both datasets, manage how they connect, and query the linked data to find customers who are also society members or have professional ties to them.
 
@@ -39,7 +39,7 @@ To follow along on your machine and complete the steps in this guide, make sure 
   Don't have an account? Contact [support@datalinks.com](support@datalinks.com) to request one.
 </Info>
 
-2. Downloaded copies of the example customer list and society list.
+2. Download a copy of [quickstart_api.zip](https://docs.cdn.datalinks.com/docs/quickstart_api.zip) to your local machine and extract it.
 3. Python installed on your local machine and the package-manager pip available. To download Python, see [the official website](https://www.python.org/downloads/).
 4. The DataLinks SDK installed on your machine.
 
@@ -70,7 +70,7 @@ To follow along on your machine and complete the steps in this guide, make sure 
 Now that you've created an empty dataset, you need to populate it with data. To do so, follow these steps:
 
 1. Click anywhere in the **Click to upload** area to open the file explorer.
-2. Click the `customer_list.json` file you downloaded, then click **Open**.
+2. Select **customer_list.json **from the `quickstart_api.zip` folder you downloaded, then click **Open**.
 3. Wait while DataLinks ingests your data.
 4. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
 5. Scroll down to the bottom of the page, then click **Upload data**.
@@ -94,7 +94,7 @@ Now that you've created an empty dataset, you need to populate it with data. To 
 
 For the structured data you uploaded through the DataLinks web platform, you first created a dataset (Part 1) and then uploaded data into it (Part 2). For the unstructured data in this section, you’ll create and populate the dataset at the same time using a Python script.
 
-The unstructured data file you’ll use is a simple text file created by copying and pasting a list of dental society members into a text file.  This is the  `society_members_api.txt`file you downloaded in the Prerequisites section.
+The unstructured data file you’ll use is a simple text file created by copying and pasting a list of dental society members into a text file. This is the  `society_members_api.txt`file you downloaded `quickstart_api.zip` folder you downlaoded in the Prerequisites section.
 
 To upload and transform your data, follow the steps below:
 
@@ -103,7 +103,7 @@ To upload and transform your data, follow the steps below:
    - On line 25, paste in your API token.
    - On line 27, enter the namespace you're using (`dental_prospects`)
    - On line 28, enter the name for the new dataset you're creating (`society_members`)
-   - On line 34, update the location of the `society_members_api.txt` based on where you've placed the file.
+   - On line 34, if needed, update the location of the `society_members_api.txt` based on where you've placed the file.
    - On line 49, paste in the following prompt:
 
      ```
