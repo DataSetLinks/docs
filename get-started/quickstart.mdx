@@ -18,8 +18,8 @@ You're a sales manager for a dental products company in North America. Your goal
 
 You'll work with two datasets:
 
-- A JSON file that contains your current customers, including names, locations, and contact details
-- A dental society member list that includes dentists and clinic owners across the United States and Canada
+- A JSON file that contains your current customers, including names, locations, and contact details — customer_list.json
+- A dental society member list that includes dentists and clinic owners across the United States and Canada — society_list_web.txt
 
 Using the DataLinks web platform, you'll ingest both datasets, view how they connect, and query the linked data to find customers who are also society members or have professional ties to them.
 
@@ -35,12 +35,11 @@ To follow along on your machine and complete the steps in this guide, make sure 
 
 1. Access to a DataLinks account.
 
+<Info>
+  Don't have an account? Contact [support@datalinks.com](support@datalinks.com) to request one.
+</Info>
 
-1. The example customer list and society list downloaded.
-
-   <Info>
-     Don't have an account? Contact [who](#) to request one.
-   </Info>
+2. Downloaded copies of the example customer list and society list.
 
 With these things in place, you're ready to get started!
 
@@ -58,7 +57,7 @@ With these things in place, you're ready to get started!
 6. Click **Create dataset and upload data**.
 
 <Check>
-  Result: You've created an empty `sonia_data` dataset inside the `Demo_sonia` namespace.
+  Result: You've created an empty `customer_list` dataset inside the `dental_prospects` namespace.
 </Check>
 
 ## Part 2: Upload the structured customer list
@@ -66,21 +65,39 @@ With these things in place, you're ready to get started!
 Now that you've created an empty dataset, you need to populate it with data. To do so, follow these steps:
 
 1. Click anywhere in the **Click to upload** area to open the file explorer.
-2. Click the `Demo_synt.json` file you downloaded, then click **Open**.
+2. Click the `customer_list.json` file you downloaded, then click **Open**.
 3. Wait while DataLinks ingests your data.
 4. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
 5. Scroll down to the bottom of the page, then click **Upload data**.
 6. Click **Append** to confirm.
 
 <Check>
-  Result: You've now populated your `sonia_data` dataset with data.
+  Result: You've now populated your `customer_list` dataset with data.
 </Check>
 
-## Part 3: Create a second dataset and upload the unstructured data
+## Part 3: Create a second dataset for the society members list
 
-Now that you have your customer list uploaded, you need to upload 
+Now that you have your customer list uploaded, you need to upload the list of dental society members you want to compare it against. 
 
-## Part 4: Query your data to create a list of sales prospects
+1. Return to Home. 
+2. Click **Create New Dataset**.
+3. Enter the following dataset name: `society_members`.
+4. Enter namespace `dental_prospects`.
+5. Ensure the Dataset visibility is set to **Private** using the toggle.
+6. Click **Create dataset and upload data**.
+
+## Part 4: Upload the unstructured society members list
+
+Now that you've created your dataset for the society member list, you need to populate it with data. To do so, follow these steps:
+
+1. Click anywhere in the **Click to upload** area to open the file explorer.
+2. Click the `society_members_web.txt` file you downloaded, then click **Open**.
+3. Wait while DataLinks ingests your data.
+4. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
+5. Scroll down to the bottom of the page, then click **Upload data**.
+6. Click **Append** to confirm.
+
+## Part 5: Manage connections 
 
 1. In the **sonia_data** dataset, Click the **Preview & Query** tab.
 1. In the Query your data section on the right side of your screen, enter the following prompt: `List members that can be found in both the sonia_data and Society datasets.`
