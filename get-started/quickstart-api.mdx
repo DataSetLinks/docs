@@ -41,7 +41,7 @@ To follow along on your machine and complete the steps in this guide, make sure 
 
 2. Downloaded copies of the example customer list and society list.
 3. Python installed on your local machine and the package-manager pip available. To download Python, see [the official website](https://www.python.org/downloads/).
-4. The DataLinks SDK installed on your machine. 
+4. The DataLinks SDK installed on your machine.
 
    <Note>
      For installation instructions, see the official [DataLinks SDK Installation Steps](https://www.notion.so/pythonsdk#installation).
@@ -136,20 +136,13 @@ To upload and transform your data, follow the steps below:
 
 ## Part 5: Manage connections
 
-1. Log in to the DataLinks platform.
-1. Click the **customer_list** dataset.
+1. Open the DataLinks web platform again and return to the **Home** page.
+1. Click the **customer_list** dataset in the `dental_prospects` namespace.
 1. Click the **Connections** tab.
-1. In the Active Links section in the bottom-right of your screen, click **Select all**, then **Save connections**.
-1. Click the **demo_sonia/society** connection.
-1. Under Suggested links, select the relevant links (`data_full_name`, `society_member_name`), then click **Save connections**.
-
-## Part 6: Query your data to create a list of sales prospects
-
-1. In the **sonia_data** dataset, Click the **Preview & Query** tab.
-1. In the Query your data section on the right side of your screen, enter the following prompt: `List members that can be found in both the sonia_data and Society datasets.`
-1. Click the **send icon**.
-1. Review the table that is created showing all of your customers that are also belong to the DGOI.
-1. Click **Export CSV** in the top-right of your screen to download a CSV copy of the data.
+1. Click **Select all** under active Active Links. This will select all active links and ready them for removal.
+1. Click **Save connections**. This will remove all active links.
+1. Click the row containing `customer_list.full_name` and `society_members.membername`.
+1. Click **Add connections**.
 
 ## Next steps
 
