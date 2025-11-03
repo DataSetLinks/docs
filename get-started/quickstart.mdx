@@ -52,12 +52,12 @@ With these things in place, you're ready to get started!
    <Info>
      Use underscores, not spaces, when naming your datasets.
    </Info>
-4. Enter namespace `dental_prospects`.
+4. Enter namespace `dental_prospects_web`.
 5. Ensure the Dataset visibility is set to **Private** using the toggle.
 6. Click **Create dataset and upload data**.
 
 <Check>
-  Result: You've created an empty `customer_list` dataset inside the `dental_prospects` namespace.
+  Result: You've created an empty `customer_list` dataset inside the `dental_prospects_web` namespace.
 </Check>
 
 ## Part 2: Upload the structured customer list
@@ -82,7 +82,7 @@ Now that you have your customer list uploaded, you need to upload the list of de
 1. Return to Home.
 2. Click **Create New Dataset**.
 3. Enter the following dataset name: `society_members`.
-4. Enter namespace `dental_prospects`.
+4. Enter namespace `dental_prospects_web`.
 5. Ensure the Dataset visibility is set to **Private** using the toggle.
 6. Click **Create dataset and upload data**.
 
@@ -92,8 +92,12 @@ Now that you've created your dataset for the society member list, you need to po
 
 1. Click anywhere in the **Click to upload** area to open the file explorer.
 2. Select the [society_members_web.txt](https://docs.cdn.datalinks.com/docs/quickstart-web/society_list_web.txt) file you downloaded, then click **Open**.
-3. In the **Helper Prompt** field, past the following: `This is the data from a dental societies where the names of members (dental practices), the addresses, the phone numbers, and the websites, are included. The file contains several entries. `
-4. In the **Field Definitions** field, past the following:  
+3. In the **Helper Prompt** field, past the following:  
+
+   ```
+   This is the data from a dental societies where the names of members (dental practices), the addresses, the phone numbers, and the websites, are included. The file contains several entries.
+   ```
+4. In the **Field Definitions** field, past the following:
 
    ```
    MemberName = this is the set of names that are used to define the member entity, which may be a person, or may be an entity like and institution, business, etc. Do the import without academic titles such as "Dr." for Doctor, "Prof." for professor and similar, and without personal honorifics like "Ms.", "Mr.", "Frau", "Herr", and extensions of these like "Miss".
