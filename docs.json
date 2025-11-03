@@ -136,8 +136,20 @@
   },
   "redirects": [
     {
-      "source": "/welcome",
+      "source": "/Welcome",
       "destination": "/index"
+    },
+    {
+      "source": "/Uploading_data_into_a_dataset",
+      "destination": "/api-reference/ingest/ingest-data"
+    },
+    {
+      "source": "/Creating_a_dataset",
+      "destination": "/api-reference/ingest/create-new-dataset"
+    },
+    {
+      "source": "/Querying_data",
+      "destination": "/api-reference/query/query-data"
     }
   ]
 }
