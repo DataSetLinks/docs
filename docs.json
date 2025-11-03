@@ -11,10 +11,10 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Getting Started",
+        "tab": "Docs",
         "groups": [
           {
-            "group": "DataLinks",
+            "group": "Getting Started",
             "pages": [
               "Welcome",
               "Creating_a_dataset",
@@ -22,8 +22,7 @@
               "Querying_data",
               "ai_inference",
               "Command_List"
-            ],
-            "icon": "file-lines"
+            ]
           },
           {
             "group": "Use-cases",
