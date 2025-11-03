@@ -66,20 +66,11 @@
 {
   "tab": "API Reference",
   "icon": "code",
-  "groups": [
-    {
-      "group": "Overview",
-      "pages": ["api-reference/index"]
-    },
-    {
-      "group": "Endpoints",
-      "expanded": true,
-      "openapi": {
-        "source": "api-reference/openapi.yml",
-        "directory": "api-reference"
-      }
-    }
-  ]
+  "pages": ["api-reference/index"],
+  "openapi": {
+    "source": "api-reference/openapi.yml",
+    "directory": "api-reference"
+  }
 },
       {
         "tab": "Python SDK",
