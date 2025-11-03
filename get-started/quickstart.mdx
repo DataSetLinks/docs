@@ -19,7 +19,7 @@ You're a sales manager for a dental products company in North America. Your goal
 You'll work with two datasets:
 
 - A JSON file that contains your current customers, including names, locations, and contact details
-- A dental society member list that includes dentists and clinic owners across the United States and Canada 
+- A dental society member list that includes dentists and clinic owners across the United States and Canada
 
 Using the DataLinks web platform, you'll ingest both datasets, manage how they connect, and query the linked data to find customers who are also society members or have professional ties to them.
 
@@ -92,6 +92,24 @@ Now that you've created your dataset for the society member list, you need to po
 
 1. Click anywhere in the **Click to upload** area to open the file explorer.
 2. Select the [society_members_web.txt](https://docs.cdn.datalinks.com/docs/quickstart-web/society_list_web.txt) file you downloaded, then click **Open**.
+3. In the **Helper Prompt** field, past the following: `This is the data from a dental societies where the names of members (dental practices), the addresses, the phone numbers, and the websites, are included. The file contains several entries. `
+4. In the **Field Definitions** field, past the following:  
+
+   ```
+   MemberName = this is the set of names that are used to define the member entity, which may be a person, or may be an entity like and institution, business, etc. Do the import without academic titles such as "Dr." for Doctor, "Prof." for professor and similar, and without personal honorifics like "Ms.", "Mr.", "Frau", "Herr", and extensions of these like "Miss".
+   
+   Address = this is the street address belonging to the member name.
+   
+   city = this is the name of the city to which the address belongs to.
+   
+   Country = this is the name of the country to which the address belongs to. Normalize all names to English.
+   
+   Geo = these are the geographical coordinates that you need to calculate from the Address. These include latitude and longitude. The format should be "XX,XX", meaning "latitude,longitude".
+   
+   Phone = this is the phone number associated with the member name. If it does not contain the country code (+XX) add the respective country code based on country of member. Pay attention to which country we are dealing with and substitute the leading 0 by the country code when appropriate.
+   
+   WebSite = this is the web address associated with the member name.
+   ```
 3. Wait while DataLinks ingests your data.
 4. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
 5. Scroll down to the bottom of the page, then click **Upload data**.
