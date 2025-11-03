@@ -1,0 +1,34 @@
+---
+title: "API Reference"
+---
+
+Welcome to the DataLinks API. These endpoints let you bring in data, connect it intelligently, and ask questions that yield grounded results. Use this index to jump to the right section and understand how the parts fit together.
+
+## How the API fits together
+
+- **Ingest**: create datasets and load data.
+- **Interconnect**: discover and manage links between datasets.
+- **Inquire**: query clean, connected data for answers.
+
+## Typical end-to-end flow
+
+1. **Create a dataset**\
+   Use Create new dataset. Supplying a new namespace creates it implicitly.
+2. **Ingest data**\
+   Use Ingest data or the multipart flow for large files. Use Preview to check parsing before committing.
+3. **Review links**\
+   Use Load links and Preview links. Promote useful suggestions to active links with Add a new link or from the app UI. Rebuild links when data changes.
+4. **Query**\
+   Use Query data to retrieve grounded results across connected datasets.
+5. **Automate**\
+   Use AutoRAG for agent workflows when you need plan-and-retrieve behavior at the namespace level.
+
+## Notes and best practices
+
+- **Namespaces**: a namespace appears when you create the first dataset that references it.
+- **Large files**: prefer the multipart upload trio to improve reliability.
+- **Performance**: Rebuild links after large ingests so suggestions reflect the latest data.
+
+<Tip>
+  If you're looking for background to get started, see the explanatory articles for [Ingest](/concepts/ingest-clean), [Interconnect](/concepts/interconnection), and [Inquire](/concepts/query-insights), then return here to try automating those steps using the API.
+</Tip>
