@@ -14,14 +14,13 @@
         "tab": "Docs",
         "icon": "file-lines",
         "pages": [
-            "index"
-          ],
+          "index"
+        ],
         "groups": [
           {
             "group": "Get Started",
             "pages": [
               "get-started/intro-datalinks",
-              "get-started/interface",
               "get-started/quickstart",
               "get-started/quickstart-api"
             ],
@@ -54,7 +53,7 @@
               "reference/query_commands"
             ],
             "icon": "file-lines"
-          }, 
+          },
           {
             "group": "Use-Cases",
             "icon": "folder-open",
