@@ -11,52 +11,22 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Docs",
-        "icon": "file-lines",
-        "pages": [
-          "index"
-        ],
+        "tab": "Getting Started",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "DataLinks",
             "pages": [
-              "get-started/intro-datalinks",
-              "get-started/quickstart",
-              "get-started/quickstart-api"
-            ],
-            "icon": "rocket"
-          },
-          {
-            "group": "Concepts",
-            "pages": [
-              "concepts/datasets-namespaces",
-              "concepts/ingest-clean",
-              "concepts/interconnection",
-              "concepts/query-insights"
-            ],
-            "icon": "brain"
-          },
-          {
-            "group": "How-To Guides",
-            "pages": [
-              "how-to/create-dataset",
-              "how-to/create-namespace",
-              "how-to/manage-connections",
-              "how-to/query-data"
-            ],
-            "icon": "computer-mouse"
-          },
-          {
-            "group": "Reference",
-            "pages": [
-              "reference/ai_inference",
-              "reference/query_commands"
+              "Welcome",
+              "Creating_a_dataset",
+              "Uploading_data_into_a_dataset",
+              "Querying_data",
+              "ai_inference",
+              "Command_List"
             ],
             "icon": "file-lines"
           },
           {
-            "group": "Use-Cases",
-            "icon": "folder-open",
+            "group": "Use-cases",
             "pages": [
               "use-cases/tariffs"
             ]
@@ -65,7 +35,6 @@
       },
       {
         "tab": "API Reference",
-        "icon": "code",
         "openapi": {
           "source": "api-reference/openapi.yml",
           "directory": "api-reference"
@@ -73,7 +42,7 @@
       },
       {
         "tab": "Python SDK",
-        "icon": "python",
+        "icon": "code",
         "groups": [
           {
             "group": "Getting Started",
@@ -127,7 +96,12 @@
     }
   },
   "contextual": {
-    "options": []
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ]
   },
   "integrations": {
     "gtm": {
