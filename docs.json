@@ -66,11 +66,14 @@
 {
   "tab": "API Reference",
   "icon": "code",
-  "pages": [
-    "api-reference/index"
-  ],
   "groups": [
     {
+      "group": "Overview",
+      "pages": ["api-reference/index"]
+    },
+    {
+      "group": "Endpoints",
+      "expanded": true,
       "openapi": {
         "source": "api-reference/openapi.yml",
         "directory": "api-reference"
