@@ -66,7 +66,7 @@ You can review existing datasets or namespaces using:
 
 These endpoints ensure teams know exactly where each dataset lives before ingestion begins.
 
-## Step 2. Preview your data
+### Step 2. Preview your data
 
 Before uploading large or complex files, you can use the
 
@@ -76,7 +76,7 @@ endpoint to inspect a sample. This confirms that fields, headers, and formats lo
 
 If data requires cleaning instructions, you can add prompts or definitions at this stage. For example, you might request that all dates be standardized or that field names follow a specific convention.
 
-## Step 3. Ingest and clean data
+### Step 3. Ingest and clean data
 
 Once the dataset and preview look correct, use the
 
@@ -91,7 +91,7 @@ During ingestion, DataLinks automatically:
 - Flags missing or mismatched values
 - Validates that data fits expected patterns
 
-## Step 4. Review and manage datasets
+### Step 4. Review and manage datasets
 
 Once data is ingested, it can be inspected and maintained through several dataset-level APIs:
 
@@ -111,15 +111,7 @@ If cleaning requires a full reset, two endpoints handle dataset clearing or dele
 
   Completely removes a dataset and its associated records.
 
-## Step 5. Validate and enrich
-
-After ingestion, data can be validated or enriched through additional API actions.
-
-- [POST Query data](/api-reference/query/query-data)
-
-  Allows teams to search across data.
-
-## Step 6. Maintain structure and relationships
+### Step 5. Maintain structure and relationships
 
 While link creation and ontology management are covered in later articles, ingestion depends on their foundations. For reference, related endpoints include:
 
@@ -132,7 +124,7 @@ While link creation and ontology management are covered in later articles, inges
 
 These interfaces are how ingested and cleaned data later become connected and semantically rich.
 
-## Step 7. Authentication and tokens
+### Step 6. Authentication and tokens
 
 All API operations use token-based authentication. Tokens are managed through:
 
