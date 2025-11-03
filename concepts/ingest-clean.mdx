@@ -1,0 +1,157 @@
+---
+title: "Data Ingestion and Cleaning"
+sidebarTitle: "Ingestion and Cleaning"
+---
+
+Organizations of all sizes are seeing their data grow faster than their ability to use it, with much of that data living in spreadsheets, databases, PDFs, emails, and countless other siloed sources. Yet when businesses try to apply it to AI or automation, the results disappoint. The reason is simple: the data exists, but it is messy, inconsistent, and disconnected.
+
+At DataLinks, ingestion and cleaning are not viewed as separate chores. They are seen as the first stages of intelligence. Together, they transform unstructured or disconnected information into structured, standardized data that can be understood by people and by AI systems.
+
+## Why traditional ingestion and cleaning fall short
+
+In most environments, ingestion simply means collecting data from one place and storing it in another. Cleaning is handled later, usually through manual scripts that remove errors, rename columns, or standardize formats. These steps are repetitive and lack an understanding of the data being ingested.
+
+Even after cleaning, the result can be technically correct but still inconsistent. A company name might appear in several different forms, or a date field might use mixed formats. When this happens, relationships between datasets are hidden, and insights are lost.
+
+Treating ingestion and cleaning as separate stages causes delay and duplication. Teams spend time fixing the same problems in slightly different ways, and valuable information remains disconnected.
+
+## Using the DataLinks web platform or the API
+
+DataLinks offers two ways to ingest and clean data: through the web platform or through the API (or SDK). Both use the same underlying infrastructure and produce identical results, but each suits a different kind of workflow.
+
+### The web platform
+
+The DataLinks web platform is the fastest way to start. It provides a guided experience for creating datasets, uploading files, and running ingestion directly from your browser. You can preview data, apply cleaning options via prompts, and view validation results in real time.
+
+This interface is ideal when:
+
+- You are testing new data sources or experimenting with formats
+- You want to see immediate visual feedback on how cleaning and extraction work
+- You are working with a limited number of files or moderate data volumes
+
+The platform automatically applies the same cleaning, validation, and normalization logic used by the API. It also records metadata so your results stay consistent if you later decide to automate ingestion.
+
+### The API and SDK
+
+For larger or recurring workloads, the DataLinks API (and SDK) is the best choice. The API provides endpoints for every step in the ingestion and cleaning process, from creating datasets and previewing files to ingesting, validating, and managing them at scale.
+
+This approach is best when:
+
+- You need to ingest large or frequent data uploads
+- You want to integrate DataLinks with an existing data pipeline or workflow
+- You prefer automation over manual uploads
+- You are handling high-volume or sensitive datasets where precision and repeatability matter
+
+The API supports multipart uploads and asynchronous processing for efficiency. The **DataLinks SDK** simplifies this even further, letting you build Python scripts that call the same endpoints with less setup.
+
+## How DataLinks improves ingestion and cleaning
+
+DataLinks combines ingestion, cleaning, and validation so that every dataset is structured correctly from the beginning. The process uses a simple sequence of API calls, all of which are available in the DataLinks API documentation.
+
+### Step 1. Create a dataset
+
+The ingestion process begins by defining where data will live. You use the **Create new dataset** endpoint ([POST Create new dataset](/api-reference/ingest/create-new-dataset)) to register a dataset within a namespace. This step establishes ownership, visibility, and a consistent place for data to be ingested.
+
+You can review existing datasets or namespaces using:
+
+- [GET Fetch datasets](/api-reference/datasets/fetch-datasets)
+- [GET Fetch datasets in namespace](/api-reference/datasets/fetch-datasets-in-namespace?utm_source=chatgpt.com)
+- [GET List all datasets](/api-reference/schema/list-all-datasets)
+- [GET List user namespaces](/api-reference/schema/list-user-namespaces)
+- [GET List datasets within namespace](/api-reference/schema/list-datasets-within-namespace)
+
+These endpoints ensure teams know exactly where each dataset lives before ingestion begins.
+
+### Step 2. Preview your data
+
+Before uploading large or complex files, you can use the
+
+[POST Preview](/api-reference/ingest/preview)
+
+endpoint to inspect a sample. This confirms that fields, headers, and formats look correct before the full load.
+
+If data requires cleaning instructions, you can add prompts or definitions at this stage. For example, you might request that all dates be standardized or that field names follow a specific convention.
+
+### Step 3. Ingest and clean data
+
+Once the dataset and preview look correct, use the
+
+[POST Ingest data](/api-reference/ingest/ingest-data)
+
+endpoint to bring data into the platform.
+
+During ingestion, DataLinks automatically:
+
+- Extracts structure from both structured and unstructured inputs
+- Applies normalization to align fields to the target schema
+- Flags missing or mismatched values
+- Validates that data fits expected patterns
+
+### Step 4. Review and manage datasets
+
+Once data is ingested, it can be inspected and maintained through several dataset-level APIs:
+
+- [GET Get dataset information](/api-reference/dataset/get-dataset-information)
+
+  Retrieves full metadata, including owner, namespace, and visibility.
+- [POST Rename a dataset](/api-reference/dataset/rename-a-dataset)
+
+  Updates dataset names without recreating them.
+
+If cleaning requires a full reset, two endpoints handle dataset clearing or deletion:
+
+- [POST Clear all data for a dataset](/api-reference/dataset/clear-all-data-for-a-dataset)
+
+  Empties a dataset while keeping its metadata.
+- [DEL Delete all data and metadata for a dataset (balefire)](/api-reference/dataset/delete-all-data-and-metadata-for-a-dataset-balefire)
+
+  Completely removes a dataset and its associated records.
+
+### Step 5. Maintain structure and relationships
+
+While link creation and ontology management are covered in later articles, ingestion depends on their foundations. For reference, related endpoints include:
+
+- [GET Load links](/api-reference/links/load-links)
+- [POST Rebuild links](/api-reference/links/rebuild-links)
+- [POST Preview links](/api-reference/links/preview-links)
+- [POST Add a new link](/api-reference/links/add-a-new-link)
+- [GET Get ontology](/api-reference/ontology/get-ontology-)
+- [POST Post ontology](/api-reference/ontology/post-ontology-)
+
+These interfaces are how ingested and cleaned data later become connected and semantically rich.
+
+### Step 6. Authentication and tokens
+
+All API operations use token-based authentication. Tokens are managed through:
+
+- [GET Get usertokens](/api-reference/user/get-usertokens)
+- [POST Post usertoken](/api-reference/user/post-usertoken)
+- [DEL Delete usertoken](/api-reference/user/delete-usertoken)
+
+These endpoints allow secure access while keeping control in the hands of dataset owners.
+
+## Why this matters
+
+AI systems and analytics tools depend on consistent data. If data arrives in different shapes, or if key fields vary from file to file, even the best models will produce uncertain results.
+
+By combining ingestion and cleaning, DataLinks ensures that data is immediately usable. Clean structure, standardized labels, and reliable formatting make it easier to connect information later and to build accurate insights.
+
+This process also reduces the time and technical skill needed to prepare data. Instead of spending weeks building scripts, teams can upload data, add simple cleaning instructions, and trust the output.
+
+## Example scenarios
+
+- **Financial data**: Normalize columns and clean date formats before analysis to ensure accuracy across multiple reports.
+- **Procurement data**: Ingest vendor lists from different departments, fix naming inconsistencies, and prepare them for future linking.
+- **Unstructured reports**: Convert raw text into structured rows, apply date formatting, and validate results automatically.
+
+Each of these cases shows how intelligent ingestion removes repetitive cleanup and gives teams data they can use immediately.
+
+## The foundation for what comes next
+
+Ingestion and cleaning form the first phase of the broader DataLinks model: **Ingest, Interconnect, Inquire.**
+
+- Ingest prepares and cleans the data.
+- Interconnect builds relationships between datasets.
+- Inquire allows people and AI to explore the results.
+
+Without clean, consistent ingestion, the rest of the process cannot succeed. Ingestion and cleaning is where raw information first starts to become meaningful.

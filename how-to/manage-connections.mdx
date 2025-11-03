@@ -1,0 +1,85 @@
+---
+title: "How To View and Manage Connections"
+sidebarTitle: "Manage Connections"
+---
+
+Connections are what make DataLinks powerful. They turn isolated datasets into a web of related knowledge that both humans and AI can reason over. Each connection represents a link between entities or values that share a relationship across datasets. Viewing and managing these links helps you understand how your data interacts and ensures that your knowledge map stays accurate.
+
+## View all connections in the Ontology Explorer
+
+The Ontology Explorer provides a top-level visualization of your knowledge map, helping you see how information flows across datasets. Public datasets will appear only if there is at least one shared or matching entity between your data and theirs.
+
+To see the full picture of how your datasets connect:
+
+1. Log in to your DataLinks account.
+2. In the left navigation menu, click **Ontology Explorer**.
+3. This opens a map view showing all of your private datasets, along with any public datasets that have at least one connection to them.
+
+<Note>
+  When working with sensitive data, remember that connections to public datasets are visible only if an overlap exists, and your private data remains private and is not visible to others.
+</Note>
+
+## View connections for a specific dataset
+
+To focus on the relationships of one dataset:
+
+1. Click the **dataset name** from your homepage or the navigation list.
+2. Click the **Connections** tab at the top of the page.
+3. You will see two lists on the right side of your screen:
+   - **Active links:** connections currently used when querying or traversing data.
+   - **Suggested links:** potential matches identified during ingestion but not yet confirmed.
+
+<Check>
+  By default, all connections are active.
+</Check>
+
+Each connection listed shows the dataset it links to, the fields involved, and the number of matching records (the “score”).
+
+Connections may include both **private datasets you own** and **public datasets** that share related entities.
+
+## Manage connections in the web platform
+
+You can move links between **Active** and **Suggested** states to control which connections DataLinks uses when building queries or expanding results.
+
+**To deactivate a link:**
+
+1. In the Active Links table, **click the rows** you want to remove.
+2. Selected rows turn red and display a minus sign at the end.
+3. Click **Save Connections**.
+   - The selected links will move to the Suggested Links table.
+
+**To activate a link:**
+
+1. In the Suggested Links table, **click the rows** you want to add.
+2. Selected rows turn green and show a plus icon at the end.
+3. Click **Save Connections**.
+   - The selected links will move to the **Active Links** table and become part of your working data model.
+
+This process lets you fine-tune which relationships are included in your namespace’s knowledge map.
+
+## Manage connections through the API or SDK
+
+You can also view and manage connections programmatically using the API or SDK.
+
+- **GET Load Links**
+
+  Retrieves the existing connections (both active and suggested).
+- **POST Rebuild Links**
+
+  Regenerates suggested links for a dataset or namespace based on current data.
+- **POST Preview Links**
+
+  Previews how new potential links would appear before committing them.
+- **POST Add a New Link**
+
+  Adds a specific manual connection between datasets (for example, if you know two fields correspond but were not automatically matched).
+
+These endpoints are ideal for teams that maintain automated pipelines or want to validate and manage links at scale.
+
+You can also use the **DataLinks SDK** to interact with these APIs through scripts, integrating connection management into your workflows.
+
+## Best practices
+
+- Regularly review **Suggested Links** to confirm or remove potential matches.
+- Keep **Active Links** focused on meaningful relationships that enhance analysis or AI reasoning.
+- When working with the SDK, use the **Rebuild Links** API periodically to refresh suggestions as your data evolves.

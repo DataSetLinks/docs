@@ -1,0 +1,68 @@
+---
+title: "How To Create a New Namespace"
+sidebarTitle: "Create a Namespace"
+---
+
+A namespace is a container that helps organize related datasets within DataLinks. Think of it as a workspace or project folder where your datasets live and connect to one another.
+
+Namespaces help keep your data organized, secure, and contextually grouped for easier querying and AI analysis.
+
+If you’re new to this concept, read the explanatory article Datasets and Namespaces to see how they work together.
+
+## Create a namespace in the web platform
+
+Namespaces cannot be created on their own. A new namespace is automatically created when you create your first dataset within it.
+
+To create a namespace:
+
+1. **Log in** to your DataLinks account.
+2. In the left navigation menu, click **Create a New Dataset**.
+3. Enter a name for your dataset.
+4. In the **Namespace field**, type the name of the new namespace you’d like to create.
+   - If the namespace does not already exist, DataLinks will create it automatically.
+   - If it already exists, the dataset will be added to that namespace instead.
+5. Click **Create dataset and upload data** to finish.
+
+Your new namespace will now appear in the list on your homepage, containing the dataset you just created.
+
+## Create a namespace using the API or SDK
+
+Namespaces are created through dataset creation, not as standalone objects. When you create a dataset with a new namespace name, DataLinks automatically provisions that namespace.
+
+**To create via API:**
+
+Use the **POST Create New Dataset** endpoint: [POST Create new dataset](/api-reference/ingest/create-new-dataset)
+
+In your request body, include a field such as: `"namespace": "your_namespace_name"`
+
+If the namespace does not already exist, it will be created during this request.
+
+**To confirm creation:**
+
+Use [GET List user namespaces](/api-reference/schema/list-user-namespaces) to view your namespaces:
+
+**With the SDK:**
+
+You can achieve the same effect by calling the dataset creation method and passing a new namespace name in your parameters. The SDK wraps the API behavior and is ideal for scripting or integrating namespace creation into automated data pipelines.
+
+## Manage namespaces
+
+- You cannot create an empty namespace. Every namespace must contain at least one dataset.
+- You cannot delete a namespace that still contains datasets. To remove a namespace, first delete all datasets within it.
+- Once all datasets in a namespace are deleted, the namespace will no longer appear on your homepage.
+
+## Best practices
+
+- Use clear, descriptive names for namespaces (for example: `Finance_2025`, `Customer_Data`, or `Compliance_Reports`).
+- Group datasets by business domain, department, or project to make navigation and querying easier.
+- Keep in mind that datasets within the same namespace can connect and share context more easily.
+
+## Next Steps
+
+After you’ve created your first namespace:
+
+- You can add more datasets to it at any time.
+- Begin ingesting data using the [Ingest Data API](/api-reference/ingest/ingest-data) or directly through the web platform.
+- Use the Connections view to see how datasets in your namespace link together through DataLinks’ Knowledge Map.
+
+Creating a namespace is your starting point for turning fragmented data into a structured, connected foundation for AI.

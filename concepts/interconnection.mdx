@@ -1,0 +1,51 @@
+---
+title: "Interconnection (Knowledge Maps)"
+sidebarTitle: "Interconnection"
+---
+
+Once your data is ingested and organized into datasets, DataLinks automatically begins to find relationships between them. This process is known as **interconnection**, and it is the foundation of what makes DataLinks a true ontological system rather than just another data warehouse.
+
+## From datasets to knowledge maps
+
+Each dataset in DataLinks represents a collection of related facts, such as a registry of companies, a list of shareholders, or a table of tariffs. When multiple datasets exist within the same private namespace, or across public namespaces, DataLinks can detect and create **links** between them based on shared entities such as company names, IDs, or other attributes.
+
+These relationships form a **knowledge map**: a living network of data that shows how your information connects across different contexts.
+
+The screenshot above is an example of this visualization in the DataLinks web platform. On the left, you can see datasets represented as nodes, with active links connecting them. On the right, you see the list of **Suggested links** and **Active links:** the relationships that have been automatically discovered or confirmed.
+
+## Why interconnection matters
+
+Most organizations struggle not because they lack data, but because their data lives in silos. Each dataset tells part of the story, but the real value emerges only when those pieces connect.
+
+Interconnection turns data into context. It allows DataLinks to:
+
+- Surface hidden relationships between entities
+- Enrich AI and analytics with broader context
+- Enable complex reasoning across datasets, such as tracing ownership networks or identifying risk exposure
+
+This connected structure also provides the semantic memory that makes AI agents intelligent and consistent. When data is linked through knowledge maps, AI systems can recall facts, understand context, and reason across multiple domains, just like a human analyst.
+
+## How it works
+
+When a dataset is connected to others, the platform performs entity matching and link inference using both rule-based logic and AI-assisted reasoning. It identifies similar fields, overlapping records, and meaningful associations that may not be obvious in the raw data.
+
+For instance:
+
+- A registry/companies dataset might connect to registry/shareholders through shared company IDs or names.
+- The same company could also link to sanctions/individuals or supply chain/tariffs datasets if related entities are detected.
+- Each connection is scored, labeled (for example, “exact match” or “partial match”), and stored for reuse across the platform.
+
+This linking process can be managed through the web platform or the API (or SDK):
+
+- [GET Load links](/api-reference/links/load-links)
+- [POST Add a new link](/api-reference/links/add-a-new-link)
+- [POST Rebuild links](/api-reference/links/rebuild-links)
+- [POST Preview links](/api-reference/links/preview-links)
+
+Through these endpoints, developers can programmatically create, rebuild, or preview connections, making it possible to automate updates as new data is ingested.
+
+## Visualizing connections
+
+The DataLinks web platform provides an interactive **Connections** view where each node represents a dataset and each line represents an active or potential link. Hovering over a node reveals its relationships, and clicking a link shows the fields or entities involved.
+
+This visualization helps users explore data relationships intuitively, trace where insights come from, and understand how their information fits within the wider enterprise knowledge map.

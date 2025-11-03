@@ -1,0 +1,164 @@
+---
+title: "DataLinks Web Platform QuickStart Guide"
+description: "Learn how to ingest data, view connections, and query using the DataLinks web platform."
+sidebarTitle: "QuickStart Web Guide"
+---
+
+## Introduction
+
+This guide shows you how to use the DataLinks web platform to find shared sales opportunities across two North American data sources. You will learn by doing: uploading files, connecting records, and exploring the results directly in the platform.
+
+<Info>
+  This guide focuses on the web platform only. If you'd like to learn about using the DataLinks API and SDK kit, you can try our [API/SDK QuickStart guide](/get-started/quickstart-api) instead.
+</Info>
+
+## Scenario
+
+You're a sales manager for a dental products company in North America. Your goal is to see how your existing customer base overlaps with members of a major dental society to uncover new prospecting opportunities.
+
+You'll work with two datasets:
+
+- A JSON file that contains your current customers, including names, locations, and contact details
+- A dental society member list that includes dentists and clinic owners across the United States and Canada
+
+Using the DataLinks web platform, you'll ingest both datasets, manage how they connect, and query the linked data to find customers who are also society members or have professional ties to them.
+
+## Outcome
+
+By the end of this guide, you will have a table showing which of your current customers also appear in the dental society list. You can explore these matches in the DataLinks platform or export them as a CSV file for follow-up.
+
+This exercise helps you practice the full workflow in DataLinks: importing data, linking records, exploring relationships, and using the insights for focused outreach.
+
+## Prerequisites
+
+To follow along on your machine and complete the steps in this guide, make sure you have the following ready:
+
+1. Access to a DataLinks account.
+
+<Info>
+  Don't have an account? Contact [support@datalinks.com](support@datalinks.com) to request one.
+</Info>
+
+2. Downloaded copies of the [example customer list](https://docs.cdn.datalinks.com/docs/quickstart-web/customer_list.json) and [example society list](https://docs.cdn.datalinks.com/docs/quickstart-web/society_list_web.txt). (Click to download.)
+
+With these things in place, you're ready to get started!
+
+## Part 1: Create your namespace and first dataset
+
+<Frame>
+  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-1.mp4" alt="DataLinks" controls autoPlay muted loop />
+</Frame>
+
+1. Log in to the DataLinks platform.
+2. Click **Create New Dataset**.
+3. Enter the following dataset name: `customer_list`.
+
+   <Info>
+     Use underscores, not spaces, when naming your datasets.
+   </Info>
+4. Enter namespace `dental_prospects_web`.
+5. Ensure the Dataset visibility is set to **Private** using the toggle.
+6. Click **Create dataset and upload data**.
+
+<Check>
+  Result: You've created an empty `customer_list` dataset inside the `dental_prospects_web` namespace.
+</Check>
+
+## Part 2: Upload the structured customer list
+
+Now that you've created an empty dataset, you need to populate it with data. To do so, follow these steps:
+
+<Frame>
+  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-2.mp4" alt="DataLinks" controls autoPlay muted loop />
+</Frame>
+
+1. Click anywhere in the **Click to upload** area to open the file explorer.
+2. Select the [customer_list.json](https://docs.cdn.datalinks.com/docs/quickstart-web/customer_list.json) file you downloaded, then click **Open**.
+3. Wait while DataLinks ingests your data.
+4. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
+5. Scroll down to the bottom of the page, then click **Upload data**.
+6. Click **Append** to confirm.
+
+<Check>
+  Result: You've now populated your `customer_list` dataset with data.
+</Check>
+
+## Part 3: Create a second dataset for the society members list
+
+Now that you have your customer list uploaded, you need to upload the list of dental society members you want to compare it against.
+
+<Frame>
+  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-3.mp4" alt="DataLinks" controls autoPlay muted loop />
+</Frame>
+
+1. Return to Home.
+2. Click **Create New Dataset**.
+3. Enter the following dataset name: `society_members`.
+4. Enter namespace `dental_prospects_web`.
+5. Ensure the Dataset visibility is set to **Private** using the toggle.
+6. Click **Create dataset and upload data**.
+
+## Part 4: Upload the unstructured society members list
+
+Now that you've created your dataset for the society member list, you need to populate it with data. To do so, follow these steps:
+
+<Frame>
+  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-4.mp4" alt="DataLinks" controls autoPlay muted loop />
+</Frame>
+
+1. Click anywhere in the **Click to upload** area to open the file explorer.
+2. Select the [society_members_web.txt](https://docs.cdn.datalinks.com/docs/quickstart-web/society_list_web.txt) file you downloaded, then click **Open**.
+3. In the **Helper Prompt** field, paste the following:
+
+   ```
+   This is the data from a dental societies where the names of members (dental practices), the addresses, the phone numbers, and the websites, are included. The file contains several entries.
+   ```
+4. In the **Field Definitions** field, paste the following:
+
+   ```
+   MemberName = this is the set of names that are used to define the member entity, which may be a person, or may be an entity like and institution, business, etc. Do the import without academic titles such as "Dr." for Doctor, "Prof." for professor and similar, and without personal honorifics like "Ms.", "Mr.", "Frau", "Herr", and extensions of these like "Miss".
+   
+   Address = this is the street address belonging to the member name.
+   
+   city = this is the name of the city to which the address belongs to.
+   
+   Country = this is the name of the country to which the address belongs to. Normalize all names to English.
+   
+   Geo = these are the geographical coordinates that you need to calculate from the Address. These include latitude and longitude. The format should be "XX,XX", meaning "latitude,longitude".
+   
+   Phone = this is the phone number associated with the member name. If it does not contain the country code (+XX) add the respective country code based on country of member. Pay attention to which country we are dealing with and substitute the leading 0 by the country code when appropriate.
+   
+   WebSite = this is the web address associated with the member name.
+   ```
+3. Wait while DataLinks ingests your data.
+4. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
+5. Scroll down to the bottom of the page, then click **Upload data**.
+6. Click **Append** to confirm.
+
+## Part 5: Manage connections
+
+DataLinks makes all connections active by default. In this section, we'll show you how to remove all connections, then add back the specific connection you're interested in querying.
+
+<Frame>
+  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-5.mp4" alt="DataLinks" controls autoPlay muted loop />
+</Frame>
+
+1. Return to **Home** using the left menu.
+2. Click the **customer_list** dataset in the `dental_prospects` namespace.
+3. Click the **Connections** tab.
+4. Click **Select all** under active Active Links. This will select all active links and ready them for removal.
+5. Click **Save connections**. This will remove all active links.
+6. Click the row containing `customer_list.full_name` and `society_members.membername`.
+7. Click **Add connections**.
+
+<Check>
+  You've now connected the names in your customer list to the names in the society members list.
+</Check>
+
+## Next steps
+
+Congratulations! You've used structured and unstructured data to find a list of prospects.
+
+Thank you for taking the time to try this guide and explore DataLinks.
+
+To learn more about DataLinks and how we can help your organization, get started by joining the [DataLinks waitlist](https://datalinks.com/newsletter).

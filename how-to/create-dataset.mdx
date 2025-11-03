@@ -1,0 +1,50 @@
+---
+title: "How To Create a New Dataset"
+sidebarTitle: "Create a Dataset"
+---
+
+Datasets are the foundation of how DataLinks organizes and understands your information. Each dataset represents a structured table of data that can later be cleaned, connected, and queried by AI.
+
+If you’re new to DataLinks, you may want to start with the explanatory article [Datasets and Namespaces](/concepts/datasets-namespaces)  to learn how datasets fit within namespaces and the broader DataLinks structure.
+
+## Create a dataset in the web platform
+
+If you prefer a simple, guided setup, you can create a dataset directly in the DataLinks web platform.
+
+Follow these steps:
+
+1. **Log in** to your DataLinks account.
+2. In the left navigation menu, click **Create a New Dataset**.
+3. **Enter a name** for your dataset. Choose something descriptive, such as “customer_transactions_2025.”
+
+   <Info>
+     Use underscores, not spaces, when creating names.
+   </Info>
+4. **Select or enter a namespace** to assign the dataset to. The namespace helps organize related datasets and controls access and context.
+5. Use the toggle to set visibility to Private or Public.
+6. Click **Create dataset and upload data** to finish.
+
+Your dataset will appear in your list of available datasets and will be ready for ingestion and cleaning.
+
+## Create a dataset with the API or SDK
+
+For users managing large amounts of data or integrating DataLinks into automated workflows, creating datasets through the **API** or **SDK** is the most efficient option.
+
+You can use either:
+
+- **A script** that calls the DataLinks API endpoint: [POST Create new dataset](/api-reference/ingest/create-new-dataset)
+- Or the **DataLinks SDK**, which simplifies dataset creation in just a few lines of code.
+
+<Info>
+  For detailed instructions and code examples, visit the API reference for [**Create New Dataset**](/api-reference/ingest/create-new-dataset).
+</Info>
+
+## Next steps
+
+Once your dataset is created, you can:
+
+- Ingest data into it using the [**Ingest Data API**](/api-reference/ingest/ingest-data) or the web upload feature.
+- Preview or validate data before committing changes.
+- Begin linking datasets through DataLinks’ automatic connection features.
+
+Creating a dataset is your first step toward transforming raw data into an intelligent, connected knowledge layer ready for AI and analysis.
