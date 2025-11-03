@@ -18,7 +18,7 @@ You're a sales manager for a dental products company in North America. Your goal
 
 You'll work with two datasets:
 
-- A JSON file that contains your current customers, including names, locations, and contact details 
+- A JSON file that contains your current customers, including names, locations, and contact details
 - A dental society member list that includes dentists and clinic owners across the United States and Canada
 
 Using the DataLinks web platform, you'll ingest both datasets, manage how they connect, and query the linked data to find customers who are also society members or have professional ties to them.
@@ -70,7 +70,7 @@ To follow along on your machine and complete the steps in this guide, make sure 
 Now that you've created an empty dataset, you need to populate it with data. To do so, follow these steps:
 
 1. Click anywhere in the **Click to upload** area to open the file explorer.
-2. Select **customer_list.json **from the `quickstart_api.zip` folder you downloaded, then click **Open**.
+2. Select **customer_list.json** from the `quickstart_api.zip` folder you downloaded, then click **Open**.
 3. Wait while DataLinks ingests your data.
 4. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
 5. Scroll down to the bottom of the page, then click **Upload data**.
@@ -100,23 +100,20 @@ To upload and transform your data, follow the steps below:
 
 1. Open the `ingest_dental.py`file in your code editor.
 1. Add the following information to the file:
-   - On line 25, paste in your API token.
-   - On line 27, enter the namespace you're using (`dental_prospects`)
-   - On line 28, enter the name for the new dataset you're creating (`society_members`)
-   - On line 34, if needed, update the location of the `society_members_api.txt` based on where you've placed the file.
-   - On line 49, paste in the following prompt:
+   - On line 17, `apikey`, paste in your API token.
+   - On line 19, `namespace,` enter the namespace you're using (`dental_prospects`)
+   - On line 20, `objectname`, enter the name for the new dataset you're creating (`society_members`)
+   - On line 26, `textfile`, enter `society_members_api.txt` and update the location if needed based on where you've placed the file in your directory.
+   - On line 49, `helper_prompt`, paste in the following prompt:
 
      ```
-     This is the data contained within a html from the society's DGOI page (https://www.dgoi.info/die-dgoi/mitglieder/), where the names of members (dental practices), the addresses, the phone numbers, and the websites, are included. The file contains thousands of entries. 
+     This is the data from a dental societies where the names of members (dental practices), the addresses, the phone numbers, and the websites, are included. The file contains several entries.  
      # **Instructions**
      * Extract **all data** provided. 
      * **Do not skip any entry.**
      
-     Whenever possible abide to the follwing schema:
-     
+     Whenever possible abide to the following schema:
      MemberName = this is the set of names that are used to define the member entity, which may be a person, or may be an entity like and institution, business, etc. Do the import without academic titles such as "Dr." for Doctor, "Prof." for professor and similar, and without personal honorifics like "Ms.", "Mr.", "Frau", "Herr", and extensions of these like "Miss".
-     
-     AcademicTitle = this is a Academic honorific (e.g. "Dr." for Doctor, "Prof." for professor) that can be extracted before the name.
      
      Address = this is the street address belonging to the member name.
      
@@ -124,7 +121,7 @@ To upload and transform your data, follow the steps below:
      
      Country = this is the name of the country to which the address belongs to. Normalize all names to English.
      
-     Geo = these are the geographical coordinates that you need to calculate from the Address. These include latitude and longitude.
+     Geo = these are the geographical coordinates that you need to calculate from the Address. These include latitude and longitude. The format should be "XX,XX", meaning "latitude,longitude".
      
      Phone = this is the phone number associated with the member name. If it does not contain the country code (+XX) add the respective country code based on country of member. Pay attention to which country we are dealing with and substitute the leading 0 by the country code when appropriate.
      
