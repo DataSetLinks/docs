@@ -57,12 +57,12 @@ To follow along on your machine and complete the steps in this guide, make sure 
    <Info>
      Use underscores, not spaces, when naming your datasets.
    </Info>
-4. Enter namespace `dental_prospects`.
+4. Enter namespace `dental_prospects_api`.
 5. Ensure the Dataset visibility is set to **Private** using the toggle.
 6. Click **Create dataset and upload data**.
 
 <Check>
-  Result: You've created an empty `customer_list` dataset inside the `dental_prospects` namespace.
+  Result: You've created an empty `customer_list` dataset inside the `dental_prospects_api` namespace.
 </Check>
 
 ## Part 2: Upload the structured customer list
@@ -101,7 +101,7 @@ To upload and transform your data, follow the steps below:
 1. Open the `ingest_dental.py`file in your code editor.
 1. Add the following information to the file:
    - On line 17, `apikey`, paste in your API token.
-   - On line 19, `namespace,` enter the namespace you're using (`dental_prospects`)
+   - On line 19, `namespace,` enter the namespace you're using (`dental_prospects_api`)
    - On line 20, `objectname`, enter the name for the new dataset you're creating (`society_members`)
    - On line 26, `textfile`, enter `society_members_api.txt` and update the location if needed based on where you've placed the file in your directory.
    - On line 49, `helper_prompt`, paste in the following prompt:
