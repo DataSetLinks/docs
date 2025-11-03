@@ -133,5 +133,11 @@
     "gtm": {
       "tagId": "GTM-M2TM5387"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/welcome",
+      "destination": "/index"
+    }
+  ]
 }
