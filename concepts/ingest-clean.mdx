@@ -91,14 +91,6 @@ During ingestion, DataLinks automatically:
 - Flags missing or mismatched values
 - Validates that data fits expected patterns
 
-For larger files, the multipart upload APIs allow you to manage ingestion safely:
-
-- [POST Prepare multipart upload](/api-reference/multipart-upload/prepare-multipart-upload#prepare-multipart-upload)
-- [POST Finish multipart upload](/api-reference/multipart-upload/finish-multipart-upload)
-- [POST Abort multipart upload](/api-reference/multipart-upload/abort-multipart-upload)
-
-Together, these endpoints ensure reliable ingestion even for large or incremental data loads.
-
 ## Step 4. Review and manage datasets
 
 Once data is ingested, it can be inspected and maintained through several dataset-level APIs:
@@ -109,12 +101,6 @@ Once data is ingested, it can be inspected and maintained through several datase
 - [POST Rename a dataset](/api-reference/dataset/rename-a-dataset)
 
   Updates dataset names without recreating them.
-- [PUT Update infer definition](/api-reference/dataset/update-infer-definition)
-
-  Refines schema definitions and field interpretations based on new data.
-- [PUT Update dataset sort order](/api-reference/dataset/update-dataset-sort-order)
-
-  Adjusts how data is displayed or accessed in structured views.
 
 If cleaning requires a full reset, two endpoints handle dataset clearing or deletion:
 
@@ -131,12 +117,7 @@ After ingestion, data can be validated or enriched through additional API action
 
 - [POST Query data](/api-reference/query/query-data)
 
-  Allows teams to verify field integrity or check for duplicates and missing values.
-- [POST Run AutoRAG agent over all data](/api-reference/autorag/run-autorag-agent-over-all-data)
-
-  Uses the AutoRAG agent to answer a question about any data that the user can access.
-
-These steps ensure that datasets remain clean and meaningful after ingestion.
+  Allows teams to search across data.
 
 ## Step 6. Maintain structure and relationships
 
