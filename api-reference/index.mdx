@@ -10,48 +10,85 @@ Welcome to the DataLinks API. These endpoints let you bring in data, connect it 
 - **Interconnect**: discover and manage links between datasets.
 - **Inquire**: query clean, connected data for answers.
 
-## API Endpoint Index
+## API Reference Index
 
-Browse all endpoints by category.
+#### datasets
 
-Each group below links directly into the detailed reference pages in the sidebar.
+| | |
+|---|---|
+| <Badge color="green">GET</Badge> | [Fetch datasets](/api-reference/datasets/fetch-datasets) |
+| <Badge color="green">GET</Badge> | [Fetch datasets in namespace](/api-reference/datasets/fetch-datasets-in-namespace) |
 
-## Ingestion and Dataset Management
+#### ingest
 
-| Ingestion                                   | Dataset Management                                                   |
-|--------------------------------------------|----------------------------------------------------------------------|
-| **POST** Create new dataset                 | **GET** Get dataset information                                      |
-| **POST** Ingest data                        | **POST** Rename a dataset                                            |
-| **POST** Preview                            | **PUT** Update infer definition                                      |
-|                                            | **PUT** Update dataset sort order                                    |
-|                                            | **POST** Clear all data for a dataset                                |
-|                                            | **DEL** Delete all data and metadata for a dataset (balefire)        |
+| | |
+|---|---|
+| <Badge color="blue">POST</Badge> | [Create new dataset](/api-reference/ingest/create-new-dataset) |
+| <Badge color="blue">POST</Badge> | [Ingest data](/api-reference/ingest/ingest-data) |
+| <Badge color="blue">POST</Badge> | [Preview](/api-reference/ingest/preview) |
 
-| Datasets                                   | Schema                                                               |
-|--------------------------------------------|----------------------------------------------------------------------|
-| **GET** Fetch datasets                     | **GET** List all datasets                                            |
-| **GET** Fetch datasets in namespace        | **GET** List user namespaces                                         |
-|                                            | **GET** List datasets within namespace                               |
+#### dataset
 
-## Links, Ontology, and Navigation
+| | |
+|---|---|
+| <Badge color="green">GET</Badge> | [Get dataset information](/api-reference/dataset/get-dataset-information) |
+| <Badge color="blue">POST</Badge> | [Rename a dataset](/api-reference/dataset/rename-a-dataset) |
+| <Badge color="yellow">PUT</Badge> | [Update infer definition](/api-reference/dataset/update-infer-definition) |
+| <Badge color="yellow">PUT</Badge> | [Update dataset sort order](/api-reference/dataset/update-dataset-sort-order) |
+| <Badge color="blue">POST</Badge> | [Clear all data for a dataset](/api-reference/dataset/clear-all-data-for-a-dataset) |
+| <Badge color="red">DEL</Badge> | [Delete all data and metadata for a dataset (balefire)](/api-reference/dataset/delete-all-data-and-metadata-for-a-dataset-balefire) |
 
-| Links                                      | Ontology                                                             |
-|--------------------------------------------|----------------------------------------------------------------------|
-| **GET** Load links                         | **GET** Get ontology                                                 |
-| **POST** Rebuild links                     | **POST** Post ontology                                               |
-| **POST** Preview links                     |                                                                      |
-| **POST** Add a new link                    |                                                                      |
+#### query
 
-## Querying, Agents, Auth, and Uploads
+| | |
+|---|---|
+| <Badge color="blue">POST</Badge> | [Query data](/api-reference/query/query-data) |
 
-| Query and Agents                           | User Tokens and Uploads                                              |
-|--------------------------------------------|----------------------------------------------------------------------|
-| **POST** Query data                        | **GET** Get usertokens                                               |
-| **POST** Run AutoRAG agent over all data   | **POST** Post usertoken                                              |
-|                                            | **DEL** Delete usertoken                                             |
-|                                            | **POST** Prepare multipart upload                                    |
-|                                            | **POST** Finish multipart upload                                     |
-|                                            | **POST** Abort multipart upload                                      |
+#### autorag
+
+| | |
+|---|---|
+| <Badge color="blue">POST</Badge> | [Run AutoRAG agent over all data](/api-reference/autorag/run-autorag-agent-over-all-data) |
+
+#### links
+
+| | |
+|---|---|
+| <Badge color="green">GET</Badge> | [Load links](/api-reference/links/load-links) |
+| <Badge color="blue">POST</Badge> | [Rebuild links](/api-reference/links/rebuild-links) |
+| <Badge color="blue">POST</Badge> | [Preview links](/api-reference/links/preview-links) |
+| <Badge color="blue">POST</Badge> | [Add a new link](/api-reference/links/add-a-new-link) |
+
+#### ontology
+
+| | |
+|---|---|
+| <Badge color="green">GET</Badge> | [Get ontology](/api-reference/ontology/get-ontology-) |
+| <Badge color="blue">POST</Badge> | [Post ontology](/api-reference/ontology/post-ontology-) |
+
+#### schema
+
+| | |
+|---|---|
+| <Badge color="green">GET</Badge> | [List all datasets](/api-reference/schema/list-all-datasets) |
+| <Badge color="green">GET</Badge> | [List user namespaces](/api-reference/schema/list-user-namespaces) |
+| <Badge color="green">GET</Badge> | [List datasets within namespace](/api-reference/schema/list-datasets-within-namespace) |
+
+#### user
+
+| | |
+|---|---|
+| <Badge color="green">GET</Badge> | [Get usertokens](/api-reference/user/get-usertokens) |
+| <Badge color="blue">POST</Badge> | [Post usertoken](/api-reference/user/post-usertoken) |
+| <Badge color="red">DEL</Badge> | [Delete usertoken](/api-reference/user/delete-usertoken) |
+
+#### multipart-upload
+
+| | |
+|---|---|
+| <Badge color="blue">POST</Badge> | [Prepare multipart upload](/api-reference/multipart-upload/prepare-multipart-upload) |
+| <Badge color="blue">POST</Badge> | [Finish multipart upload](/api-reference/multipart-upload/finish-multipart-upload) |
+| <Badge color="blue">POST</Badge> | [Abort multipart upload](/api-reference/multipart-upload/abort-multipart-upload) |
 
 
 
