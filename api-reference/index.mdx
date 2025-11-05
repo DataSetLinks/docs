@@ -10,6 +10,56 @@ Welcome to the DataLinks API. These endpoints let you bring in data, connect it 
 - **Interconnect**: discover and manage links between datasets.
 - **Inquire**: query clean, connected data for answers.
 
+## API Endpoint Index
+
+Browse all endpoints by category.
+
+Each group below links directly into the detailed reference pages in the sidebar.
+
+# API Endpoint Index
+
+# API Endpoint Index
+
+## Ingestion and Dataset Management
+
+| Ingestion                                   | Dataset Management                                                   |
+|--------------------------------------------|----------------------------------------------------------------------|
+| **POST** Create new dataset                 | **GET** Get dataset information                                      |
+| **POST** Ingest data                        | **POST** Rename a dataset                                            |
+| **POST** Preview                            | **PUT** Update infer definition                                      |
+|                                            | **PUT** Update dataset sort order                                    |
+|                                            | **POST** Clear all data for a dataset                                |
+|                                            | **DEL** Delete all data and metadata for a dataset (balefire)        |
+
+| Datasets                                   | Schema                                                               |
+|--------------------------------------------|----------------------------------------------------------------------|
+| **GET** Fetch datasets                     | **GET** List all datasets                                            |
+| **GET** Fetch datasets in namespace        | **GET** List user namespaces                                         |
+|                                            | **GET** List datasets within namespace                               |
+
+## Links, Ontology, and Navigation
+
+| Links                                      | Ontology                                                             |
+|--------------------------------------------|----------------------------------------------------------------------|
+| **GET** Load links                         | **GET** Get ontology                                                 |
+| **POST** Rebuild links                     | **POST** Post ontology                                               |
+| **POST** Preview links                     |                                                                      |
+| **POST** Add a new link                    |                                                                      |
+
+## Querying, Agents, Auth, and Uploads
+
+| Query and Agents                           | User Tokens and Uploads                                              |
+|--------------------------------------------|----------------------------------------------------------------------|
+| **POST** Query data                        | **GET** Get usertokens                                               |
+| **POST** Run AutoRAG agent over all data   | **POST** Post usertoken                                              |
+|                                            | **DEL** Delete usertoken                                             |
+|                                            | **POST** Prepare multipart upload                                    |
+|                                            | **POST** Finish multipart upload                                     |
+|                                            | **POST** Abort multipart upload                                      |
+
+
+
+
 ## Typical end-to-end flow
 
 1. **Create a dataset**\
