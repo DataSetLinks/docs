@@ -21,6 +21,8 @@ If you want to install the package in an editable development mode:
 pip install -e .
 ```
 
+
+
 ## Components
 
 ### 1. **DLConfig**
@@ -93,7 +95,7 @@ Run tests to verify your implementation:
 tox
 ```
 
-## Quick Start
+## QuickStart
 
 Here’s how to get started with the DataLinks SDK:
 
@@ -121,6 +123,15 @@ client = DataLinksAPI(config=config)
 data = client.query_data(query="*", include_metadata=False)
 print(data)
 ```
+
+3. **CLI Usage**
+
+   The SDK also provides a built-in CLI that can be extended:
+
+```shell
+datalinks-client [-h] --verbose <input-folder>
+````
+
 
 ## License
 
