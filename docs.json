@@ -90,7 +90,9 @@
             "group": "Getting Started",
             "expanded": true,
             "pages": [
-              "pythonsdk/index"
+              "pythonsdk/index",
+              "pythonsdk/sdk-install",
+              "pythonsdk/sdk-quickstart"
             ],
             "icon": "notebook"
           },
