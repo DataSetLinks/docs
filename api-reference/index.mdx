@@ -1,0 +1,45 @@
+---
+title: "API Reference"
+---
+
+Welcome to the DataLinks API. These endpoints let you bring in data, connect it intelligently, and ask questions that yield grounded results.
+
+Expand any group in the left navigation to view its endpoints.
+
+## Typical end-to-end flow
+
+1. **Create a dataset**\
+   Use Create new dataset. Supplying a new namespace creates it implicitly.
+
+   `POST` [Create new dataset](/api-reference/ingest/create-new-dataset)
+2. **Ingest data**\
+   Use Ingest data or the multipart flow for large files. Use Preview to check parsing before committing.
+
+   `POST` [Ingest data](/api-reference/ingest/ingest-data)\
+   `POST` [Preview](/api-reference/ingest/preview)
+
+   Multipart flow:\
+   `POST` [Prepare multipart upload](/api-reference/multipart-upload/prepare-multipart-upload)\
+   `POST` [Finish multipart upload](/api-reference/multipart-upload/finish-multipart-upload)\
+   `POST` [Abort multipart upload](/api-reference/multipart-upload/abort-multipart-upload)
+3. **Review links**\
+   Use Load links and Preview links. Promote useful suggestions to active links with Add a new link or from the app UI. Rebuild links when data changes.
+
+   `GET` [Load links](/api-reference/links/load-links)\
+   `POST` [Preview links](/api-reference/links/preview-links)\
+   `POST` [Add a new link](/api-reference/links/add-a-new-link)\
+   `POST` [Rebuild links](/api-reference/links/rebuild-links)
+4. **Query**\
+   Use Query data to retrieve grounded results across connected datasets.
+
+   `POST` [Query data](/api-reference/query/query-data)
+
+## Notes and best practices
+
+- **Namespaces**: a namespace appears when you create the first dataset that references it.
+- **Large files**: prefer the multipart upload trio to improve reliability.
+- **Performance**: Rebuild links after large ingests so suggestions reflect the latest data.
+
+<Tip>
+  If you're looking for background to get started, see the explanatory articles for [Ingest](/concepts/ingest-clean), [Interconnect](/concepts/interconnection), and [Inquire](/concepts/query-insights), then return here to try automating those steps using the API.
+</Tip>
