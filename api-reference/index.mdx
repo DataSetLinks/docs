@@ -6,33 +6,66 @@ Welcome to the DataLinks API. These endpoints let you bring in data, connect it 
 
 ## How the API fits together
 
-- **Ingest**: create datasets and load data.
-- **Interconnect**: discover and manage links between datasets.
-- **Inquire**: query clean, connected data for answers.
+- [Ingest](/concepts/ingest-clean): create datasets and load data.
+- [Interconnect](/concepts/interconnection): discover and manage links between datasets.
+- [Inquire](/concepts/query-insights): query clean, connected data for answers.
 
 ## Typical end-to-end flow
 
 1. **Create a dataset**\
    Use Create new dataset. Supplying a new namespace creates it implicitly.
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">POST</span> [Create new dataset](/api-reference/ingest/create-new-dataset)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+     POST</span>
+
+      [Create new dataset](/api-reference/ingest/create-new-dataset)
 2. **Ingest data**\
    Use Ingest data or the multipart flow for large files. Use Preview to check parsing before committing.
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">POST</span> [Ingest data](/api-reference/ingest/ingest-data)
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">POST</span> [Preview](/api-reference/ingest/preview)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+     POST</span>
+
+      [Ingest data](/api-reference/ingest/ingest-data)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+     POST</span>
+
+      [Preview](/api-reference/ingest/preview)
 
    Multipart flow:
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">POST</span> [Prepare multipart upload](/api-reference/multipart-upload/prepare-multipart-upload)
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">POST</span> [Finish multipart upload](/api-reference/multipart-upload/finish-multipart-upload)
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">POST</span> [Abort multipart upload](/api-reference/multipart-upload/abort-multipart-upload)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+     POST</span>
+
+      [Prepare multipart upload](/api-reference/multipart-upload/prepare-multipart-upload)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+     POST</span>
+
+      [Finish multipart upload](/api-reference/multipart-upload/finish-multipart-upload)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+     POST</span>
+
+      [Abort multipart upload](/api-reference/multipart-upload/abort-multipart-upload)
 3. **Review links**\
    Use Load links and Preview links. Promote useful suggestions to active links with Add a new link or from the app UI. Rebuild links when data changes.
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">GET</span> [Load links](/api-reference/links/load-links)
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">POST</span> [Preview links](/api-reference/links/preview-links)
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">POST</span> [Add a new link](/api-reference/links/add-a-new-link)
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">POST</span> [Rebuild links](/api-reference/links/rebuild-links)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
+     GET</span>
+
+      [Load links](/api-reference/links/load-links)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+     POST</span>
+
+      [Preview links](/api-reference/links/preview-links)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+     POST</span>
+
+      [Add a new link](/api-reference/links/add-a-new-link)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+     POST</span>
+
+      [Rebuild links](/api-reference/links/rebuild-links)
 4. **Query**\
    Use Query data to retrieve grounded results across connected datasets.
-   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">POST</span> [Query data](/api-reference/query/query-data)
+   - <span className="inline-flex min-w-[2.5rem] justify-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+     POST</span>
+
+      [Query data](/api-reference/query/query-data)
 
 ## Notes and best practices
 
