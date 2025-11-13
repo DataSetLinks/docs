@@ -78,6 +78,8 @@ paths:
                 $ref: '#/components/examples/moviesExample'
               actors:
                 $ref: '#/components/examples/actorsExample'
+              unstructured:
+                $ref: '#/components/examples/unstructuredExample'
       responses:
         '200':
           description: Successful ingestion response.
@@ -1539,3 +1541,13 @@ components:
             nationality: American
         link:
           ExactMatch: null
+    unstructuredExample:
+      summary: example of extrtacting row from unstructured data
+      value:
+        data:
+          - text: "Meryl Streep, known for her incredible acting, has starred in unforgettable films like The Devil Wears Prada and Sophie's Choice. She's won three Oscars over her illustrious career. Anne Hathaway shared the screen with her in The Devil Wears Prada and later shone in Les Misérables, earning her own Oscar.\n\nLeonardo DiCaprio, a household name, is celebrated for roles in Titanic, Inception, and The Revenant. His long-awaited Oscar win came for The Revenant. His Titanic co-star Kate Winslet, who also has an Oscar to her name, delivered powerful performances in The Reader and of course, Titanic.\n\nTom Hanks, the quintessential leading man, gave us unforgettable performances in Forrest Gump, Cast Away, and Saving Private Ryan. He's a two-time Oscar winner. Robin Wright, who starred alongside him in Forrest Gump, is also well-remembered for her role in The Princess Bride.\n\nCate Blanchett, a two-time Oscar winner, mesmerized audiences in films like Blue Jasmine, Carol, and Elizabeth. Rooney Mara, her co-star in Carol, also made a mark with her performance in The Girl with the Dragon Tattoo.\n\nDenzel Washington, one of the most respected actors in Hollywood, has won two Oscars for his work in Training Day and Glory. He also delivered a heartfelt performance in Fences, where he starred alongside Viola Davis. Davis herself is a powerhouse of talent, with an Oscar for her role in Fences and another standout performance in The Help."
+        infer:
+          steps:
+            - deriveFrom: text
+              helperPrompt: "If you find a numeric field use only the value and omit the rest."
+              type: table
