@@ -3,12 +3,55 @@ info:
   title: DataLinks
   version: 1.0.0
 security:
-  - bearerAuth: []
-  - openId: [implicit]
+  - bearerAuth: [ ]
+  - openId: [ implicit ]
+  - openId-dev: [ implicit ]
 servers:
-  - url: https://api.datalinks.com/api/v1
-    description: production server
+  - url: /api/v1
 paths:
+  /user/tokens:
+    get:
+      description: list all user tokens
+      operationId: listTokens
+      tags:
+        - user
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTokenResponse'
+  /user/token:
+    post:
+      description: add user token
+      operationId: addToken
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserToken'
+  /user/token/{tokenId}:
+    delete:
+      description: delete user token
+      operationId: deleteToken
+      tags:
+        - user
+      parameters:
+        - $ref: '#/components/parameters/TokenId'
+      responses:
+        '200':
+          description: Success
   /data:
     get:
       summary: Fetch datasets
@@ -35,81 +78,6 @@ paths:
           $ref: '#/components/responses/ListOfDatasets'
         '401':
           $ref: '#/components/responses/Unauthorized'
-  /ingest/new/{namespace}/{datasetName}:
-    post:
-      summary: Create new dataset
-      description: Creates a new dataset within a specified namespace.
-      operationId: createDataset
-      tags:
-        - ingest
-        - datasets
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateDatasetRequest'
-      responses:
-        '201':
-          description: Dataset created successfully.
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-  /ingest/{namespace}/{datasetName}:
-    post:
-      summary: Ingest data
-      description: Load data into specified dataset
-      operationId: ingestData
-      tags:
-        - ingest
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IngestRequest'
-            examples:
-              movies:
-                $ref: '#/components/examples/moviesExample'
-              actors:
-                $ref: '#/components/examples/actorsExample'
-      responses:
-        '200':
-          description: Successful ingestion response.
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-  /infer/preview:
-    post:
-      summary: Preview
-      description: Process data like in ingest but don't save in dataset
-      operationId: previewInfer
-      tags:
-        - ingest
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IngestRequest'
-            examples:
-              movies:
-                $ref: '#/components/examples/moviesExample'
-              actors:
-                $ref: '#/components/examples/actorsExample'
-      responses:
-        '200':
-          description: Successful preview response with processed data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IngestPreviewResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
   /data/{username}/{namespace}/{datasetName}:
     get:
       summary: Get dataset information
@@ -128,6 +96,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetResponse'
+
         '404':
           description: Dataset not found
         '400':
@@ -249,158 +218,6 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           description: Dataset not found or not allowed to modify
-  /query:
-    post:
-      summary: Query data
-      description: Execute ontology query
-      operationId: queryData
-      tags:
-        - query
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/QueryDataRequest'
-      responses:
-        '200':
-          $ref: '#/components/responses/QueryResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-  /query/autorag:
-    post:
-      summary: Run AutoRAG agent over all data
-      description: Uses the AutoRAG agent to answer a question about any data that the user can access.
-      operationId: autorag
-      tags:
-        - autorag
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AutoRagRequest'
-      responses:
-        '200':
-          $ref: '#/components/responses/AutoRagResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-  /links/{username}/{namespace}/{datasetName}:
-    get:
-      summary: Load links
-      description: Load links for specified dataset
-      operationId: getLinks
-      tags:
-        - links
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-        - $ref: '#/components/parameters/Username'
-      responses:
-        '200':
-          description: List of links related to specified dataset.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IngestLinksResponse'
-        '204':
-          description: There are no links associated with specified dataset
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-    post:
-      summary: "Rebuild links"
-      description: "Recalculate links for specified dataset"
-      operationId: rebuildLinks
-      tags:
-        - links
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-        - $ref: '#/components/parameters/Username'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IngestLinksRequest'
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IngestLinksResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          description: Forbidden - User doesn't have access to the dataset
-  /links/preview/{username}/{namespace}/{datasetName}:
-    post:
-      summary: "Preview links"
-      description: "Show what recalculate would do"
-      operationId: previewLinks
-      tags:
-        - links
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-        - $ref: '#/components/parameters/Username'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IngestLinksRequest'
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IngestLinksResponse'
-  /ontology/{username}/{namespace}/{datasetName}:
-    get:
-      description: load ontology
-      operationId: getConnectedLinks
-      tags:
-        - ontology
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-        - $ref: '#/components/parameters/Username'
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OntologyResponse'
-        '204':
-          description: There is no ontology for specified dataset
-    post:
-      description: save ontology
-      operationId: saveConnections
-      tags:
-        - ontology
-      parameters:
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-        - $ref: '#/components/parameters/Username'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModifyOntologyRequest'
-      responses:
-        '200':
-          description: Success
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
   /schema/datasets/all:
     get:
       summary: List all datasets
@@ -461,108 +278,83 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           description: User or namespace not found
-  /user/tokens:
-    get:
-      description: list all user tokens
-      operationId: listTokens
-      tags:
-        - user
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserTokenResponse'
-  /user/token:
+  /ingest/new/{namespace}/{datasetName}:
     post:
-      description: add user token
-      operationId: addToken
+      summary: Create new dataset
+      description: Creates a new dataset within a specified namespace.
+      operationId: createDataset
       tags:
-        - user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateTokenRequest'
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserToken'
-  /user/token/{tokenId}:
-    delete:
-      description: delete user token
-      operationId: deleteToken
-      tags:
-        - user
+        - ingest
+        - datasets
       parameters:
-        - $ref: '#/components/parameters/TokenId'
-      responses:
-        '200':
-          description: Success
-  /links/add:
-    post:
-      summary: Add a new link
-      description: Create a new link between two dataset columns
-      operationId: addLink
-      tags:
-        - links
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddLinkRequest'
-            examples:
-              exactMatch:
-                summary: Exact match between movie datasets
-                value:
-                  from:
-                    username: "johndoe"
-                    namespace: "cinematography"
-                    dataset: "movies"
-                    columnName: "director"
-                  to:
-                    username: "janedoe"
-                    namespace: "entertainment"
-                    dataset: "films"
-                    columnName: "director_name"
-                  matchType: "ExactMatch"
-              geoMatch:
-                summary: Geographic match between location datasets
-                value:
-                  from:
-                    username: "alice"
-                    namespace: "geography"
-                    dataset: "cities"
-                    columnName: "coordinates"
-                  to:
-                    username: "bob"
-                    namespace: "mapping"
-                    dataset: "locations"
-                    columnName: "gps_coords"
-                  matchType: "GeoMatch"
+              $ref: '#/components/schemas/CreateDatasetRequest'
       responses:
-        '200':
-          description: Link existed, no creation required.
         '201':
-          description: Link created successfully
-        '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Dataset created successfully.
         '401':
           $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          description: Source or target dataset not found
+  /ingest/{namespace}/{datasetName}:
+    post:
+      summary: Ingest data
+      description: Load data into specified dataset
+      operationId: ingestData
+      tags:
+        - ingest
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestRequest'
+            examples:
+              movies:
+                $ref: '#/components/examples/moviesExample'
+              actors:
+                $ref: '#/components/examples/actorsExample'
+              unstructured:
+                $ref: '#/components/examples/unstructuredExample'
+      responses:
+        '200':
+          description: Successful ingestion response.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /infer/preview:
+    post:
+      summary: Preview
+      description: Process data like in ingest but don't save in dataset
+      operationId: previewInfer
+      tags:
+        - ingest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestRequest'
+            examples:
+              movies:
+                $ref: '#/components/examples/moviesExample'
+              actors:
+                $ref: '#/components/examples/actorsExample'
+      responses:
+        '200':
+          description: Successful preview response with processed data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/IngestPreviewResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /upload/multipart/{username}/{namespace}/{datasetName}/prepare:
     post:
       summary: Prepare multipart upload
@@ -657,6 +449,217 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /ontology/{username}/{namespace}/{datasetName}:
+    get:
+      description: load ontology
+      operationId: getConnectedLinks
+      tags:
+        - ontology
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OntologyResponse'
+        '204':
+          description: There is no ontology for specified dataset
+    post:
+      description: save ontology
+      operationId: saveConnections
+      tags:
+        - ontology
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifyOntologyRequest'
+      responses:
+        '200':
+          description: Success
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /links/{username}/{namespace}/{datasetName}:
+    get:
+      summary: Load links
+      description: Load links for specified dataset
+      operationId: getLinks
+      tags:
+        - links
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      responses:
+        '200':
+          description: List of links related to specified dataset.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngestLinksResponse'
+        '204':
+          description: There are no links associated with specified dataset
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      summary: "Rebuild links"
+      description: "Recalculate links for specified dataset"
+      operationId: rebuildLinks
+      tags:
+        - links
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestLinksRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngestLinksResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Forbidden - User doesn't have access to the dataset
+  /links/preview/{username}/{namespace}/{datasetName}:
+    post:
+      summary: "Preview links"
+      description: "Show what recalculate would do"
+      operationId: previewLinks
+      tags:
+        - links
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestLinksRequest'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngestLinksResponse'
+  /links/add:
+    post:
+      summary: Add a new link
+      description: Create a new link between two dataset columns
+      operationId: addLink
+      tags:
+        - links
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddLinkRequest'
+            examples:
+              exactMatch:
+                summary: Exact match between movie datasets
+                value:
+                  from:
+                    username: "johndoe"
+                    namespace: "cinematography"
+                    dataset: "movies"
+                    columnName: "director"
+                  to:
+                    username: "janedoe"
+                    namespace: "entertainment"
+                    dataset: "films"
+                    columnName: "director_name"
+                  matchType: "ExactMatch"
+              geoMatch:
+                summary: Geographic match between location datasets
+                value:
+                  from:
+                    username: "alice"
+                    namespace: "geography"
+                    dataset: "cities"
+                    columnName: "coordinates"
+                  to:
+                    username: "bob"
+                    namespace: "mapping"
+                    dataset: "locations"
+                    columnName: "gps_coords"
+                  matchType: "GeoMatch"
+      responses:
+        '200':
+          description: Link existed, no creation required.
+        '201':
+          description: Link created successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Source or target dataset not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /query:
+    post:
+      summary: Query data
+      description: Execute ontology query
+      operationId: queryData
+      tags:
+        - query
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryDataRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/QueryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /query/autorag:
+    post:
+      summary: Run AutoRAG agent over all data
+      description: Uses the AutoRAG agent to answer a question about any data that the user can access.
+      operationId: autorag
+      tags:
+        - autorag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoRagRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/AutoRagResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 components:
   parameters:
     DatasetName:
@@ -695,6 +698,7 @@ components:
       description: The username associated with the request.
       schema:
         type: string
+
   schemas:
     DataArray:
       type: array
@@ -702,6 +706,7 @@ components:
       items:
         type: object
         additionalProperties: true
+
     AddLinkRequest:
       type: object
       properties:
@@ -792,9 +797,10 @@ components:
       properties:
         columnNames:
           type: array
-          items: {type: string}
+          items: { type: string }
           description: List of dataset column names.
-          example: ["id", "name", "age", "department", "salary"]
+          example: [ "id","name","age","department","salary" ]
+
         inferDefinition:
           description: Inference definition for dataset.
           allOf:
@@ -807,6 +813,7 @@ components:
               age=employee age in years
               department=work department
               salary=annual salary in USD
+
         rowCount:
           type: integer
           format: int64
@@ -1060,6 +1067,7 @@ components:
           department: "Finance"
           location: "Texas"
           __metadata_normalize: "Normalized department field from 'Fin Dept' to 'Finance'"
+
     UpdateSortOrderRequest:
       type: object
       properties:
@@ -1068,9 +1076,10 @@ components:
           items:
             type: string
           description: Ordered list of all column names in desired sequence
-          example: ["id", "name", "age", "department", "location"]
+          example: [ "id", "name", "age", "department", "location" ]
       required:
         - order
+
     ModifyOntologyRequest:
       type: object
       properties:
@@ -1082,15 +1091,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ApiLink'
+
     NormaliseStep:
       type: object
       properties:
         type:
           type: string
-          enum: [normalise, normalize]
+          enum: [ normalise,normalize ]
         mode:
           type: string
-          enum: [all-in-one, field-by-field, embeddings]
+          enum: [ all-in-one, field-by-field, embeddings ]
           description: Normalisation mode
         targetCols:
           type: object
@@ -1104,6 +1114,7 @@ components:
         - type
         - mode
         - targetCols
+
     OntologyResponse:
       type: array
       items:
@@ -1112,6 +1123,7 @@ components:
       type: string
       example: "OntologyObject(\"objectName\").get()"
       description: for details check [Querying data](/Querying_data)
+
     QueryDataRequest:
       type: object
       properties:
@@ -1133,6 +1145,7 @@ components:
       required:
         - username
         - namespace
+
     AutoRagRequest:
       type: object
       properties:
@@ -1151,36 +1164,39 @@ components:
         - username
         - namespace
         - query
+
     ReverseGeoStep:
       type: object
       properties:
         type:
           type: string
-          enum: [reverseGeo]
+          enum: [ reverseGeo ]
         deriveFrom:
           type: string
           description: Location column name
       required:
         - type
         - deriveFrom
+
     RowsStep:
       type: object
       properties:
         type:
           type: string
-          enum: [rows]
+          enum: [ rows ]
         deriveFrom:
           type: string
           description: Column name from where the json content will be read
       required:
         - type
         - deriveFrom
+
     TableStep:
       type: object
       properties:
         type:
           type: string
-          enum: [table]
+          enum: [ table ]
         deriveFrom:
           type: string
           description: Column name from where the column should be derived from
@@ -1191,6 +1207,7 @@ components:
       required:
         - type
         - deriveFrom
+
     UserToken:
       type: object
       properties:
@@ -1217,15 +1234,16 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/UserToken'
+
     ValidateStep:
       type: object
       properties:
         type:
           type: string
-          enum: [validate]
+          enum: [ validate ]
         mode:
           type: string
-          enum: [regex, rows, fields]
+          enum: [ regex, rows, fields ]
           description: Validation mode
         columns:
           type: array
@@ -1236,6 +1254,7 @@ components:
         - type
         - mode
         - columns
+
     PrepareMultipartRequest:
       type: object
       properties:
@@ -1251,6 +1270,7 @@ components:
       required:
         - filename
         - size
+
     PrepareMultipartResponse:
       type: object
       properties:
@@ -1279,6 +1299,7 @@ components:
         - key
         - partSize
         - presignedUrls
+
     PresignedUrlItem:
       type: object
       properties:
@@ -1288,6 +1309,7 @@ components:
           example: 'https://my-data-bucket.s3.amazonaws.com/uploads/data/20240301-143022-uuid.json?partNumber=1&uploadId=...'
       required:
         - url
+
     FinishedMultipartRequest:
       type: object
       properties:
@@ -1309,6 +1331,7 @@ components:
         - uploadId
         - key
         - parts
+
     FinishedMultipartItem:
       type: object
       properties:
@@ -1323,6 +1346,7 @@ components:
       required:
         - partNumber
         - etag
+
     AbortMultipartRequest:
       type: object
       properties:
@@ -1337,6 +1361,7 @@ components:
       required:
         - uploadId
         - key
+
     QueryResponseMetadata:
       type: object
       properties:
@@ -1352,6 +1377,7 @@ components:
         sourceObject:
           type: string
           description: The source object queried
+
     QueryResponseData:
       type: object
       properties:
@@ -1362,6 +1388,7 @@ components:
       required:
         - data
         - metadata
+
     AutoRagResponseData:
       type: object
       properties:
@@ -1389,6 +1416,7 @@ components:
       required:
         - response
         - steps
+
   responses:
     QueryResponse:
       description: Successful response with the ontology data object.
@@ -1396,12 +1424,14 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/QueryResponseData'
+
     AutoRagResponse:
       description: Response containing step-by-step RAG execution results and the final answer.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/AutoRagResponseData'
+
     BadRequest:
       description: Bad request. The request was malformed or invalid.
       content:
@@ -1453,6 +1483,14 @@ components:
       description: |
         Use a Bearer token for authentication. Submit the token using the `Authorization`
         header: `Authorization: Bearer <token>`.
+
+    openId-dev:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://login.dev.datalinks.com/realms/datalinks-realm/protocol/openid-connect/auth
+          scopes:
+            openid: openid
     openId:
       type: oauth2
       flows:
@@ -1460,6 +1498,7 @@ components:
           authorizationUrl: https://login.datalinks.com/realms/datalinks-realm/protocol/openid-connect/auth
           scopes:
             openid: openid
+
   examples:
     moviesExample:
       summary: movies
@@ -1502,6 +1541,7 @@ components:
           - name: Sophie Marceau
             age: 57
             nationality: French
+
           # Argo
           - name: Ben Affleck
             age: 52
@@ -1509,6 +1549,7 @@ components:
           - name: Bryan Cranston
             age: 68
             nationality: American
+
           # A Quiet Place
           - name: John Krasinski
             age: 45
@@ -1516,6 +1557,7 @@ components:
           - name: Emily Blunt
             age: 41
             nationality: British
+
           # Dances with Wolves
           - name: Kevin Costner
             age: 69
@@ -1523,6 +1565,7 @@ components:
           - name: Mary McDonnell
             age: 72
             nationality: American
+
           # Unforgiven
           - name: Clint Eastwood
             age: 94
@@ -1530,6 +1573,7 @@ components:
           - name: Morgan Freeman
             age: 86
             nationality: American
+
           # The Postman
           - name: Kevin Costner
             age: 69
@@ -1537,5 +1581,16 @@ components:
           - name: Will Patton
             age: 70
             nationality: American
+
         link:
           ExactMatch: null
+    unstructuredExample:
+      summary: example of extrtacting row from unstructured data
+      value:
+        data:
+          - text: "Meryl Streep, known for her incredible acting, has starred in unforgettable films like The Devil Wears Prada and Sophie's Choice. She's won three Oscars over her illustrious career. Anne Hathaway shared the screen with her in The Devil Wears Prada and later shone in Les Misérables, earning her own Oscar.\n\nLeonardo DiCaprio, a household name, is celebrated for roles in Titanic, Inception, and The Revenant. His long-awaited Oscar win came for The Revenant. His Titanic co-star Kate Winslet, who also has an Oscar to her name, delivered powerful performances in The Reader and of course, Titanic.\n\nTom Hanks, the quintessential leading man, gave us unforgettable performances in Forrest Gump, Cast Away, and Saving Private Ryan. He's a two-time Oscar winner. Robin Wright, who starred alongside him in Forrest Gump, is also well-remembered for her role in The Princess Bride.\n\nCate Blanchett, a two-time Oscar winner, mesmerized audiences in films like Blue Jasmine, Carol, and Elizabeth. Rooney Mara, her co-star in Carol, also made a mark with her performance in The Girl with the Dragon Tattoo.\n\nDenzel Washington, one of the most respected actors in Hollywood, has won two Oscars for his work in Training Day and Glory. He also delivered a heartfelt performance in Fences, where he starred alongside Viola Davis. Davis herself is a powerhouse of talent, with an Oscar for her role in Fences and another standout performance in The Help."
+        infer:
+          steps:
+            - deriveFrom: text
+              helperPrompt: "If you find a numeric field use only the value and omit the rest."
+              type: table
