@@ -3,7 +3,9 @@ title: "How To View and Manage Connections"
 sidebarTitle: "Manage Connections"
 ---
 
-Connections are what make DataLinks powerful. They turn isolated datasets into a web of related knowledge that both humans and AI can reason over. Each connection represents a link between entities or values that share a relationship across datasets. Viewing and managing these links helps you understand how your data interacts and ensures that your knowledge map stays accurate.
+Connections are what make DataLinks powerful. They turn isolated datasets into a web of related knowledge that both humans and AI can reason over. Each connection represents a link between entities or values that share a relationship across datasets.
+
+Viewing and managing these links helps you understand how your data interacts and ensures that your knowledge map stays accurate.
 
 ## View all connections in the Ontology Explorer
 
@@ -61,16 +63,16 @@ This process lets you fine-tune which relationships are included in your namespa
 
 You can also view and manage connections programmatically using the API or SDK.
 
-- **GET Load Links**
+- [**GET Load Links**](/api-reference/links/load-links)
 
   Retrieves the existing connections (both active and suggested).
-- **POST Rebuild Links**
+- [**POST Rebuild Links**](/api-reference/links/rebuild-links)
 
   Regenerates suggested links for a dataset or namespace based on current data.
-- **POST Preview Links**
+- [**POST Preview Links**](/api-reference/links/preview-links)
 
   Previews how new potential links would appear before committing them.
-- **POST Add a New Link**
+- [**POST Add a New Link**](/api-reference/links/add-a-new-link)
 
   Adds a specific manual connection between datasets (for example, if you know two fields correspond but were not automatically matched).
 

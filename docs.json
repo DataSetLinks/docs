@@ -41,6 +41,7 @@
             "pages": [
               "how-to/create-dataset",
               "how-to/create-namespace",
+              "how-to/get-api-token",
               "how-to/manage-connections",
               "how-to/query-data"
             ],
