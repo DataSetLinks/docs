@@ -78,6 +78,8 @@ paths:
                 $ref: '#/components/examples/moviesExample'
               actors:
                 $ref: '#/components/examples/actorsExample'
+              unstructured:
+                $ref: '#/components/examples/unstructuredExample'
       responses:
         '200':
           description: Successful ingestion response.
@@ -157,6 +159,34 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           description: Dataset not found or not allowed to modify
+  /agents/{username}/{namespace}/{datasetName}/requestCleaning:
+    post:
+      summary: Request cleaning on a dataset
+      description: Request cleaning on a dataset
+      operationId: requestCleaning
+      tags:
+        - agents
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCleaningRequest'
+      responses:
+        '201':
+          description: Successfully scheduled a new cleaning task.
+        '400':
+          description: Request body is invalid or malformed JSON.
+        '404':
+          description: The dataset does not exist or the user cannot modify it.
+        '409':
+          description: A dataset with the specified name already exists in the target namespace.
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
   /data/{username}/{namespace}/{datasetName}/inferDefinition:
     put:
       summary: Update infer definition
@@ -960,9 +990,7 @@ components:
       type: object
       properties:
         data:
-          type: array
-          items:
-            type: object
+          $ref: '#/components/schemas/DataArray'
         link:
           type: object
           properties:
@@ -973,6 +1001,8 @@ components:
                   type: number
                 minVariation:
                   type: number
+                bidirectional:
+                  type: boolean
               additionalProperties:
                 type: string
             GeoMatch:
@@ -982,11 +1012,12 @@ components:
                   type: number
                 distanceUnit:
                   type: string
+                bidirectional:
+                  type: boolean
               additionalProperties:
                 type: string
       required:
         - data
-        - link
       example:
         data:
           - name: "Braveheart"
@@ -1071,6 +1102,31 @@ components:
           example: ["id", "name", "age", "department", "location"]
       required:
         - order
+    RequestCleaningRequest:
+      type: object
+      properties:
+        prompts:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: string
+          description: Prompts that describe each cleaning step in the intended order.
+          example:
+            - "Remove extra spaces from firstName and lastName fields."
+            - "Remove empty values from the age field."
+        outputNamespace:
+          type: string
+          description: Target namespace where the cleaned dataset will be created.
+          example: "all_about_movies"
+        outputDatasetName:
+          type: string
+          description: Name of the new dataset created after the cleaning task is completed. Dataset cannot exists and will be created when cleaning starts.
+          example: "movies_cleaned"
+      required:
+        - prompts
+        - outputNamespace
+        - outputDatasetName
     ModifyOntologyRequest:
       type: object
       properties:
@@ -1143,6 +1199,9 @@ components:
         query:
           type: string
           example: "What do llamas drink to cool themselves down?"
+        helperPrompt:
+          type: string
+          example: "You're a prophet of the alpacalypse. Your task is to spit the word!"
         model:
           type: string
         provider:
@@ -1349,9 +1408,12 @@ components:
         originalQuery:
           type: string
           description: The original query provided by the user
-        sourceObject:
+        startingDataset:
           type: string
-          description: The source object queried
+          description: The initial dataset used when evaluating the query. For linked queries, this is the dataset where the query begins.
+        finalDataset:
+          type: string
+          description: The dataset that the query ultimately returns results from. For linked queries, this is the final dataset after following links.
     QueryResponseData:
       type: object
       properties:
@@ -1539,3 +1601,13 @@ components:
             nationality: American
         link:
           ExactMatch: null
+    unstructuredExample:
+      summary: example of extrtacting row from unstructured data
+      value:
+        data:
+          - text: "Meryl Streep, known for her incredible acting, has starred in unforgettable films like The Devil Wears Prada and Sophie's Choice. She's won three Oscars over her illustrious career. Anne Hathaway shared the screen with her in The Devil Wears Prada and later shone in Les Misérables, earning her own Oscar.\n\nLeonardo DiCaprio, a household name, is celebrated for roles in Titanic, Inception, and The Revenant. His long-awaited Oscar win came for The Revenant. His Titanic co-star Kate Winslet, who also has an Oscar to her name, delivered powerful performances in The Reader and of course, Titanic.\n\nTom Hanks, the quintessential leading man, gave us unforgettable performances in Forrest Gump, Cast Away, and Saving Private Ryan. He's a two-time Oscar winner. Robin Wright, who starred alongside him in Forrest Gump, is also well-remembered for her role in The Princess Bride.\n\nCate Blanchett, a two-time Oscar winner, mesmerized audiences in films like Blue Jasmine, Carol, and Elizabeth. Rooney Mara, her co-star in Carol, also made a mark with her performance in The Girl with the Dragon Tattoo.\n\nDenzel Washington, one of the most respected actors in Hollywood, has won two Oscars for his work in Training Day and Glory. He also delivered a heartfelt performance in Fences, where he starred alongside Viola Davis. Davis herself is a powerhouse of talent, with an Oscar for her role in Fences and another standout performance in The Help."
+        infer:
+          steps:
+            - deriveFrom: text
+              helperPrompt: "If you find a numeric field use only the value and omit the rest."
+              type: table
