@@ -162,6 +162,10 @@
       "destination": "/api-reference/ingest/create-new-dataset"
     },
     {
+      "source": "/command_list",
+      "destination": "/reference/query_commands"
+    },
+    {
       "source": "/Querying_data",
       "destination": "/api-reference/query/query-data"
     }
