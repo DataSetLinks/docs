@@ -75,6 +75,26 @@ Enterprises spend millions each year trying to extract value from data, but the 
 
 Because the platform understands both the structure and the meaning of the data, it can generate high-quality queries that reflect real business logic. This combination of semantic structure and LLM interpretation turns querying into an intelligent conversation with your data.
 
+## Example: Deep search across connected datasets
+
+You can use query language to traverse multiple degrees of connections in the knowledge map to uncover indirect relationships that matter for compliance and risk. For example, the following query starts from a specific company in the registry, explores its network, and then looks for any links to sanctions data:
+
+```
+Ontology("registry/companies")
+  .filter("full_name" == "Qualcomm Technologies, Inc.")
+  .searchAround(5)
+  .find("sanctions/companies")
+```
+
+This query works in several steps:
+
+- `Ontology("registry/companies")` selects the companies registry dataset as the starting point.
+- `.filter("full_name" == "Qualcomm Technologies, Inc.")` narrows the focus to a single legal entity based on its full registered name.
+- `.searchAround(5)` walks the knowledge map up to five degrees of connections away from that company, following the defined links between datasets such as ownership, subsidiaries, and related entities.
+- `.find("sanctions/companies")` returns the companies in the sanctions dataset that are discovered within that five-degree reach.
+
+This kind of deep search can reveal whether a company has direct or indirect exposure to sanctioned entities, without requiring the user to know ahead of time how those relationships are structured.
+
 ## The foundation of data-driven decision making
 
 When querying works at this level, AI becomes more than a tool for analysis; it becomes a partner in reasoning. Clean, connected, and well-structured data combined with LLM-driven querying gives organizations the ability to move from static reports to continuous discovery.
