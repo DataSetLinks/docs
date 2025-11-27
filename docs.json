@@ -166,6 +166,10 @@
       "destination": "/reference/query_commands"
     },
     {
+      "source": "/Command_List",
+      "destination": "/reference/query_commands"
+    },
+    {
       "source": "/Querying_data",
       "destination": "/api-reference/query/query-data"
     }
