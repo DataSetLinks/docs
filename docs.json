@@ -38,6 +38,7 @@
           },
           {
             "group": "How-To Guides",
+            "icon": "computer-mouse",
             "pages": [
               "how-to/create-dataset",
               "how-to/create-namespace",
@@ -45,7 +46,14 @@
               "how-to/manage-connections",
               "how-to/query-data"
             ],
-            "icon": "computer-mouse"
+            "groups": [
+              {
+                "group": "MCP Guides",
+                "pages": [
+                  "mcp/claude-desktop"
+                ]
+              }
+            ]
           },
           {
             "group": "Reference",
