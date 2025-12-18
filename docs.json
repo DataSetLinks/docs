@@ -44,9 +44,7 @@
               "how-to/create-namespace",
               "how-to/get-api-token",
               "how-to/manage-connections",
-              "how-to/query-data"
-            ],
-            "groups": [
+              "how-to/query-data",
               {
                 "group": "MCP Guides",
                 "pages": [
