@@ -1,0 +1,212 @@
+---
+title: "How to Connect Claude Desktop to the DataLinks MCP Server"
+description: "Learn how to connect to the DataLinks server using Claude Desktop."
+---
+
+This guide provides step-by-step instructions for using the DataLinks MCP server within Claude Desktop. DataLinks provides an MCP endpoint that Claude can use once it is configured locally. The process involves:
+
+1. Installing Claude Desktop
+2. Installing required system dependencies
+3. Locating the Claude config folder and file
+4. Adding the DataLinks MCP configuration
+5. Restarting Claude Desktop
+6. Verifying the connection
+
+## Step 1: Install Claude Desktop
+
+1. Open your browser and go to https://claude.com/download
+2. Download the installer for your operating system:
+   - Windows: `.exe`
+   - macOS: `.dmg`
+   - Linux: `.AppImage` or `.deb` depending on your distribution
+3. Run the installer and follow the on screen instructions.
+4. Launch Claude Desktop and sign in with your Anthropic account.
+
+## Step 2: Install required dependencies
+
+Claude Desktop relies on external tools to run MCP servers. These must be installed separately.
+
+### Windows
+
+- Install Node.js (required)
+  - Download from https://nodejs.org
+  - Choose the LTS version
+  - Restart your computer after installation
+- Confirm installation:
+
+  ```
+  node--version
+  npx--version
+  ```
+
+### macOS
+
+- Install Node.js
+  - Option 1: Download from https://nodejs.org
+  - Option 2: Use Homebrew (Don’t have Homebrew? For install instructions, see [brew.sh](http://brew.sh))
+
+    ```
+    brew install node
+    ```
+- Confirm installation:
+
+  ```
+  node -v
+  npx -v
+  ```
+
+### Linux
+
+- Install Node.js using your package manager
+
+  Ubuntu or Debian:
+
+  ```
+  sudo apt update
+  sudo apt install nodejs npm
+  ```
+
+  Fedora:
+
+  ```
+  sudo dnf install nodejs
+  ```
+- Confirm installation:
+
+  ```
+  node--version
+  npx--version
+  ```
+
+## Step 3: Locate the Claude Desktop config folder and open the config file
+
+Claude Desktop reads MCP settings from a local configuration file. This can accessed by following these steps:
+
+1. Open Claude Desktop.
+2. Click your **profile icon** in the bottom-left corner of the app.
+3. Click **Settings**.
+4. Click **Developer** at the bottom of the left menu.
+5. Click the **Edit Config** button.
+
+This should open your file location in your file explorer. Look for a JSON file titled `claude_desktop_config` or something similar.
+
+### Typical config location by platform
+
+- Windows: `%APPDATA%\\Claude\\`
+- macOS: `~/Library/ApplicationSupport/Claude/`
+- Linux: `~/.config/Claude/`
+
+If the folder does not exist yet, start Claude Desktop once and close it. The folder will be created automatically.
+
+## Step 4: Add the DataLinks MCP configuration
+
+1. Inside the Claude folder, open the file called `claude_desktop_config.json` (or similar).
+2. Paste the following configuration into the file:
+
+   ```
+   {
+     "mcpServers": {
+       "datalinks": {
+         "command": "C:\\\\PROGRA~1\\\\nodejs\\\\npx.cmd",
+         "args": [
+           "mcp-remote",
+           "<https://mcp.datalinks.com/mcp/>",
+           "--header",
+           "Authorization:Bearer <your-token-here>"
+         ]
+       }
+     }
+   }
+   ```
+3. Replace `<your-token-here>` with your DataLinks API token.
+
+### Notes for macOS and Linux
+
+- Update the `command` path to your system’s `npx` location.
+- Common values include:
+
+  ```
+  /usr/local/bin/npx
+  ```
+
+  or
+
+  ```
+  /opt/homebrew/bin/npx
+  ```
+
+You can find the correct path by running:
+
+```
+which npx
+```
+
+## Step 5: Restart Claude Desktop
+
+1. Fully close Claude Desktop. (This means closing it in your application tray icon as well.)
+2. Open it again.
+3. Claude will automatically load the MCP server during startup.
+
+If the configuration is correct, the DataLinks MCP server becomes available for tool based interactions.
+
+## Step 6: Verify the connection
+
+You can verify the setup by asking Claude something like:
+
+> Can you confirm that the DataLinks MCP server is available?
+
+If the server fails to load, Claude usually reports an MCP startup error.
+
+<Tip>
+  Screenshot any errors that appear at startup for troubleshooting later.
+</Tip>
+
+## Common troubleshooting
+
+### Check the logs file
+
+Claude Desktop keeps detailed logs that explain what went wrong.
+
+### Log file locations
+
+- Windows: `%APPDATA%\\Claude\\logs`
+- macOS: `~/Library/Application Support/Claude/logs`
+- Linux: `~/.config/Claude/logs`
+
+Open the most recent log file and look for MCP related errors.
+
+### Common issues and fixes
+
+**Claude does not start the MCP server**
+
+- Confirm Node.js is installed
+- Confirm `npx` works from the command line
+- Double check the `command` path in the config file
+
+**Authorization errors**
+
+- Verify your DataLinks token is correct
+- Make sure there are no extra spaces in the Authorization header
+
+**Windows path errors**
+
+- Ensure the `npx.cmd` path matches your Node.js installation
+- `C:\\Program Files\\nodejs\\npx.cmd` is common, but it can vary
+
+**Nothing happens after restart**
+
+- Check that the config file name is exactly `claude_desktop_config.json`
+- Confirm the JSON formatting is valid
+
+## Getting help
+
+If you get stuck:
+
+1. Open the Claude logs file
+2. Copy the content
+3. Paste them into an LLM (such as ChatGPT) along with a short description of what you tried
+4. Also paste any error messages you were able to screenshot
+
+This usually provides clear guidance on what needs to be adjusted.
+
+Once the configuration is complete, Claude Desktop can communicate with the DataLinks MCP server and use it as part of its tool workflow.
