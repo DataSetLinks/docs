@@ -48,6 +48,7 @@
               {
                 "group": "MCP Guides",
                 "pages": [
+                  "mcp/general-mcp",
                   "mcp/claude-desktop"
                 ]
               }
