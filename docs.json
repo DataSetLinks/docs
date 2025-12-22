@@ -45,6 +45,7 @@
               "how-to/get-api-token",
               "how-to/manage-connections",
               "how-to/query-data",
+              "how-to/connect-app-builder",
               {
                 "group": "MCP Guides",
                 "pages": [
