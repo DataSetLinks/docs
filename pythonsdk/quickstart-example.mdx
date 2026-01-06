@@ -1,0 +1,114 @@
+---
+title: "DataLinks SDK Quickstart"
+description: "Create a dataset and upload data into it using the DataLinks SDK."
+---
+
+This guide helps you create your first dataset and upload data using DataLinks. You will go from zero to a working dataset in just a few minutes.
+
+By the end of this page, you will have:
+
+- Created a dataset
+- Uploaded data into it
+- Verified that the data is available
+
+## Prerequisites
+
+Before you start, make sure you have:
+
+- Python 3.9 or newer
+- A Data Links API key
+
+## Install the SDK
+
+Install the Data Links Python SDK:
+
+```
+pip install datalinks
+```
+
+## Set your API key
+
+Set your API key as an environment variable:
+
+```
+export DATALINKS_API_KEY="your_api_key_here"
+```
+
+If you are on Windows, use:
+
+```
+setx DATALINKS_API_KEY "your_api_key_here"
+```
+
+## Create a dataset and upload data
+
+Create a new file called `quickstart.py` and paste the following code into it.
+
+```
+from datalinks import DataLinksClient
+
+client = DataLinksClient()
+
+# Create a dataset
+dataset = client.datasets.create(
+    name="quickstart-dataset",
+    description="My first Data Links dataset"
+)
+
+print(f"Created dataset with id: {dataset.id}")
+
+# Upload data
+records = [
+    {"id": 1, "title": "First record", "category": "example"},
+    {"id": 2, "title": "Second record", "category": "example"},
+]
+
+client.datasets.upload_data(
+    dataset_id=dataset.id,
+    records=records
+)
+
+print("Data uploaded successfully")
+```
+
+Run the script from your terminal:
+
+```
+python quickstart.py
+```
+
+## Verify your dataset
+
+After the script finishes, you should see output similar to:
+
+```
+Created dataset with id: ds_12345
+Data uploaded successfully
+```
+
+Your dataset is now created and populated with data.
+
+You can now:
+
+- View the dataset in the Data Links dashboard
+- Query the dataset using the API or SDK
+- Apply AI-powered linking and enrichment
+
+## What just happened
+
+In a few lines of code, you:
+
+1. Initialized the Data Links client using your API key
+2. Created a new dataset
+3. Uploaded structured records into that dataset
+
+This workflow is the foundation for most Data Links applications.
+
+## Next steps
+
+Once you are comfortable with this flow, you can explore:
+
+- Updating or deleting datasets
+- Uploading larger files such as CSV or JSONL
+- Querying and linking data
+- Using AI features on your datasets
