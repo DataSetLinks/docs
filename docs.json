@@ -62,13 +62,6 @@
               "reference/query_commands"
             ],
             "icon": "file-lines"
-          },
-          {
-            "group": "Use-Cases",
-            "icon": "folder-open",
-            "pages": [
-              "use-cases/tariffs"
-            ]
           }
         ]
       },
