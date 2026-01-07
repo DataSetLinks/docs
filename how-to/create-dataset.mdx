@@ -1,6 +1,7 @@
 ---
 title: "How To Create a New Dataset"
 sidebarTitle: "Create a Dataset"
+description: "Create a new dataset using the DataLinks web platform or API."
 ---
 
 Datasets are the foundation of how DataLinks organizes and understands your information. Each dataset represents a structured table of data that can later be cleaned, connected, and queried by AI.
@@ -26,25 +27,169 @@ Follow these steps:
 
 Your dataset will appear in your list of available datasets and will be ready for ingestion and cleaning.
 
-## Create a dataset with the API or SDK
+## Create a dataset using the API
 
-For users managing large amounts of data or integrating DataLinks into automated workflows, creating datasets through the **API** or **SDK** is the most efficient option.
+This sections shows how to create a new dataset in DataLinks by calling the REST API directly from Python.
 
-You can use either:
+You’ll create a dataset named `employee_records` inside a namespace called `hr_demo`, using the DataLinks **Create new dataset** API endpoint.
 
-- **A script** that calls the DataLinks API endpoint: [POST Create new dataset](/api-reference/ingest/create-new-dataset)
-- Or the **DataLinks SDK**, which simplifies dataset creation in just a few lines of code.
+### Prerequisites
+
+Before you begin, make sure you have:
+
+- A DataLinks account
+- A valid bearer token for the DataLinks API
+- A Python environment set up for running scripts
+- The ability to install Python packages
+
+You can use any project structure or environment setup that fits your workflow.
+
+### Install dependencies
+
+This guide uses direct HTTP calls with Python. Install the `requests` library if you do not already have it available:
+
+```
+pip install requests
+```
+
+### Configure environment variables
+
+Set the following environment variables so sensitive values are not hardcoded in your script:
+
+<Tabs>
+  <Tab title="Windows">
+    **For the current session**
+
+    ```
+    $env:DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
+    $env:DATALINKS_NAMESPACE="hr_demo"
+    $env:DATALINKS_DATASET="employee_records"
+    ```
+
+    **Persist across future sessions**
+
+    ```
+    setx DATALINKS_TOKEN "YOUR_BEARER_TOKEN"
+    setx DATALINKS_NAMESPACE "hr_demo"
+    setx DATALINKS_DATASET "employee_records"
+    ```
+
+    After using `setx`, open a new PowerShell window before running your script.
+  </Tab>
+  <Tab title="Linux">
+    ```
+    export DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
+    export DATALINKS_NAMESPACE="hr_demo"
+    export DATALINKS_DATASET="employee_records"
+    ```
+
+    These apply to the current shell session. Add them to `~/.bashrc` or `~/.zshrc` if you want them to persist automatically.
+  </Tab>
+  <Tab title="MacOS">
+    ```
+    export DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
+    export DATALINKS_NAMESPACE="hr_demo"
+    export DATALINKS_DATASET="employee_records"
+    ```
+
+    These apply to the current terminal session. For persistence, place them in `~/.zshrc`.
+
+    ## Create the dataset (Python)
+  </Tab>
+</Tabs>
+
+### Create the dataset (Python)
+
+Create a Python file, for example `create_dataset.py`, and add the following code:
+
+```
+import os
+import json
+import requests
+
+BASE_URL = "https://api.datalinks.com/api/v1"
+
+token = os.environ["DATALINKS_TOKEN"]
+namespace = os.environ["DATALINKS_NAMESPACE"]
+dataset_name = os.environ["DATALINKS_DATASET"]
+
+url = f"{BASE_URL}/ingest/new/{namespace}/{dataset_name}"
+
+headers = {
+    "Authorization": f"Bearer {token}",
+    "Content-Type": "application/json",
+}
+
+payload = {
+    # Required. Options: "Public" or "Private"
+    "visibility": "Private",
+
+    # Optional but recommended
+    "inferDefinition": {
+        "dataDescription": "Employee dataset containing demographics and compensation.",
+        "fieldDefinition": (
+            "id=unique employee identifier\n"
+            "name=full employee name\n"
+            "age=employee age in years\n"
+            "department=work department\n"
+            "salary=annual salary in USD\n"
+        ),
+    },
+}
+
+response = requests.post(
+    url,
+    headers=headers,
+    data=json.dumps(payload),
+    timeout=30,
+)
+
+print("Status:", response.status_code)
+
+if response.headers.get("content-type", "").startswith("application/json"):
+    print(json.dumps(response.json(), indent=2))
+else:
+    print(response.text)
+
+response.raise_for_status()
+print("\nDataset created successfully.")
+```
+
+Run the script using your normal Python workflow:
+
+```
+python create_dataset.py
+```
+
+### How this works
+
+This request:
+
+- Calls `POST /ingest/new/{namespace}/{datasetName}` to create a dataset
+- Authenticates using a bearer token in the `Authorization` header
+- Sets dataset visibility to `Private`
+- Supplies optional metadata to help DataLinks understand the dataset structure
 
 <Info>
-  For detailed instructions and code examples, visit the API reference for [**Create New Dataset**](/api-reference/ingest/create-new-dataset).
+  The `inferDefinition` section is optional, though it is strongly recommended when creating datasets programmatically.
 </Info>
+
+### Common issues
+
+**Authentication errors**
+
+If the request fails with a 401 error, confirm that:
+
+- The token environment variable is set correctly
+- The `Authorization` header uses the `Bearer` format
+
+**Dataset naming errors**
+
+If you see a 400 or 404 error, check that:
+
+- The namespace and dataset name appear in the request URL
+- The dataset name follows standard naming conventions, such as lowercase letters and underscores
 
 ## Next steps
 
-Once your dataset is created, you can:
-
-- Ingest data into it using the [**Ingest Data API**](/api-reference/ingest/ingest-data) or the web upload feature.
-- Preview or validate data before committing changes.
-- Begin linking datasets through DataLinks’ automatic connection features.
-
-Creating a dataset is your first step toward transforming raw data into an intelligent, connected knowledge layer ready for AI and analysis.
+Once your dataset exists, you can ingest data into it using the data ingestion endpoints. From there, you can explore schema inference, enrichment, and querying workflows in DataLinks.
