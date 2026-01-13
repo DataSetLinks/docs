@@ -12,7 +12,7 @@ paths:
   /data:
     get:
       summary: Fetch datasets
-      description: Retrieve all available datasets
+      description: Retrieve all available datasets.
       operationId: getDatasets
       tags:
         - datasets
@@ -24,7 +24,7 @@ paths:
   /data/{namespace}:
     get:
       summary: Fetch datasets in namespace
-      description: Retrieve dataset for a specific namespace.
+      description: Retrieve all datasets for the specified namespace.
       operationId: getDatasetsInNamespace
       tags:
         - datasets
@@ -33,6 +33,28 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/ListOfDatasets'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /data/{username}/{namespace}/{datasetName}/ingest/attempts:
+    get:
+      summary: List ingestions for a dataset
+      description: Lists ingestion attempts for a dataset.
+      operationId: listIngestions
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+        - $ref: '#/components/parameters/BeforeCreatedAt'
+        - $ref: '#/components/parameters/PageSize'
+      tags:
+        - data
+      responses:
+        '200':
+          description: Returns ingestion records for the specified dataset.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListIngestionsResponseData'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /ingest/new/{namespace}/{datasetName}:
@@ -54,13 +76,13 @@ paths:
               $ref: '#/components/schemas/CreateDatasetRequest'
       responses:
         '201':
-          description: Dataset created successfully.
+          description: Creates a new dataset.
         '401':
           $ref: '#/components/responses/Unauthorized'
   /ingest/{namespace}/{datasetName}:
     post:
       summary: Ingest data
-      description: Load data into specified dataset
+      description: Load data into the specified dataset.
       operationId: ingestData
       tags:
         - ingest
@@ -78,15 +100,17 @@ paths:
                 $ref: '#/components/examples/moviesExample'
               actors:
                 $ref: '#/components/examples/actorsExample'
+              unstructured:
+                $ref: '#/components/examples/unstructuredExample'
       responses:
         '200':
-          description: Successful ingestion response.
+          description: Returns the ingestion result.
         '401':
           $ref: '#/components/responses/Unauthorized'
   /infer/preview:
     post:
       summary: Preview
-      description: Process data like in ingest but don't save in dataset
+      description: Process data using ingestion logic without saving it to a dataset.
       operationId: previewInfer
       tags:
         - ingest
@@ -103,17 +127,61 @@ paths:
                 $ref: '#/components/examples/actorsExample'
       responses:
         '200':
-          description: Successful preview response with processed data
+          description: Returns the processed preview data.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/IngestPreviewResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /infer/description:
+    post:
+      summary: Infer dataset description
+      description: Ask an agent to infer a data description based on sampled data.
+      operationId: inferDescription
+      tags:
+        - ingest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InferSchemaDescriptionRequest'
+      responses:
+        '200':
+          description: Returns an inferred description.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InferredDescriptionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /infer/schema:
+    post:
+      summary: Schema
+      description: Ask an agent to infer a schema based on sampled data.
+      operationId: inferSchema
+      tags:
+        - ingest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InferSchemaDescriptionRequest'
+      responses:
+        '200':
+          description: Returns the inferred schema.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InferredSchemaResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /data/{username}/{namespace}/{datasetName}:
     get:
       summary: Get dataset information
-      description: Allow to get dataset information
+      description: Get dataset metadata for the specified user, namespace, and dataset.
       operationId: getDatasetInformation
       tags:
         - dataset
@@ -123,18 +191,19 @@ paths:
         - $ref: '#/components/parameters/Username'
       responses:
         '200':
-          description: Successful return dataset information
+          description: Returns dataset metadata.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetResponse'
         '404':
-          description: Dataset not found
+          description: The dataset was not found.
         '400':
           description: Bad request
   /data/{username}/{namespace}/{datasetName}/rename:
     post:
       summary: Rename a dataset
+      description: Rename the specified dataset.
       operationId: renameDataset
       tags:
         - dataset
@@ -150,17 +219,45 @@ paths:
               type: string
       responses:
         '200':
-          description: Successful rename of a dataset
+          description: Renames the specified dataset.
         '400':
           description: Bad request
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Dataset not found or not allowed to modify
+          description: The dataset was not found or the user cannot modify it.
+  /agents/{username}/{namespace}/{datasetName}/requestCleaning:
+    post:
+      summary: Request cleaning on a dataset
+      description: Request a cleaning job for the specified dataset.
+      operationId: requestCleaning
+      tags:
+        - agents
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/DatasetName'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCleaningRequest'
+      responses:
+        '201':
+          description: Schedules a new cleaning task.
+        '400':
+          description: Request body is invalid or malformed JSON.
+        '404':
+          description: The dataset does not exist or the user cannot modify it.
+        '409':
+          description: A dataset with the specified name already exists in the target namespace.
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
   /data/{username}/{namespace}/{datasetName}/inferDefinition:
     put:
-      summary: Update infer definition
-      description: Allow to update saved infer
+      summary: Update inference definition
+      description: Update the saved inference definition for the dataset.
       operationId: updateInferDefinition
       tags:
         - dataset
@@ -176,15 +273,15 @@ paths:
               $ref: '#/components/schemas/ApiInferenceDefinition'
       responses:
         '201':
-          description: Successfully created new infer definition
+          description: Creates a new inference definition.
         '404':
-          description: Dataset not found or not allowed to modify
+          description: The dataset was not found or the user cannot modify it.
         '400':
           description: Bad request
   /schema/{username}/{namespace}/{datasetName}/sort-order:
     put:
       summary: Update dataset sort order
-      description: Update the sort order of columns in a dataset
+      description: Update the sort order of columns in a dataset.
       operationId: updateSortOrder
       tags:
         - dataset
@@ -200,19 +297,19 @@ paths:
               $ref: '#/components/schemas/UpdateSortOrderRequest'
       responses:
         '200':
-          description: Successfully reordered columns
+          description: Reorders columns.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
-          description: Dataset not found or not accessible
+          description: The dataset was not found or is not accessible.
         '422':
           $ref: '#/components/responses/UnprocessableContent'
   /data/{username}/{namespace}/{datasetName}/clear:
     post:
       summary: Clear all data for a dataset
-      description: Remove all data, links from the specified dataset. This is irreversible.
+      description: Remove all data and links from the specified dataset. This action is irreversible.
       operationId: clearDataset
       tags:
         - dataset
@@ -222,17 +319,17 @@ paths:
         - $ref: '#/components/parameters/Username'
       responses:
         '200':
-          description: Dataset data removed successfully.
+          description: Removes all data and links from the dataset.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
-          description: Dataset not found or not allowed to modify
+          description: The dataset was not found or the user cannot modify it.
   /data/{username}/{namespace}/{datasetName}/balefire:
     delete:
       summary: Delete all data and metadata for a dataset (balefire)
-      description: Remove all data, links, and metadata for the specified dataset. This is irreversible.
+      description: Remove all data, links, and metadata for the specified dataset. This action is irreversible.
       operationId: balefireDataset
       tags:
         - dataset
@@ -242,17 +339,17 @@ paths:
         - $ref: '#/components/parameters/Username'
       responses:
         '200':
-          description: Dataset and all related data deleted successfully.
+          description: Deletes the dataset and all related data.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
-          description: Dataset not found or not allowed to modify
+          description: The dataset was not found or the user cannot modify it.
   /query:
     post:
       summary: Query data
-      description: Execute ontology query
+      description: Execute an ontology query.
       operationId: queryData
       tags:
         - query
@@ -288,7 +385,7 @@ paths:
   /links/{username}/{namespace}/{datasetName}:
     get:
       summary: Load links
-      description: Load links for specified dataset
+      description: Load the links for the specified dataset.
       operationId: getLinks
       tags:
         - links
@@ -298,18 +395,18 @@ paths:
         - $ref: '#/components/parameters/Username'
       responses:
         '200':
-          description: List of links related to specified dataset.
+          description: Returns the links for the specified dataset.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/IngestLinksResponse'
         '204':
-          description: There are no links associated with specified dataset
+          description: There are no links associated with the specified dataset.
         '401':
           $ref: '#/components/responses/Unauthorized'
     post:
       summary: "Rebuild links"
-      description: "Recalculate links for specified dataset"
+      description: "Recalculate links for a specified dataset."
       operationId: rebuildLinks
       tags:
         - links
@@ -325,7 +422,7 @@ paths:
               $ref: '#/components/schemas/IngestLinksRequest'
       responses:
         '200':
-          description: Success
+          description: Returns the recalculated links.
           content:
             application/json:
               schema:
@@ -333,11 +430,11 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden - User doesn't have access to the dataset
+          description: Forbidden. The user does not have access to the dataset.
   /links/preview/{username}/{namespace}/{datasetName}:
     post:
       summary: "Preview links"
-      description: "Show what recalculate would do"
+      description: "Shows what recalculating links would look like without saving changes."
       operationId: previewLinks
       tags:
         - links
@@ -353,14 +450,15 @@ paths:
               $ref: '#/components/schemas/IngestLinksRequest'
       responses:
         '200':
-          description: Success
+          description: Returns the preview link results.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/IngestLinksResponse'
   /ontology/{username}/{namespace}/{datasetName}:
     get:
-      description: load ontology
+      summary: Get dataset ontology
+      description: Load the ontology for the specified dataset.
       operationId: getConnectedLinks
       tags:
         - ontology
@@ -370,15 +468,16 @@ paths:
         - $ref: '#/components/parameters/Username'
       responses:
         '200':
-          description: Success
+          description: Returns the dataset ontology.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OntologyResponse'
         '204':
-          description: There is no ontology for specified dataset
+          description: There is no ontology for the specified dataset.
     post:
-      description: save ontology
+      summary: Save dataset ontology
+      description: Save the ontology for the specified dataset.
       operationId: saveConnections
       tags:
         - ontology
@@ -394,7 +493,7 @@ paths:
               $ref: '#/components/schemas/ModifyOntologyRequest'
       responses:
         '200':
-          description: Success
+          description: Saves the dataset ontology.
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -404,7 +503,7 @@ paths:
   /schema/datasets/all:
     get:
       summary: List all datasets
-      description: Retrieve all datasets visible to the authenticated user
+      description: Retrieve all datasets visible to the authenticated user.
       operationId: listAllDatasets
       tags:
         - schema
@@ -417,7 +516,7 @@ paths:
   /schema/{user}/namespaces:
     get:
       summary: List user namespaces
-      description: Retrieve namespaces for a specific user (use 'self' for current user)
+      description: Retrieve namespaces for a specific user. Use 'self' for the current user.
       operationId: listUserNamespaces
       tags:
         - schema
@@ -426,7 +525,7 @@ paths:
         - name: user
           in: path
           required: true
-          description: Username or 'self' for current user
+          description: Username or 'self' for the current user.
           schema:
             type: string
           example: self
@@ -436,11 +535,11 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
-          description: User not found
+          description: The user was not found.
   /schema/{user}/{namespace}/datasets:
     get:
       summary: List datasets within namespace
-      description: Retrieve datasets within a specific namespace for a user
+      description: Retrieve datasets within a specific namespace for a user. Use 'self' for the current user.
       operationId: listDatasetsWithinNamespace
       tags:
         - schema
@@ -449,7 +548,7 @@ paths:
         - name: user
           in: path
           required: true
-          description: Username or 'self' for current user
+          description: Username or 'self' for the current user.
           schema:
             type: string
           example: self
@@ -460,23 +559,25 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
-          description: User or namespace not found
+          description: The user or namespace was not found.
   /user/tokens:
     get:
-      description: list all user tokens
+      summary: List user tokens
+      description: List all tokens for the authenticated user.
       operationId: listTokens
       tags:
         - user
       responses:
         '200':
-          description: Success
+          description: Returns the user tokens.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserTokenResponse'
   /user/token:
     post:
-      description: add user token
+      summary: Add a new user token
+      description: Create a new token for the authenticated user.
       operationId: addToken
       tags:
         - user
@@ -488,14 +589,15 @@ paths:
               $ref: '#/components/schemas/CreateTokenRequest'
       responses:
         '200':
-          description: Success
+          description: Creates a user token and returns it.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserToken'
   /user/token/{tokenId}:
     delete:
-      description: delete user token
+      summary: Delete user token
+      description: Delete the specified user token.
       operationId: deleteToken
       tags:
         - user
@@ -503,11 +605,11 @@ paths:
         - $ref: '#/components/parameters/TokenId'
       responses:
         '200':
-          description: Success
+          description: Deletes the specified token.
   /links/add:
     post:
       summary: Add a new link
-      description: Create a new link between two dataset columns
+      description: Create a new link between two dataset columns.
       operationId: addLink
       tags:
         - links
@@ -550,7 +652,7 @@ paths:
         '200':
           description: Link existed, no creation required.
         '201':
-          description: Link created successfully
+          description: Creates a new link.
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -558,7 +660,7 @@ paths:
         '403':
           $ref: '#/components/responses/Forbidden'
         '404':
-          description: Source or target dataset not found
+          description: The source or target dataset was not found.
           content:
             application/json:
               schema:
@@ -566,7 +668,7 @@ paths:
   /upload/multipart/{username}/{namespace}/{datasetName}/prepare:
     post:
       summary: Prepare multipart upload
-      description: Initiate a multipart upload and get presigned URLs for all parts
+      description: Initiate a multipart upload and get presigned URLs for all parts.
       operationId: prepareMultipartUpload
       tags:
         - multipart-upload
@@ -582,7 +684,7 @@ paths:
               $ref: '#/components/schemas/PrepareMultipartRequest'
       responses:
         '200':
-          description: Multipart upload prepared successfully
+          description: Returns multipart upload details, including presigned URLs.
           content:
             application/json:
               schema:
@@ -592,7 +694,7 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
-          description: Failed to prepare multipart upload
+          description: Failed to prepare the multipart upload.
           content:
             application/json:
               schema:
@@ -600,7 +702,7 @@ paths:
   /upload/multipart/{username}/{namespace}/{datasetName}/finish:
     post:
       summary: Finish multipart upload
-      description: Finish a multipart upload by providing all part ETags
+      description: Finish a multipart upload by providing all part ETags.
       operationId: finishMultipartUpload
       tags:
         - multipart-upload
@@ -616,13 +718,13 @@ paths:
               $ref: '#/components/schemas/FinishedMultipartRequest'
       responses:
         '200':
-          description: Multipart upload completed successfully
+          description: Completes the multipart upload.
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
-          description: Failed to complete multipart upload
+          description: Failed to complete the multipart upload.
           content:
             application/json:
               schema:
@@ -630,7 +732,7 @@ paths:
   /upload/multipart/{username}/{namespace}/{datasetName}/abort:
     post:
       summary: Abort multipart upload
-      description: Abort a multipart upload and clean up partial data
+      description: Abort a multipart upload and clean up partial data.
       operationId: abortMultipartUpload
       tags:
         - multipart-upload
@@ -646,13 +748,13 @@ paths:
               $ref: '#/components/schemas/AbortMultipartRequest'
       responses:
         '200':
-          description: Multipart upload aborted successfully
+          description: Aborts the multipart upload and cleans up partial data.
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '500':
-          description: Failed to abort multipart upload
+          description: Failed to abort the multipart upload.
           content:
             application/json:
               schema:
@@ -695,6 +797,24 @@ components:
       description: The username associated with the request.
       schema:
         type: string
+    BeforeCreatedAt:
+      name: beforeCreatedAt
+      in: query
+      description: Value of the `created_at` field before or equals which to return ingestions.
+      schema:
+        type: string
+        format: date-time
+        example: "2024-03-01T14:30:22.000Z"
+        default: null
+    PageSize:
+      name: pageSize
+      in: query
+      description: Maximum number of results to return.
+      schema:
+        type: integer
+        minimum: 1
+        default: 25
+        maximum: 100
   schemas:
     DataArray:
       type: array
@@ -720,13 +840,13 @@ components:
             dataset: "films"
             columnName: "director_name"
         options:
-          type: object
-          additionalProperties:
-            type: string
-          description: Flexible options map for match configuration
+          description: Flexible options map for match configuration.
+          oneOf:
+            - $ref: '#/components/schemas/ExactMatchConfig'
+            - $ref: '#/components/schemas/GeoMatchConfig'
         matchType:
           type: string
-          description: Type of match to create between the columns
+          description: Type of match to create between the columns.
           enum:
             - ExactMatch
             - GeoMatch
@@ -740,10 +860,10 @@ components:
       properties:
         name:
           type: string
-          description: Dataset name
+          description: Name of the dataset.
         namespace:
           type: string
-          description: Namespace name
+          description: Name of the namespace the dataset belongs to.
         nameWithNamespace:
           type: string
           description: The name concatenated with the namespace.
@@ -846,12 +966,12 @@ components:
       properties:
         name:
           type: string
-          description: The name of the namespace
+          description: The name of the namespace.
           example: "cinematography"
         owner:
           type: string
           format: uuid
-          description: UUID of the namespace owner
+          description: UUID of the namespace owner.
           example: "550e8400-e29b-41d4-a716-446655440000"
       required:
         - name
@@ -897,19 +1017,19 @@ components:
       properties:
         username:
           type: string
-          description: Username who owns the dataset
+          description: Username of the dataset owner.
           example: "johndoe"
         namespace:
           type: string
-          description: Namespace of the dataset
+          description: Namespace of the dataset.
           example: "cinematography"
         dataset:
           type: string
-          description: Name of the dataset
+          description: Name of the dataset.
           example: "movies"
         columnName:
           type: string
-          description: Column name in the dataset
+          description: Column name in the dataset.
           example: "director"
       required:
         - username
@@ -960,33 +1080,11 @@ components:
       type: object
       properties:
         data:
-          type: array
-          items:
-            type: object
+          $ref: '#/components/schemas/DataArray'
         link:
-          type: object
-          properties:
-            ExactMatch:
-              type: object
-              properties:
-                minDistinct:
-                  type: number
-                minVariation:
-                  type: number
-              additionalProperties:
-                type: string
-            GeoMatch:
-              type: object
-              properties:
-                distance:
-                  type: number
-                distanceUnit:
-                  type: string
-              additionalProperties:
-                type: string
+          $ref: '#/components/schemas/LinkConfig'
       required:
         - data
-        - link
       example:
         data:
           - name: "Braveheart"
@@ -1022,14 +1120,18 @@ components:
                   - $ref: '#/components/schemas/ValidateStep'
                   - $ref: '#/components/schemas/ReverseGeoStep'
         link:
-          type: object
-          properties:
-            ExactMatch:
-              type: string
-              nullable: true
-              example: null
+          $ref: '#/components/schemas/LinkConfig'
       required:
         - data
+    LinkConfig:
+      type: object
+      properties:
+        ExactMatch:
+          $ref: '#/components/schemas/ExactMatchConfig'
+          nullable: true
+        GeoMatch:
+          $ref: '#/components/schemas/GeoMatchConfig'
+          nullable: true
     IngestPreviewResponse:
       type: array
       items:
@@ -1067,10 +1169,35 @@ components:
           type: array
           items:
             type: string
-          description: Ordered list of all column names in desired sequence
+          description: Ordered list of all column names in the desired sequence.
           example: ["id", "name", "age", "department", "location"]
       required:
         - order
+    RequestCleaningRequest:
+      type: object
+      properties:
+        prompts:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: string
+          description: Prompts that describe each cleaning step in the intended order.
+          example:
+            - "Remove extra spaces from firstName and lastName fields."
+            - "Remove empty values from the age field."
+        outputNamespace:
+          type: string
+          description: Target namespace where the cleaned dataset will be created.
+          example: "all_about_movies"
+        outputDatasetName:
+          type: string
+          description: Specifies the name of the cleaned dataset. The service creates this dataset when the cleaning job starts, and the name must be unused in the target namespace.
+          example: "movies_cleaned"
+      required:
+        - prompts
+        - outputNamespace
+        - outputDatasetName
     ModifyOntologyRequest:
       type: object
       properties:
@@ -1091,15 +1218,15 @@ components:
         mode:
           type: string
           enum: [all-in-one, field-by-field, embeddings]
-          description: Normalisation mode
+          description: Normalisation mode.
         targetCols:
           type: object
           additionalProperties:
             type: string
-          description: Target columns with their descriptions
+          description: Target columns with their descriptions.
         helperPrompt:
           type: string
-          description: Prompt to help the LLM understand the domain
+          description: Prompt to help the LLM understand the domain.
       required:
         - type
         - mode
@@ -1111,7 +1238,7 @@ components:
     OntologyRequest:
       type: string
       example: "OntologyObject(\"objectName\").get()"
-      description: for details check [Querying data](/Querying_data)
+      description: For details, see [Querying data](/Querying_data).
     QueryDataRequest:
       type: object
       properties:
@@ -1130,6 +1257,8 @@ components:
           type: string
         provider:
           type: string
+        explainRequested:
+          type: boolean
       required:
         - username
         - namespace
@@ -1143,6 +1272,9 @@ components:
         query:
           type: string
           example: "What do llamas drink to cool themselves down?"
+        helperPrompt:
+          type: string
+          example: "You're a prophet of the alpacalypse. Your task is to spit the word!"
         model:
           type: string
         provider:
@@ -1159,7 +1291,7 @@ components:
           enum: [reverseGeo]
         deriveFrom:
           type: string
-          description: Location column name
+          description: Name of the location column.
       required:
         - type
         - deriveFrom
@@ -1171,7 +1303,7 @@ components:
           enum: [rows]
         deriveFrom:
           type: string
-          description: Column name from where the json content will be read
+          description: Name of the column that contains the JSON content.
       required:
         - type
         - deriveFrom
@@ -1183,10 +1315,10 @@ components:
           enum: [table]
         deriveFrom:
           type: string
-          description: Column name from where the column should be derived from
+          description: Name of the source column to extract from.
         helperPrompt:
           type: string
-          description: Prompt to guide the AI system for higher accuracy during extraction
+          description: Prompt to guide the AI system for higher accuracy during extraction.
           example: "This text contains a table comma separated, but instead of line breaks we are using a ';'."
       required:
         - type
@@ -1226,12 +1358,12 @@ components:
         mode:
           type: string
           enum: [regex, rows, fields]
-          description: Validation mode
+          description: Validation mode.
         columns:
           type: array
           items:
             type: string
-          description: Columns to validate
+          description: Columns to validate.
       required:
         - type
         - mode
@@ -1241,12 +1373,12 @@ components:
       properties:
         filename:
           type: string
-          description: 'Name of the file being uploaded'
+          description: Name of the file being uploaded.
           example: 'large-data.csv'
         size:
           type: integer
           format: int64
-          description: 'Size of the file in bytes'
+          description: Size of the file in bytes.
           example: 73473457
       required:
         - filename
@@ -1256,22 +1388,22 @@ components:
       properties:
         uploadId:
           type: string
-          description: Unique identifier for the multipart upload session
+          description: Unique identifier for the multipart upload session.
           example: '2~VmxqYXRlRDZWfjJrRWRiZ2FEQXk3dHI4DGhGLygtTmQNXEZPQXFzMVZOZTUgdEdrXCEyNStkQUp3U3Q2RjJqSkV4MFNBOWxJCk0yIHEkfcQ'
         key:
           type: string
-          description: Generated S3 object key
+          description: Generated S3 object key.
           example: 'uploads/data/20240301-143022-uuid.json'
         partSize:
           type: integer
           format: int64
-          description: Size of each part in bytes (8MB)
+          description: Size of each part in bytes (8MB).
           example: 8388608
         presignedUrls:
           type: array
           items:
             $ref: "#/components/schemas/PresignedUrlItem"
-          description: Array of presigned URLs for multipart upload
+          description: Array of presigned URLs for multipart upload.
           minItems: 1
           maxItems: 10000
       required:
@@ -1284,7 +1416,7 @@ components:
       properties:
         url:
           type: string
-          description: Presigned URL for uploading this part
+          description: Presigned URL for uploading this part.
           example: 'https://my-data-bucket.s3.amazonaws.com/uploads/data/20240301-143022-uuid.json?partNumber=1&uploadId=...'
       required:
         - url
@@ -1293,17 +1425,17 @@ components:
       properties:
         uploadId:
           type: string
-          description: Upload ID from the prepare response
+          description: Upload ID from the prepare response.
           example: '2~VmxqYXRlRDZWfjJrRWRiZ2FEQXk3dHI4DGhGLygtTmQNXEZPQXFzMVZOZTUgdEdrXCEyNStkQUp3U3Q2RjJqSkV4MFNBOWxJCk0yIHEkfcQ'
         key:
           type: string
-          description: S3 object key from the prepare response
+          description: S3 object key from the prepare response.
           example: 'uploads/data/20240301-143022-uuid.json'
         parts:
           type: array
           items:
             $ref: "#/components/schemas/FinishedMultipartItem"
-          description: Array of completed parts with their ETags
+          description: Array of completed parts with their ETags.
           minItems: 1
       required:
         - uploadId
@@ -1318,7 +1450,7 @@ components:
           example: 1
         etag:
           type: string
-          description: ETag returned by S3 after uploading the part
+          description: ETag returned by S3 after uploading the part.
           example: 'd41d8cd98f00b204e9800998ecf8427e'
       required:
         - partNumber
@@ -1328,11 +1460,11 @@ components:
       properties:
         uploadId:
           type: string
-          description: Upload ID to abort
+          description: Upload ID to abort.
           example: '2~VmxqYXRlRDZWfjJrRWRiZ2FEQXk3dHI4DGhGLygtTmQNXEZPQXFzMVZOZTUgdEdrXCEyNStkQUp3U3Q2RjJqSkV4MFNBOWxJCk0yIHEkfcQ'
         key:
           type: string
-          description: S3 object key to abort
+          description: S3 object key to abort.
           example: 'uploads/data/20240301-143022-uuid.json'
       required:
         - uploadId
@@ -1342,21 +1474,26 @@ components:
       properties:
         count:
           type: integer
-          description: Number of results returned
+          description: Number of results returned.
         executedQuery:
           type: string
-          description: The actual query that was executed
+          description: The actual query that was executed.
         originalQuery:
           type: string
-          description: The original query provided by the user
-        sourceObject:
+          description: The original query provided by the user.
+        startingDataset:
           type: string
-          description: The source object queried
+          description: The initial dataset used when evaluating the query. For linked queries, this is the dataset where the query begins.
+        finalDataset:
+          type: string
+          description: The dataset that the query ultimately returns results from. For linked queries, this is the final dataset after following links.
     QueryResponseData:
       type: object
       properties:
         data:
           $ref: '#/components/schemas/DataArray'
+        explainResults:
+          $ref: '#/components/schemas/QueryExplainResponse'
         metadata:
           $ref: '#/components/schemas/QueryResponseMetadata'
       required:
@@ -1389,9 +1526,165 @@ components:
       required:
         - response
         - steps
+    ExactMatchConfig:
+      type: object
+      nullable: true
+      properties:
+        minDistinct:
+          type: number
+        minVariation:
+          type: number
+        bidirectional:
+          type: boolean
+        targetColumns:
+          type: array
+          items:
+            type: string
+        ignorePrivateColumns:
+          type: boolean
+    GeoMatchConfig:
+      type: object
+      nullable: true
+      properties:
+        distance:
+          type: number
+        distanceUnit:
+          type: string
+        bidirectional:
+          type: boolean
+        targetColumns:
+          type: array
+          items:
+            type: string
+        ignorePrivateColumns:
+          type: boolean
+    InferredDescriptionResponse:
+      type: object
+      description: Wrapper object containing the inferred description.
+      properties:
+        description:
+          type: string
+          description: The inferred description text.
+      required:
+        - description
+    InferSchemaDescriptionRequest:
+      type: object
+      properties:
+        sample:
+          $ref: '#/components/schemas/DataArray'
+        model:
+          type: string
+          description: The inference model to use.
+        provider:
+          type: string
+          description: Provider offering the model.
+        currentValue:
+          type: object
+          properties:
+            description:
+              type: string
+              description: The current data description.
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+      required:
+        - sample
+    InferredSchemaResponse:
+      type: object
+      description: Wrapper object containing inferred field types.
+      properties:
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+        - schema
+    QueryExplainResponse:
+      type: object
+      description: Explain results for the query.
+      properties:
+        id:
+          type: string
+          description: Id of the step.
+        datasetIdToCount:
+          type: object
+          description: Maps each datasetId to the number of results returned for that dataset.
+          additionalProperties:
+            type: integer
+        start:
+          type: string
+          format: date-time
+          description: Timestamp of the step start.
+        durationNs:
+          type: integer
+          format: int64
+          description: Duration of the step in nanoseconds.
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryExplainResponse'
+      required:
+        - id
+        - datasetIdToCount
+        - start
+        - durationNs
+        - children
+    ListIngestionsResponseData:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListIngestionsResponseDataItem'
+        metadata:
+          $ref: '#/components/schemas/ListIngestionsResponseMetadata'
+      required:
+        - data
+        - metadata
+    ListIngestionsResponseMetadata:
+      type: object
+      properties:
+        beforeCreatedAt:
+          type: string
+          format: date-time
+          description: Value of the `created_at` field before or equal to which return ingestions records.
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 10
+          maximum: 100
+      required:
+        - pageSize
+    ListIngestionsResponseDataItem:
+      type: object
+      description: Wrapper object containing details of the ingestion.
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        statusMessage:
+          type: string
+        processedBytes:
+          type: integer
+          format: int64
+        expectedTotalBytes:
+          type: integer
+          format: int64
+        processedRows:
+          type: integer
+          format: int64
+      required:
+        - id
+        - datasetName
+        - status
+        - expectedTotalBytes
+        - createdBy
   responses:
     QueryResponse:
-      description: Successful response with the ontology data object.
+      description: Returns query results.
       content:
         application/json:
           schema:
@@ -1409,19 +1702,19 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     Forbidden:
-      description: Forbidden. User doesn't have access to this resource.
+      description: Forbidden. The user does not have access to this resource.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     ListOfDatasets:
-      description: Successful response containing data with namespace details.
+      description: Returns a list of datasets accessible to the user.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/DatasetsResponse'
     ListOfNamespaces:
-      description: Successful response containing list of namespaces accessible to the user.
+      description: Returns a list of namespaces accessible to the user.
       content:
         application/json:
           schema:
@@ -1441,7 +1734,7 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     UnprocessableContent:
-      description: Unable to process request.
+      description: The request could not be processed.
       content:
         application/json:
           schema:
@@ -1462,7 +1755,7 @@ components:
             openid: openid
   examples:
     moviesExample:
-      summary: movies
+      summary: Movies
       value:
         data:
           - name: Braveheart
@@ -1492,7 +1785,7 @@ components:
         link:
           ExactMatch: null
     actorsExample:
-      summary: actors
+      summary: Actors
       value:
         data:
           # Braveheart
@@ -1539,3 +1832,13 @@ components:
             nationality: American
         link:
           ExactMatch: null
+    unstructuredExample:
+      summary: Example of extracting rows from unstructured data
+      value:
+        data:
+          - text: "Meryl Streep, known for her incredible acting, has starred in unforgettable films like The Devil Wears Prada and Sophie's Choice. She's won three Oscars over her illustrious career. Anne Hathaway shared the screen with her in The Devil Wears Prada and later shone in Les Misérables, earning her own Oscar.\n\nLeonardo DiCaprio, a household name, is celebrated for roles in Titanic, Inception, and The Revenant. His long-awaited Oscar win came for The Revenant. His Titanic co-star Kate Winslet, who also has an Oscar to her name, delivered powerful performances in The Reader and of course, Titanic.\n\nTom Hanks, the quintessential leading man, gave us unforgettable performances in Forrest Gump, Cast Away, and Saving Private Ryan. He's a two-time Oscar winner. Robin Wright, who starred alongside him in Forrest Gump, is also well-remembered for her role in The Princess Bride.\n\nCate Blanchett, a two-time Oscar winner, mesmerized audiences in films like Blue Jasmine, Carol, and Elizabeth. Rooney Mara, her co-star in Carol, also made a mark with her performance in The Girl with the Dragon Tattoo.\n\nDenzel Washington, one of the most respected actors in Hollywood, has won two Oscars for his work in Training Day and Glory. He also delivered a heartfelt performance in Fences, where he starred alongside Viola Davis. Davis herself is a powerhouse of talent, with an Oscar for her role in Fences and another standout performance in The Help."
+        infer:
+          steps:
+            - deriveFrom: text
+              helperPrompt: "If you find a numeric field use only the value and omit the rest."
+              type: table
