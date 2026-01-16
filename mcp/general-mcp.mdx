@@ -1,0 +1,207 @@
+---
+title: "How to Connect to the DataLinks MCP Server (General Guide)"
+description: "General instructions on how to connect to the DataLinks MCP server"
+sidebarTitle: "General Connection Guide"
+---
+
+The DataLinks MCP server allows AI tools and agent frameworks to securely access DataLinks services. Once connected, your application or desktop client can send requests to DataLinks through the MCP protocol.
+
+This guide covers:
+
+1. Prerequisites
+2. Installing required dependencies
+3. Creating a basic MCP configuration
+4. Starting the MCP connection
+5. Verifying the setup
+6. Troubleshooting common issues
+
+## Prerequisites
+
+Before starting, make sure you have:
+
+- A DataLinks API token
+- Node.js installed on your system
+- An AI tool or application that supports MCP
+
+## Install Required Dependencies
+
+The DataLinks MCP connection runs through Node.js using an MCP client.
+
+### Windows
+
+1. Download Node.js (LTS) from
+
+   https://nodejs.org
+2. Restart your computer after installation.
+3. Verify installation:
+
+   ```
+   node--version
+   npx--version
+   ```
+
+### macOS
+
+Install Node.js using one of these options:
+
+- Download from https://nodejs.org
+- Or install with Homebrew (Don’t have Homebrew? For install instructions, see [**brew.sh**](http://brew.sh)):
+
+  ```
+  brew install node
+  ```
+
+Verify installation:
+
+```
+node -v
+npx -v
+```
+
+### Linux
+
+Install Node.js using your distribution’s package manager.
+
+Ubuntu or Debian:
+
+```
+sudo apt update
+sudo apt install nodejs npm
+```
+
+Fedora:
+
+```
+sudo dnf install nodejs
+```
+
+Verify installation:
+
+```
+node--version
+npx--version
+```
+
+## Create a Basic MCP Configuration
+
+Most MCP compatible tools read from a simple JSON configuration.
+
+Create a file named something like:
+
+```
+mcp_config.json
+```
+
+Add the following configuration:
+
+```json
+{
+  "mcpServers": {
+    "datalinks": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://mcp.datalinks.com/mcp/",
+        "--header",
+        "Authorization: Bearer <your-token-here>"
+      ]
+    }
+  }
+}
+```
+
+Replace `<your-token-here>` with your DataLinks API token.
+
+## Platform Specific Command Notes
+
+Depending on your operating system, the `command` value may need adjustment.
+
+- Windows commonly uses:
+
+  ```
+  C:\\\\Program Files\\\\nodejs\\\\npx.cmd
+  ```
+- macOS commonly uses:
+
+  ```
+  /usr/local/bin/npx
+  ```
+
+  or
+
+  ```
+  /opt/homebrew/bin/npx
+  ```
+- Linux commonly uses:
+
+  ```
+  /usr/bin/npx
+  ```
+
+You can find the correct path by running:
+
+```
+which npx
+```
+
+## Start the MCP Connection
+
+How you start the MCP connection depends on your tool.
+
+- Desktop clients load the configuration at startup
+- Developer tools may require starting the MCP client manually
+- Agent frameworks usually detect MCP servers automatically once running
+
+Once started, the MCP client opens a secure connection to DataLinks.
+
+## Verify the Connection
+
+To confirm everything is working:
+
+- Check terminal or application logs for a successful MCP connection
+- Send a simple request that uses DataLinks
+- Confirm that no authentication or connection errors appear
+
+## Common Troubleshooting
+
+### Review Logs
+
+Most MCP clients provide detailed logs. These logs explain:
+
+- Startup failures
+- Authentication issues
+- Network errors
+
+<Info>
+  A helpful step is to copy the log output and paste it into an LLM-powered assistant such as ChatGPT for help understanding what went wrong.
+</Info>
+
+### Common Issues
+
+**Authorization errors**
+
+- Confirm your DataLinks API token is correct
+- Make sure there are no extra spaces in the Authorization header
+
+**Command not found**
+
+- Verify Node.js is installed
+- Verify the `npx` path is correct for your system
+
+**Connection failures**
+
+- Confirm the DataLinks MCP URL is correct
+- Check firewall or proxy settings
+
+**Configuration not loading**
+
+- Confirm the JSON file is valid
+- Confirm the file name and location are correct for your tool
+
+## Next Steps
+
+Once connected, you can:
+
+- Use DataLinks as a tool in MCP compatible AI clients
+- Combine DataLinks with other MCP servers
+- Build workflows that blend AI reasoning with real data access

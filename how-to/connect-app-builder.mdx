@@ -1,0 +1,235 @@
+---
+title: "How to Connect DataLinks to a Third-Party Web App Builder"
+description: "Learn how to connect DataLinks to your preferred web app builder."
+sidebarTitle: "Connect a Web App Builder"
+---
+
+This guide shows how to connect a third-party web app builder (e.g. Lovable, Replit, Vercel v0) to DataLinks using a starter prompt and the DataLinks API. The same approach works for chat apps, dashboards, internal tools, and AI assistants.
+
+### What You Will Need
+
+Before you start, make sure you have the following:
+
+- A DataLinks API key
+- Your namespace name
+- One or more dataset names inside that namespace
+- A web app builder that supports API calls or server-side functions
+
+## Step 1: Create a Clear Starter Prompt
+
+Most app builders allow you to define an initial system or starter prompt. This prompt tells the app how it should behave and what data it can access.
+
+Example starter prompt:
+
+```
+Create a simple chatbox interface that connects to the <DATASET_1> and <DATASET_2> datasets within the <NAMESPACE> namespace. The chatbox should perform AutoRAG queries on the data in DataLinks when queried.
+```
+
+Replace the placeholders with your real namespace and dataset names.
+
+Tips for a good prompt:
+
+- Clearly name the namespace and datasets
+- State whether the app should use structured queries, natural language queries, or AutoRAG
+- Describe the expected output format, such as a text response or table
+
+---
+
+## Step 2: Configure the API Connection
+
+In your web app builder, create a new API connection or backend function with the following settings.
+
+### Base URL
+
+```
+https://api.prod.datalinks.com/api/v1
+```
+
+### Authentication Header
+
+All requests must include this header:
+
+```
+Authorization: Bearer <DL_API_KEY>
+```
+
+No other headers are required. All requests and responses use JSON.
+
+## Step 3: Choose the Right Endpoint
+
+Use the endpoint that matches how your app needs to interact with the data.
+
+### Option A: Structured or Natural Language Queries
+
+Endpoint:
+
+```
+POST /query
+```
+
+Use this when the app needs to query a specific dataset.
+
+Example request body for a natural language query:
+
+```
+{
+  "username": "self",
+  "namespace": "<NAMESPACE>",
+  "dataset": "<OBJECT_NAME>",
+  "naturalLanguageQuery": "Show me the latest 50 records"
+}
+```
+
+Example response:
+
+```
+{
+  "data": [
+    { "field1": "value", "field2": 123, "field3": true }
+  ]
+}
+```
+
+---
+
+### Option B: AutoRAG Question Answering
+
+Endpoint:
+
+```
+POST /query/autorag
+```
+
+Use this for open-ended questions that require retrieval and reasoning across datasets.
+
+Example request body:
+
+```
+{
+  "username": "self",
+  "namespace": "<NAMESPACE>",
+  "query": "What were our top 3 entities last month?"
+}
+```
+
+Example response:
+
+```
+{
+  "response": "The top three entities last month were A, B, and C.",
+  "steps": [
+    { "action": "retrieval", "details": {} },
+    { "action": "llm_call", "details": {} }
+  ]
+}
+```
+
+Client behavior guidelines:
+
+- If reasoning is disabled, return only the response string
+- If reasoning is enabled, return both the response and the steps
+
+## Step 4: Display the Results in Your App
+
+How you display results depends on your app builder:
+
+- For chat interfaces, render the response text directly
+- For dataset queries, loop over the `data` array and show rows in a table or list
+- Optionally hide fields that start with `_`, since these are system metadata
+
+## Step 5: Enable Dataset Discovery (Optional)
+
+To help users explore available datasets, you can add discovery features.
+
+List all datasets:
+
+```
+GET /data
+```
+
+List datasets in a namespace:
+
+```
+GET /data/{namespace}
+```
+
+Read raw dataset rows:
+
+```
+GET /data/self/{namespace}/{objectname}
+```
+
+These endpoints are useful for dropdowns, dataset pickers, or admin views.
+
+## Example all-in-one prompt
+
+Some app builders support placing all of the configuration details into a single initial prompt. This approach allows you to set up an external chatbot in one step, followed by a prompt to enter your API token value when required.
+
+Below is an example prompt you can use with Lovable to create the chatbot in a single attempt after filling in your details:
+
+```
+Enter your starter prompt here, for example, "Create a simple chatbox interface that connects to the <insert-dataset-name-here> and <insert-dataset-name-here> datasets within the <insert-namespace-name-here> namespace. The chatbox should perform AutoRAG queries on the data in DataLinks when queried."
+
+Here is connection info:
+
+DATALINKS API — CONNECTION INSTRUCTIONS
+
+Base URL https://api.prod.datalinks.com/api/v1
+
+Authentication All requests require a single HTTP header: Authorization: Bearer <DL_API_KEY>
+
+No additional headers are required.
+
+All requests and responses use JSON.
+
+AVAILABLE ENDPOINTS
+See https://docs.datalinks.com/api-reference for all available endpoints, some examples are included below:
+
+Structured Data Query POST /query
+Use this to run explicit or ontology-based queries against a dataset.
+
+Request body: { "username": "self", "namespace": "<NAMESPACE>", "dataset": "<OBJECT_NAME>", "query": "Ontology(<NAMESPACE>/<OBJECT_NAME>)" }
+
+Typical response: { "data": [ { "field1": "value", "field2": 123, "field3": true } ] }
+
+Natural Language Data Query POST /query
+Use this to ask questions in plain English against a dataset.
+
+Request body: { "username": "self", "namespace": "<NAMESPACE>", "dataset": "<OBJECT_NAME>", "naturalLanguageQuery": "Show me the latest 50 records" }
+
+Response format is identical to structured queries: { "data": [ ...records... ] }
+
+AutoRAG Question Answering POST /query/autorag
+Use this for open-ended questions that require retrieval plus reasoning.
+
+Request body: { "username": "self", "namespace": "<NAMESPACE>", "query": "What were our top 3 entities last month?" }
+
+Response: { "response": "<natural language answer>", "steps": [ { "action": "retrieval", "details": {} }, { "action": "llm_call", "details": {} } ] }
+
+Client behavior:
+
+If reasoning is disabled, return only the response string
+If reasoning is enabled, return (response, steps)
+Read Dataset Rows GET /data/self/{namespace}/{objectname}
+Returns raw rows for the specified dataset.
+
+Response: { "data": [ ...records... ] }
+
+Discover Available Datasets GET /data GET /data/{namespace}
+Returns dataset listings and metadata for discovery.
+
+METADATA NOTES
+
+Fields starting with "_" are system-generated metadata. Client helpers may optionally filter these fields out.
+
+SUMMARY
+
+POST /query → structured or natural language dataset queries POST /query/autorag → AutoRAG question answering GET /data → dataset discovery GET /data/self/... → dataset row access
+```
+
+## Summary
+
+- Use a clear starter prompt to define app behavior
+- Connect using the DataLinks API base URL and Bearer token
+- Choose `/query` for dataset queries and `/query/autorag` for reasoning-based answers
+- Render responses based on your app’s UI pattern
