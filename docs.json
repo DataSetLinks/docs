@@ -27,16 +27,6 @@
             "icon": "rocket"
           },
           {
-            "group": "Concepts",
-            "pages": [
-              "concepts/datasets-namespaces",
-              "concepts/ingest-clean",
-              "concepts/interconnection",
-              "concepts/query-insights"
-            ],
-            "icon": "brain"
-          },
-          {
             "group": "How-To Guides",
             "pages": [
               "how-to/create-dataset",
@@ -47,7 +37,18 @@
             ],
             "icon": "computer-mouse"
           },
-          {
+            {
+            "group": "Understanding the UI",
+            "pages": [
+              "ui/home",
+              "ui/new-dataset",
+              "ui/dataset-view",
+              "ui/ontology-explorer",
+              "ui/settings"
+            ],
+            "icon": "file-lines"
+          },
+            {
             "group": "Reference",
             "pages": [
               "reference/ai_inference",
@@ -56,11 +57,14 @@
             "icon": "file-lines"
           },
           {
-            "group": "Use-Cases",
-            "icon": "folder-open",
+            "group": "Concepts",
             "pages": [
-              "use-cases/tariffs"
-            ]
+              "concepts/datasets-namespaces",
+              "concepts/ingest-clean",
+              "concepts/interconnection",
+              "concepts/query-insights"
+            ],
+            "icon": "brain"
           }
         ]
       },
@@ -160,6 +164,14 @@
     {
       "source": "/Creating_a_dataset",
       "destination": "/api-reference/ingest/create-new-dataset"
+    },
+    {
+      "source": "/command_list",
+      "destination": "/reference/query_commands"
+    },
+    {
+      "source": "/Command_List",
+      "destination": "/reference/query_commands"
     },
     {
       "source": "/Querying_data",
