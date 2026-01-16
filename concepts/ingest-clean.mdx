@@ -17,7 +17,7 @@ Treating ingestion and cleaning as separate stages causes delay and duplication.
 
 ## Using the DataLinks web platform or the API
 
-DataLinks offers two ways to ingest and clean data: through the web platform or through the API (or SDK). Both use the same underlying infrastructure and produce identical results, but each suits a different kind of workflow.
+DataLinks offers two ways to ingest and clean data: through the web platform or through the API. Both use the same underlying infrastructure and produce identical results, but each suits a different kind of workflow.
 
 ### The web platform
 
@@ -31,9 +31,9 @@ This interface is ideal when:
 
 The platform automatically applies the same cleaning, validation, and normalization logic used by the API. It also records metadata so your results stay consistent if you later decide to automate ingestion.
 
-### The API and SDK
+### The DataLinks API
 
-For larger or recurring workloads, the DataLinks API (and SDK) is the best choice. The API provides endpoints for every step in the ingestion and cleaning process, from creating datasets and previewing files to ingesting, validating, and managing them at scale.
+For larger or recurring workloads, the DataLinks API is the best choice. The API provides endpoints for every step in the ingestion and cleaning process, from creating datasets and previewing files to ingesting, validating, and managing them at scale.
 
 This approach is best when:
 
@@ -42,7 +42,7 @@ This approach is best when:
 - You prefer automation over manual uploads
 - You are handling high-volume or sensitive datasets where precision and repeatability matter
 
-The API supports multipart uploads and asynchronous processing for efficiency. The **DataLinks SDK** simplifies this even further, letting you build Python scripts that call the same endpoints with less setup.
+The API supports multipart uploads and asynchronous processing for efficiency. 
 
 ## How DataLinks improves ingestion and cleaning
 

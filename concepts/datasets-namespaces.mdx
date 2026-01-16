@@ -5,7 +5,7 @@ sidebarTitle: "Datasets and Namespaces"
 
 In DataLinks, all information lives within a simple and flexible structure built around **namespaces** and **datasets**. Together, they organize your data, define ownership, and make it easier to manage access and relationships across the platform.
 
-Understanding how namespaces and datasets fit together is the first step in working effectively with DataLinks, whether you use the web platform, the API, or the SDK.
+Understanding how namespaces and datasets fit together is the first step in working effectively with DataLinks, whether you use the web platform or the API.
 
 ## What a namespace is
 
@@ -48,7 +48,7 @@ Namespaces prevent naming conflicts between teams while allowing easy sharing ac
 
 ## Creating namespaces and datasets
 
-You can create and manage both namespaces and datasets through the web platform or through the API (and SDK).
+You can create and manage both namespaces and datasets through the web platform or using the API.
 
 <Info>
   For step-by-step instructions, see [How To Create a Namespace](/how-to/create-namespace) and [How To Create a Dataset](/how-to/create-dataset).
@@ -64,9 +64,9 @@ The DataLinks web platform provides a visual interface for creating namespaces a
 
 This method is ideal for quick setup or when you want to explore data interactively.
 
-### Using the API or SDK
+### Using the API
 
-For automated workflows or large-scale operations, the API (and SDK) is the preferred option. The key endpoints include:
+For automated workflows or large-scale operations, the DataLinks API is the preferred option. The key endpoints include:
 
 - [POST Create new dataset](/api-reference/ingest/create-new-dataset)
 - [POST Ingest data](/api-reference/ingest/ingest-data)
@@ -75,8 +75,6 @@ For automated workflows or large-scale operations, the API (and SDK) is the pref
 - [PUT Update infer definition](/api-reference/dataset/update-infer-definition)
 
 When you create a dataset through the API, you specify the target namespace in the request. Once the dataset exists, you can ingest data directly into it, preview results, or adjust its structure programmatically.
-
-The SDK provides helper methods to simplify these steps, allowing developers to script ingestion and cleaning using Python without manually handling requests.
 
 ## Managing and maintaining your structure
 
