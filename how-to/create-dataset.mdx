@@ -14,10 +14,9 @@ If you prefer a simple, guided setup, you can create a dataset directly in the D
 
 Follow these steps:
 
-    <Frame>
-      <video className="block mx-auto" src="https://res.cloudinary.com/dlq2nawz5/video/upload/f_auto,q_auto/v1765784512/share-project_gpldrd.mp4" alt="Screen capture of creating a dataset in the DataLinks web platform." controls autoPlay muted loop />
-    </Frame>
-
+<Frame>
+  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/how-to/create-dataset.mp4" alt="Screen capture of creating a dataset in the DataLinks web platform." controls autoPlay muted loop />
+</Frame>
 
 1. **Log in** to your DataLinks account.
 2. In the left navigation menu, click **Create a New Dataset**.
@@ -49,128 +48,132 @@ Before you begin, make sure you have:
 
 You can use any project structure or environment setup that fits your workflow.
 
-### Install dependencies
-
-This guide uses direct HTTP calls with Python. Install the `requests` library if you do not already have it available:
-
-```
-pip install requests
-```
-
-or
-
-```
-pip3 install requests
-```
-
-### Configure environment variables
-
-Set the following environment variables so sensitive values are not hardcoded in your script:
-
-<Tabs>
-  <Tab title="Windows">
-    **For the current session**
+<Steps>
+  <Step title="Install dependencies">
+    This guide uses direct HTTP calls with Python. Install the `requests` library if you do not already have it available:
 
     ```
-    $env:DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
-    $env:DATALINKS_NAMESPACE="hr_demo"
-    $env:DATALINKS_DATASET="employee_records"
+    pip install requests
     ```
 
-    **Persist across future sessions**
+    or
 
     ```
-    setx DATALINKS_TOKEN "YOUR_BEARER_TOKEN"
-    setx DATALINKS_NAMESPACE "hr_demo"
-    setx DATALINKS_DATASET "employee_records"
+    pip3 install requests
     ```
+  </Step>
+  <Step title="Configure environment variables">
+    Set the following environment variables so sensitive values are not hardcoded in your script:
 
-    After using `setx`, open a new PowerShell window before running your script.
-  </Tab>
-  <Tab title="Linux">
+    <Tabs>
+      <Tab title="Windows">
+        **For the current session**
+
+        ```
+        $env:DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
+        $env:DATALINKS_NAMESPACE="hr_demo"
+        $env:DATALINKS_DATASET="employee_records"
+        ```
+
+        **Persist across future sessions**
+
+        ```
+        setx DATALINKS_TOKEN "YOUR_BEARER_TOKEN"
+        setx DATALINKS_NAMESPACE "hr_demo"
+        setx DATALINKS_DATASET "employee_records"
+        ```
+
+        After using `setx`, open a new PowerShell window before running your script.
+      </Tab>
+      <Tab title="Linux">
+        ```
+        export DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
+        export DATALINKS_NAMESPACE="hr_demo"
+        export DATALINKS_DATASET="employee_records"
+        ```
+
+        These apply to the current shell session. Add them to `~/.bashrc` or `~/.zshrc` if you want them to persist automatically.
+      </Tab>
+      <Tab title="MacOS">
+        ```
+        export DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
+        export DATALINKS_NAMESPACE="hr_demo"
+        export DATALINKS_DATASET="employee_records"
+        ```
+
+        These apply to the current terminal session. For persistence, place them in `~/.zshrc`.
+
+        ## Create the dataset (Python)
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Create the dataset (Python)">
+    Create a Python file, for example `create_dataset.py`, and add the following code:
+
     ```
-    export DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
-    export DATALINKS_NAMESPACE="hr_demo"
-    export DATALINKS_DATASET="employee_records"
+    import os
+    import json
+    import requests
+    
+    BASE_URL = "https://api.datalinks.com/api/v1"
+    
+    token = os.environ["DATALINKS_TOKEN"]
+    namespace = os.environ["DATALINKS_NAMESPACE"]
+    dataset_name = os.environ["DATALINKS_DATASET"]
+    
+    url = f"{BASE_URL}/ingest/new/{namespace}/{dataset_name}"
+    
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+    
+    payload = {
+        # Required. Options: "Public" or "Private"
+        "visibility": "Private",
+    
+        # Optional but recommended
+        "inferDefinition": {
+            "dataDescription": "Employee dataset containing demographics and compensation.",
+            "fieldDefinition": (
+                "id=unique employee identifier\n"
+                "name=full employee name\n"
+                "age=employee age in years\n"
+                "department=work department\n"
+                "salary=annual salary in USD\n"
+            ),
+        },
+    }
+    
+    response = requests.post(
+        url,
+        headers=headers,
+        data=json.dumps(payload),
+        timeout=30,
+    )
+    
+    print("Status:", response.status_code)
+    
+    if response.headers.get("content-type", "").startswith("application/json"):
+        print(json.dumps(response.json(), indent=2))
+    else:
+        print(response.text)
+    
+    response.raise_for_status()
+    print("\nDataset created successfully.")
     ```
+  </Step>
+  <Step title="Run the script">
 
-    These apply to the current shell session. Add them to `~/.bashrc` or `~/.zshrc` if you want them to persist automatically.
-  </Tab>
-  <Tab title="MacOS">
-    ```
-    export DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
-    export DATALINKS_NAMESPACE="hr_demo"
-    export DATALINKS_DATASET="employee_records"
-    ```
-
-    These apply to the current terminal session. For persistence, place them in `~/.zshrc`.
-
-    ## Create the dataset (Python)
-  </Tab>
-</Tabs>
-
-### Create the dataset (Python)
-
-Create a Python file, for example `create_dataset.py`, and add the following code:
-
-```
-import os
-import json
-import requests
-
-BASE_URL = "https://api.datalinks.com/api/v1"
-
-token = os.environ["DATALINKS_TOKEN"]
-namespace = os.environ["DATALINKS_NAMESPACE"]
-dataset_name = os.environ["DATALINKS_DATASET"]
-
-url = f"{BASE_URL}/ingest/new/{namespace}/{dataset_name}"
-
-headers = {
-    "Authorization": f"Bearer {token}",
-    "Content-Type": "application/json",
-}
-
-payload = {
-    # Required. Options: "Public" or "Private"
-    "visibility": "Private",
-
-    # Optional but recommended
-    "inferDefinition": {
-        "dataDescription": "Employee dataset containing demographics and compensation.",
-        "fieldDefinition": (
-            "id=unique employee identifier\n"
-            "name=full employee name\n"
-            "age=employee age in years\n"
-            "department=work department\n"
-            "salary=annual salary in USD\n"
-        ),
-    },
-}
-
-response = requests.post(
-    url,
-    headers=headers,
-    data=json.dumps(payload),
-    timeout=30,
-)
-
-print("Status:", response.status_code)
-
-if response.headers.get("content-type", "").startswith("application/json"):
-    print(json.dumps(response.json(), indent=2))
-else:
-    print(response.text)
-
-response.raise_for_status()
-print("\nDataset created successfully.")
-```
-
-Run the script using your normal Python workflow:
+  Run the script using your normal Python workflow:
 
 ```
 python create_dataset.py
 ```
+    
+  </Step>
+</Steps>
+
 
 ### How this works
 
