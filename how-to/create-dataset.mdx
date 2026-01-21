@@ -14,14 +14,19 @@ If you prefer a simple, guided setup, you can create a dataset directly in the D
 
 Follow these steps:
 
+    <Frame>
+      <video className="block mx-auto" src="https://res.cloudinary.com/dlq2nawz5/video/upload/f_auto,q_auto/v1765784512/share-project_gpldrd.mp4" alt="Screen capture of creating a dataset in the DataLinks web platform." controls autoPlay muted loop />
+    </Frame>
+
+
 1. **Log in** to your DataLinks account.
 2. In the left navigation menu, click **Create a New Dataset**.
-3. **Enter a name** for your dataset. Choose something descriptive, such as “customer_transactions_2025.”
+3. **Enter a name** for your dataset. Choose something descriptive, such as `customer_transactions_2025`
 
    <Info>
      Use underscores, not spaces, when creating names.
    </Info>
-4. **Select or enter a namespace** to assign the dataset to. The namespace helps organize related datasets and controls access and context.
+4. **Select or enter a namespace** to assign the dataset to. The namespace helps organize related datasets and controls access and context. For example, `accounting_2025`
 5. Use the toggle to set visibility to Private or Public.
 6. Click **Create dataset and upload data** to finish.
 
@@ -50,6 +55,12 @@ This guide uses direct HTTP calls with Python. Install the `requests` library if
 
 ```
 pip install requests
+```
+
+or
+
+```
+pip3 install requests
 ```
 
 ### Configure environment variables
