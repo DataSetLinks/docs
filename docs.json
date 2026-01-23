@@ -27,16 +27,6 @@
             "icon": "rocket"
           },
           {
-            "group": "Concepts",
-            "pages": [
-              "concepts/datasets-namespaces",
-              "concepts/ingest-clean",
-              "concepts/interconnection",
-              "concepts/query-insights"
-            ],
-            "icon": "brain"
-          },
-          {
             "group": "How-To Guides",
             "icon": "computer-mouse",
             "pages": [
@@ -55,13 +45,34 @@
               }
             ]
           },
-          {
+            {
+            "group": "Understanding the UI",
+            "pages": [
+              "ui/home",
+              "ui/new-dataset",
+              "ui/dataset-view",
+              "ui/ontology-explorer",
+              "ui/settings"
+            ],
+            "icon": "file-lines"
+          },
+            {
             "group": "Reference",
             "pages": [
               "reference/ai_inference",
               "reference/query_commands"
             ],
             "icon": "file-lines"
+          },
+          {
+            "group": "Concepts",
+            "pages": [
+              "concepts/datasets-namespaces",
+              "concepts/ingest-clean",
+              "concepts/interconnection",
+              "concepts/query-insights"
+            ],
+            "icon": "brain"
           }
         ]
       },

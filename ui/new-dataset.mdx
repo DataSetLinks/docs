@@ -1,0 +1,53 @@
+---
+title: "Understanding the UI: Create a New Dataset"
+sidebarTitle: "Create New Dataset"
+description: "The Create a new dataset window defines the properties of your new dataset"
+---
+
+When you select **Create a new dataset**, a setup window opens to guide you through the first steps of building a dataset. This window helps you define the dataset’s identity, place it within the right namespace, and choose its visibility before you upload any data.
+
+![View of creating a new dataset window in the DataLinks web platform](/images/dl-create-dataset.png)
+
+## Dataset name
+
+The first field asks you to provide a dataset name. This name appears throughout the platform, so it helps to choose something meaningful and clear.
+
+<Note>
+  Use underscores instead of hyphens when naming datasets.
+</Note>
+
+Dataset names use an underscore format. This style makes names easier to reference programmatically and keeps them consistent across the platform.
+
+## Namespace
+
+Every dataset belongs to a namespace. A namespace is a group that brings related datasets together. You will either select an existing namespace or enter the name for a new one. Namespace names also follow the underscore format.
+
+If you plan to create several datasets that share a theme or domain, placing them in the same namespace helps keep everything organized and easier to browse later.
+
+## Dataset visibility
+
+This setting determines who can view the dataset once it is created.
+
+- **Private**\
+  A private dataset is visible only to you and your team.
+- **Public**\
+  A public dataset is available for anyone across the DataLinks platform to view and connect to. Public datasets can help others link their data or understand shared concepts.
+
+You can switch the visibility before creation by using the toggle in the modal.
+
+## Action buttons
+
+At the bottom of the modal, you will find two buttons.
+
+- **Cancel** closes the window without creating anything.
+- **Create dataset and upload data** completes the creation step and moves you to the upload workflow, where you can add files and begin ingestion.
+
+This flow ensures that the dataset exists before any data is added to it.
+
+## Creating a Dataset via the API
+
+The modal includes a link to **Create a dataset via API**, which opens a panel showing the request format for creating datasets programmatically. This option is helpful if you are building automated pipelines or managing datasets through scripts.
+
+<Info>
+  For detailed instructions, see [How to create a dataset](/how-to/create-dataset).
+</Info>
