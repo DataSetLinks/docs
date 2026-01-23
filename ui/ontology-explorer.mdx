@@ -1,21 +1,46 @@
 ---
 title: "Understanding the UI: Ontology Explorer"
 sidebarTitle: "Ontology Explorer"
+description: "View and manage connections at the namespace level. "
 ---
 
-The Ontology Explorer helps you understand how datasets relate to each other within a namespace, and how those datasets connect to other datasets in other namespaces. It provides a visual layout of the datasets you have selected and offers tools for reviewing, adding, and removing semantic links between them.
+The Ontology Explorer helps you understand how datasets relate to each other within a namespace, and how those datasets connect to other datasets in other namespaces. It provides a visual layout of the datasets you have selected and offers tools for reviewing, adding, and removing connections (semantic links) between them.
 
-This view is especially helpful when you want to refine how objects connect, explore inferred relationships, or adjust the structure of your knowledge map.
+This view is especially helpful when you want to refine how objects connect, explore inferred relationships, or adjust the structure of your context graph.
 
-## Visual Workspace
+![Dl Ontology Explorer](/images/dl-ontology-explorer.png)
+
+## Visual workspace
 
 The center of the screen displays your datasets as nodes. Each node represents a dataset, and lines between nodes show existing active links. The layout adjusts automatically as you work, allowing you to zoom or pan to keep everything in view.
 
 When you select a dataset in the workspace, the right-side panel opens to show link details. This panel is where you review suggested connections and manage the links already in place.
 
-## Suggested Links
+## Namespace selector
 
-The Suggested Links section lists potential relationships between fields across your datasets. These suggestions come from the platform’s semantic analysis. Each row shows:
+At the top-right corner of the page, the namespace selector lets you switch between namespaces. 
+
+When you switch namespaces, only the datasaets in that namespace and with active or suggested connections to that dataset appear. 
+
+## Saving your ontology
+
+After adding or removing links, select **Save Ontology** to store your changes. Saving updates the semantic structure for all datasets in the namespace.
+
+## View controls
+
+You can manage the dataset visualtion using the view controls in the bottom-left corner of your screen.
+
+Click the **plus (+)** or **minus (-)** buttons to zoom in or out, the **frame button** to fit all datasets in your namespace into view, and the **lock button **to freeze datasets in place (so you can't accidently click a dataset and select it). 
+
+## Link details panel
+
+When you click a dataset in the Ontology Explorer, it opens the Link details panel, where you can manage suggested and active links.
+
+![View of Ontology Explorer with links panel open in the DataLinks web platform](/images/dl-oe-links.png)
+
+### Suggested Links
+
+When you click a datasett, the suggested links panel appears and lists potential relationships between fields across your datasets. These suggestions come from the platform’s semantic analysis. Each row shows:
 
 - The source field
 - The target field
@@ -26,7 +51,7 @@ You can select a suggested link by clicking the row. When selected, the row turn
 
 You can select several suggested links at once by using the checkbox at the top of the list.
 
-## Active Links
+### Active links
 
 The Active Links section shows the links that are currently part of the ontology for the selected namespace. Each active link displays:
 
@@ -37,15 +62,9 @@ The Active Links section shows the links that are currently part of the ontology
 
 If you select an active link, the row highlights in red. A minus sign appears on the right side of the row. Selecting the minus sign removes the link from the active list.
 
-You can clear all selected links using the \*\*Clear selection \*\*option at the top of the section.
-
-## Namespace Selector
-
-At the top-right corner of the page, the namespace selector lets you switch between namespaces. Only the datasets... confirm?
-
-## Saving Your Ontology
-
-After adding or removing links, select **Save Ontology** to store your changes. Saving updates the semantic structure for all datasets in the namespace.
+<Info>
+  You can clear all selected links using the **Clear selection** option at the top of the section.
+</Info>
 
 ## Summary
 
