@@ -1,13 +1,22 @@
 ---
 title: "Understanding the UI: Create a New Dataset"
 sidebarTitle: "Create New Dataset"
+description: "The Create a new dataset window defines the properties of your new dataset"
 ---
 
 When you select **Create a new dataset**, a setup window opens to guide you through the first steps of building a dataset. This window helps you define the dataset’s identity, place it within the right namespace, and choose its visibility before you upload any data.
 
+![View of creating a new dataset window in the DataLinks web platform](/images/dl-create-dataset.png)
+
 ## Dataset Name
 
-The first field asks you to provide a dataset name. This name appears throughout the platform, so it helps to choose something meaningful and clear. Dataset names use an underscore format. This style makes names easier to reference programmatically and keeps them consistent across the platform.
+The first field asks you to provide a dataset name. This name appears throughout the platform, so it helps to choose something meaningful and clear. 
+
+<Note>
+  Use underscores instead of hyphens when naming datasets.
+</Note>
+
+Dataset names use an underscore format. This style makes names easier to reference programmatically and keeps them consistent across the platform.
 
 ## Namespace
 
@@ -39,8 +48,6 @@ This flow ensures that the dataset exists before any data is added to it.
 
 The modal includes a link to **Create a dataset via API**, which opens a panel showing the request format for creating datasets programmatically. This option is helpful if you are building automated pipelines or managing datasets through scripts.
 
-The panel shows a sample curl command. It illustrates how to call the DataLinks API with your Bearer token and your chosen namespace and dataset name. The visibility is provided in the request body.
-
-A short explanation below the code sample walks through each part of the call, including token usage and how namespaces operate. An objectname can appear in more than one namespace, allowing you to organize data according to different contexts or workflows.
-
-A link at the bottom takes you to the full API documentation set for deeper guidance if needed.
+<Info>
+  For detailed instructions, see [How to create a dataset](/how-to/create-dataset). 
+</Info>
