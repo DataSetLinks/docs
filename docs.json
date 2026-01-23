@@ -50,7 +50,6 @@
             "pages": [
               "ui/home",
               "ui/new-dataset",
-              "ui/dataset-view",
               "ui/ontology-explorer",
               "ui/settings"
             ],
