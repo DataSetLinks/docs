@@ -717,8 +717,12 @@ paths:
             schema:
               $ref: '#/components/schemas/FinishedMultipartRequest'
       responses:
-        '200':
-          description: Completes the multipart upload.
+        '201':
+          description: Completes the multipart upload and returns the ingestion id.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedIngestionTrackingResponse"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1437,6 +1441,10 @@ components:
             $ref: "#/components/schemas/FinishedMultipartItem"
           description: Array of completed parts with their ETags.
           minItems: 1
+        name:
+          type: string
+          description: Optional name/label for the ingestion (e.g., original filename).
+          example: "sales-data-2024.csv"
       required:
         - uploadId
         - key
@@ -1455,6 +1463,16 @@ components:
       required:
         - partNumber
         - etag
+    CreatedIngestionTrackingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Ingestion id created for background ingestion.
+          example: '550e8400-e29b-41d4-a716-446655440000'
+      required:
+        - id
     AbortMultipartRequest:
       type: object
       properties:
@@ -1676,12 +1694,35 @@ components:
         processedRows:
           type: integer
           format: int64
+        attributes:
+          $ref: '#/components/schemas/IngestionItemAttributes'
       required:
         - id
-        - datasetName
         - status
         - expectedTotalBytes
-        - createdBy
+    IngestionItemAttributes:
+      type: object
+      description: Additional attributes for the ingestion.
+      nullable: true
+      properties:
+        name:
+          type: string
+          description: Filename or identifier for the ingestion.
+          nullable: true
+        seenAt:
+          type: string
+          format: date-time
+          description: Timestamp when the ingestion was first seen.
+          nullable: true
+        originalIngestionId:
+          type: string
+          format: uuid
+          description: In case of retry, it's the original ingestion id.
+        lastRetryAt:
+          type: string
+          format: date-time
+          description: Timestamp of the last retry attempt.
+          nullable: true
   responses:
     QueryResponse:
       description: Returns query results.
