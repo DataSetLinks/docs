@@ -65,7 +65,9 @@ Set the following environment variables so sensitive values are not hardcoded in
     export DATALINKS_DATASET="employee_records"
     ```
 
-    These apply to the current shell session. Add them to `~/.bashrc` or `~/.zshrc` if you want them to persist automatically.
+    <Note>
+      These apply to the current shell session. Add them to `~/.bashrc` or `~/.zshrc` if you want them to persist automatically.
+    </Note>
   </Tab>
   <Tab title="MacOS">
     ```bash
@@ -74,7 +76,9 @@ Set the following environment variables so sensitive values are not hardcoded in
     export DATALINKS_DATASET="employee_records"
     ```
 
-    These apply to the current terminal session. For persistence, place them in `~/.zshrc`.
+    <Note>
+      These apply to the current terminal session. For persistence, place them in `~/.zshrc`.
+    </Note>
   </Tab>
 </Tabs>
 
@@ -165,30 +169,71 @@ The `data` field accepts an array of dictionaries. Each dictionary represents a 
 - The `data` field contains a valid JSON array
 - Each record in the array is a dictionary with string keys
 
-## Ingest data in the web platform
-
-If you prefer a visual interface, you can ingest data directly in the DataLinks web platform. This approach is ideal for quick uploads or when you want to preview how DataLinks will process your data.
-
-To ingest data in the web platform, follow these steps:
-
-1. **Log in** to your DataLinks account.
-2. Navigate to the dataset where you want to ingest data.
-3. Click anywhere in the **Click to upload** area to open the file explorer.
-4. Select your data file (JSON, CSV, or TXT), then click **Open**.
-5. Wait while DataLinks ingests your data.
-6. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
-7. Scroll down to the bottom of the page, then click **Upload data**.
-8. Click **Append** to confirm.
-
-<Check>
-  Your data will be added to the dataset and will be ready for linking and querying.
-</Check>
-
-For unstructured data, enter helper prompts and field definitions before uploading. Files attached before entering prompts will not have transformations applied.
-
 ## Working with inference steps
 
 DataLinks can automatically transform and clean your data during ingestion using inference steps. These steps run in sequence to extract structure, normalize schemas, and validate data quality.
+
+#### Using inference steps with the API
+
+To apply inference steps when ingesting via the API, include an `infer` object in your request payload:
+
+```python
+import os
+import json
+import requests
+
+BASE_URL = "https://api.datalinks.com/api/v1"
+
+token = os.environ["DATALINKS_TOKEN"]
+namespace = os.environ["DATALINKS_NAMESPACE"]
+dataset_name = os.environ["DATALINKS_DATASET"]
+
+url = f"{BASE_URL}/ingest/{namespace}/{dataset_name}"
+
+headers = {
+    "Authorization": f"Bearer {token}",
+    "Content-Type": "application/json",
+}
+
+# Data with unstructured text to transform
+data = [
+    {"raw_text": "Alice Johnson, Engineering, $95,000/year"},
+    {"raw_text": "Bob Smith, Marketing, $78,000/year"},
+]
+
+payload = {
+    "data": data,
+    "infer": {
+        "steps": [
+            {
+                "type": "table",
+                "deriveFrom": "raw_text",
+                "helperPrompt": "Extract employee name, department, and salary from each line."
+            },
+            {
+                "type": "normalize",
+                "mode": "all-in-one",
+                "targetCols": {
+                    "employee_name": "Full name of the employee",
+                    "department": "Work department",
+                    "annual_salary": "Yearly compensation in USD"
+                },
+                "helperPrompt": "This data contains HR employee records."
+            }
+        ]
+    }
+}
+
+response = requests.post(
+    url,
+    headers=headers,
+    data=json.dumps(payload),
+    timeout=120,
+)
+
+print("Status:", response.status_code)
+print(json.dumps(response.json(), indent=2))
+```
 
 #### Table extraction
 
@@ -254,67 +299,6 @@ Use the `reverseGeo` step to extract location data from coordinates:
 }
 ```
 
-#### Using inference steps with the API
-
-To apply inference steps when ingesting via the API, include an `infer` object in your request payload:
-
-```python
-import os
-import json
-import requests
-
-BASE_URL = "https://api.datalinks.com/api/v1"
-
-token = os.environ["DATALINKS_TOKEN"]
-namespace = os.environ["DATALINKS_NAMESPACE"]
-dataset_name = os.environ["DATALINKS_DATASET"]
-
-url = f"{BASE_URL}/ingest/{namespace}/{dataset_name}"
-
-headers = {
-    "Authorization": f"Bearer {token}",
-    "Content-Type": "application/json",
-}
-
-# Data with unstructured text to transform
-data = [
-    {"raw_text": "Alice Johnson, Engineering, $95,000/year"},
-    {"raw_text": "Bob Smith, Marketing, $78,000/year"},
-]
-
-payload = {
-    "data": data,
-    "infer": {
-        "steps": [
-            {
-                "type": "table",
-                "deriveFrom": "raw_text",
-                "helperPrompt": "Extract employee name, department, and salary from each line."
-            },
-            {
-                "type": "normalize",
-                "mode": "all-in-one",
-                "targetCols": {
-                    "employee_name": "Full name of the employee",
-                    "department": "Work department",
-                    "annual_salary": "Yearly compensation in USD"
-                },
-                "helperPrompt": "This data contains HR employee records."
-            }
-        ]
-    }
-}
-
-response = requests.post(
-    url,
-    headers=headers,
-    data=json.dumps(payload),
-    timeout=120,
-)
-
-print("Status:", response.status_code)
-print(json.dumps(response.json(), indent=2))
-```
 
 ## Uploading large files
 
@@ -407,6 +391,27 @@ abort_payload = {
 
 response = requests.post(abort_url, headers=headers, json=abort_payload)
 ```
+
+## Ingest data in the web platform
+
+If you prefer a visual interface, you can ingest data directly in the DataLinks web platform. This approach is ideal for quick uploads or when you want to preview how DataLinks will process your data.
+
+To ingest data in the web platform, follow these steps:
+
+1. **Log in** to your DataLinks account.
+2. Navigate to the dataset where you want to ingest data.
+3. Click anywhere in the **Click to upload** area to open the file explorer.
+4. Select your data file (JSON, CSV, or TXT), then click **Open**.
+5. Wait while DataLinks ingests your data.
+6. Click the **eye icon** under Ingestion Results to review the data and confirm that everything looks correct.
+7. Scroll down to the bottom of the page, then click **Upload data**.
+8. Click **Append** to confirm.
+
+<Check>
+  Your data will be added to the dataset and will be ready for linking and querying.
+</Check>
+
+For unstructured data, enter helper prompts and field definitions before uploading. Files attached before entering prompts will not have transformations applied.
 
 ## Next steps
 
