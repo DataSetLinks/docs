@@ -141,6 +141,71 @@ Run the script using your normal Python workflow:
 python ingest_data.py
 ```
 
+### Full script
+
+Expand the container below for the complete script.
+
+<Accordion title="New Accordion" icon="sparkles">
+  ```
+  import os
+  import requests
+  
+  BASE_URL = "https://api.datalinks.com/api/v1"
+  token = os.environ["DATALINKS_TOKEN"]
+  username = "your_username"
+  namespace = "hr_demo"
+  dataset_name = "employee_records"
+  
+  headers = {
+      "Authorization": f"Bearer {token}",
+      "Content-Type": "application/json",
+  }
+  
+  # Step 1: Prepare the multipart upload
+  prepare_url = f"{BASE_URL}/multipart/prepare/{username}/{namespace}/{dataset_name}"
+  file_size = os.path.getsize("large_data.json")
+  
+  prepare_payload = {
+      "filename": "large_data.json",
+      "size": file_size,
+  }
+  
+  response = requests.post(prepare_url, headers=headers, json=prepare_payload)
+  upload_info = response.json()
+  
+  upload_id = upload_info["uploadId"]
+  presigned_urls = upload_info["presignedUrls"]
+  s3_key = upload_info["key"]
+  
+  # Step 2: Upload each part
+  parts = []
+  part_size = 5 * 1024 * 1024  # 5MB per part
+  
+  with open("large_data.json", "rb") as f:
+      for i, url in enumerate(presigned_urls):
+          part_data = f.read(part_size)
+          part_response = requests.put(url, data=part_data)
+          
+          etag = part_response.headers["ETag"]
+          parts.append({
+              "partNumber": i + 1,
+              "etag": etag.strip('"')
+          })
+  
+  # Step 3: Finish the multipart upload
+  finish_url = f"{BASE_URL}/multipart/finish/{username}/{namespace}/{dataset_name}"
+  
+  finish_payload = {
+      "uploadId": upload_id,
+      "key": s3_key,
+      "parts": parts,
+  }
+  
+  response = requests.post(finish_url, headers=headers, json=finish_payload)
+  print("Upload complete:", response.json())
+  ```
+</Accordion>
+
 ### **How this works**
 
 This request:
@@ -298,7 +363,6 @@ Use the `reverseGeo` step to extract location data from coordinates:
   "deriveFrom": "coordinates"
 }
 ```
-
 
 ## Uploading large files
 
