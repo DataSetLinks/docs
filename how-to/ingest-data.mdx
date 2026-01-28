@@ -12,17 +12,33 @@ If you're new to DataLinks, you may want to start with the explanatory article [
 
 This section shows how to ingest data into an existing DataLinks dataset by calling the REST API directly from Python. You'll ingest a list of employee records into a dataset named `employee_records` inside the `hr_demo` namespace.
 
+## Sample data
+
+Download the sample CSV file to follow along: employee_records_sample.csv
+
+This file contains 15 employee records with intentional inconsistencies that mirror real-world data problems:
+
+| Issue                    | Examples in the data                                |
+| ------------------------ | --------------------------------------------------- |
+| Inconsistent casing      | "Engineering", "ENGINEERING", "engineering"         |
+| Department abbreviations | "HR" vs "Human Resources"                           |
+| Salary format variations | "\$95,000/year", "78000", "87000 annually"          |
+| Date format chaos        | "2022-03-15", "03/22/2021", "Jan 5 2020"            |
+| Phone number formats     | "(555) 555-4567", "555.555.5678", "+1-555-555-6789" |
+
+You'll see how DataLinks handles these inconsistencies in the Cleaning data with inference steps section.
+
 #### Prerequisites
 
 Before you begin, make sure you have:
 
 - A DataLinks account
-- A valid bearer token for the DataLinks API
-- An existing dataset to ingest data into (see [How to Create a Dataset](/how-to/create-dataset))
-- A Python environment set up for running scripts
-- The `requests` library installed
+- A valid API token (see [How to Get an API Token](/how-to/get-api-token))
+- An existing dataset named `employee_records` inside a `hr_demo` namespace (see [How to Create a Dataset](/how-to/create-dataset))
+- Python 3.x with the `requests` library installed
+- A copy of the sample data
 
-### **Step 1: Install dependencies**
+### Step 1: Install dependencies
 
 ```
 pip install requests
@@ -34,7 +50,7 @@ or
 pip3 install requests
 ```
 
-**Step 2: Configure environment variables**
+### Step 2: Configure environment variables
 
 Set the following environment variables so sensitive values are not hardcoded in your script:
 
@@ -82,20 +98,21 @@ Set the following environment variables so sensitive values are not hardcoded in
   </Tab>
 </Tabs>
 
-### **Step 2: Create the ingestion script**
+### Step 3: Create the ingestion script
 
-Create a Python file, for example `ingest_data.py`, and add the following code:
+Create a file named `ingest_employees.py`:
 
 ```python
 import os
+import csv
 import json
 import requests
 
 BASE_URL = "https://api.datalinks.com/api/v1"
 
 token = os.environ["DATALINKS_TOKEN"]
-namespace = os.environ["DATALINKS_NAMESPACE"]
-dataset_name = os.environ["DATALINKS_DATASET"]
+namespace = "hr_demo"
+dataset_name = "employee_records"
 
 url = f"{BASE_URL}/ingest/{namespace}/{dataset_name}"
 
@@ -104,111 +121,32 @@ headers = {
     "Content-Type": "application/json",
 }
 
-# Sample data to ingest
-data = [
-    {"id": "001", "name": "Alice Johnson", "age": "32", "department": "Engineering", "salary": "95000"},
-    {"id": "002", "name": "Bob Smith", "age": "45", "department": "Marketing", "salary": "78000"},
-    {"id": "003", "name": "Carol Davis", "age": "28", "department": "Engineering", "salary": "87000"},
-]
+# Read data from CSV file
+data = []
+with open("employee_records_sample.csv", "r") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        data.append(row)
 
-payload = {
-    "data": data,
-}
+payload = {"data": data}
 
-response = requests.post(
-    url,
-    headers=headers,
-    data=json.dumps(payload),
-    timeout=60,
-)
+response = requests.post(url, headers=headers, json=payload, timeout=60)
 
 print("Status:", response.status_code)
-
-if response.headers.get("content-type", "").startswith("application/json"):
-    print(json.dumps(response.json(), indent=2))
-else:
-    print(response.text)
-
-response.raise_for_status()
-print("\nData ingested successfully.")
+print(json.dumps(response.json(), indent=2))
 ```
 
-### **Step 3: Run the script**
-
-Run the script using your normal Python workflow:
+### Step 4: Run the script
 
 ```bash
-python ingest_data.py
+python ingest_employees.py
 ```
 
-### Full script
+A successful response returns status 200 with information about the ingested records.
 
-Expand the container below for the complete script.
+### How this works
 
-<Accordion title="Full script" icon="sparkles">
-  ```
-  import os
-  import requests
-  
-  BASE_URL = "https://api.datalinks.com/api/v1"
-  token = os.environ["DATALINKS_TOKEN"]
-  username = "your_username"
-  namespace = "hr_demo"
-  dataset_name = "employee_records"
-  
-  headers = {
-      "Authorization": f"Bearer {token}",
-      "Content-Type": "application/json",
-  }
-  
-  # Step 1: Prepare the multipart upload
-  prepare_url = f"{BASE_URL}/multipart/prepare/{username}/{namespace}/{dataset_name}"
-  file_size = os.path.getsize("large_data.json")
-  
-  prepare_payload = {
-      "filename": "large_data.json",
-      "size": file_size,
-  }
-  
-  response = requests.post(prepare_url, headers=headers, json=prepare_payload)
-  upload_info = response.json()
-  
-  upload_id = upload_info["uploadId"]
-  presigned_urls = upload_info["presignedUrls"]
-  s3_key = upload_info["key"]
-  
-  # Step 2: Upload each part
-  parts = []
-  part_size = 5 * 1024 * 1024  # 5MB per part
-  
-  with open("large_data.json", "rb") as f:
-      for i, url in enumerate(presigned_urls):
-          part_data = f.read(part_size)
-          part_response = requests.put(url, data=part_data)
-          
-          etag = part_response.headers["ETag"]
-          parts.append({
-              "partNumber": i + 1,
-              "etag": etag.strip('"')
-          })
-  
-  # Step 3: Finish the multipart upload
-  finish_url = f"{BASE_URL}/multipart/finish/{username}/{namespace}/{dataset_name}"
-  
-  finish_payload = {
-      "uploadId": upload_id,
-      "key": s3_key,
-      "parts": parts,
-  }
-  
-  response = requests.post(finish_url, headers=headers, json=finish_payload)
-  print("Upload complete:", response.json())
-  ```
-</Accordion>
-
-### **How this works**
-
-This request:
+The request:
 
 - Calls `POST /ingest/{namespace}/{datasetName}` to load data into an existing dataset
 - Authenticates using a bearer token in the `Authorization` header
@@ -219,242 +157,117 @@ The `data` field accepts an array of dictionaries. Each dictionary represents a 
 
 ### Common issues
 
-**Authentication errors** If the request fails with a 401 error, confirm that:
+**401 Unauthorized**
 
-- The token environment variable is set correctly
-- The `Authorization` header uses the `Bearer` format
+- Confirm the token environment variable is set correctly
+- Verify the `Authorization` header uses the `Bearer` prefix
 
-**Dataset not found** If you see a 404 error, check that:
+**404 Not Found**
 
-- The namespace and dataset name in the URL match an existing dataset
-- You have permission to access the dataset
+- Check that the namespace and dataset name match an existing dataset
+- Verify you have permission to access the dataset
 
-**Data format errors** If you see a 400 error, verify that:
+**400 Bad Request**
 
-- The `data` field contains a valid JSON array
-- Each record in the array is a dictionary with string keys
+- Ensure the `data` field contains a valid JSON array
+- Verify each record is a dictionary with string keys
 
-## Working with inference steps
+## Cleaning data with inference steps
 
 DataLinks can automatically transform and clean your data during ingestion using inference steps. These steps run in sequence to extract structure, normalize schemas, and validate data quality.
 
-#### Using inference steps with the API
+### Available inference steps
 
-To apply inference steps when ingesting via the API, include an `infer` object in your request payload:
+| Step         | Purpose                                         |
+| ------------ | ----------------------------------------------- |
+| `table`      | Extract structured data from unstructured text  |
+| `rows`       | Extract rows from JSON content in a column      |
+| `normalize`  | Standardize column names to a consistent schema |
+| `validate`   | Verify data quality against expected patterns   |
+| `reverseGeo` | Extract location data from coordinates          |
 
-```python
-import os
-import json
-import requests
-
-BASE_URL = "https://api.datalinks.com/api/v1"
-
-token = os.environ["DATALINKS_TOKEN"]
-namespace = os.environ["DATALINKS_NAMESPACE"]
-dataset_name = os.environ["DATALINKS_DATASET"]
-
-url = f"{BASE_URL}/ingest/{namespace}/{dataset_name}"
-
-headers = {
-    "Authorization": f"Bearer {token}",
-    "Content-Type": "application/json",
-}
-
-# Data with unstructured text to transform
-data = [
-    {"raw_text": "Alice Johnson, Engineering, $95,000/year"},
-    {"raw_text": "Bob Smith, Marketing, $78,000/year"},
-]
-
-payload = {
-    "data": data,
-    "infer": {
-        "steps": [
-            {
-                "type": "table",
-                "deriveFrom": "raw_text",
-                "helperPrompt": "Extract employee name, department, and salary from each line."
-            },
-            {
-                "type": "normalize",
-                "mode": "all-in-one",
-                "targetCols": {
-                    "employee_name": "Full name of the employee",
-                    "department": "Work department",
-                    "annual_salary": "Yearly compensation in USD"
-                },
-                "helperPrompt": "This data contains HR employee records."
-            }
-        ]
-    }
-}
-
-response = requests.post(
-    url,
-    headers=headers,
-    data=json.dumps(payload),
-    timeout=120,
-)
-
-print("Status:", response.status_code)
-print(json.dumps(response.json(), indent=2))
-```
-
-#### Table extraction
-
-Use the `table` step to extract structured data from text containing tables:
+Use the `table` step to extract structured data from unstructured text:
 
 ```json
 {
-  "type": "table",
-  "deriveFrom": "raw_column",
-  "helperPrompt": "This text contains a comma-separated table with semicolons as line breaks."
+    "type": "table",
+    "deriveFrom": "raw_text",
+    "helperPrompt": "Extract employee name, department, and salary from each line."
 }
 ```
 
-#### Normalize
+The `deriveFrom` field specifies which column contains the text to parse. The `helperPrompt` guides the AI to improve extraction accuracy.
 
-Use the `normalize` step to consolidate column names into a consistent schema:
+### Rows extraction
+
+Use the `rows` step to extract rows from JSON content stored in a column:
 
 ```json
 {
-  "type": "normalize",
-  "mode": "all-in-one",
-  "targetCols": {
-    "employee_name": "Full name of the employee",
-    "department": "Work department name",
-    "salary": "Annual salary in USD"
-  },
-  "helperPrompt": "This data contains HR employee records."
+    "type": "rows",
+    "deriveFrom": "json_data"
+}
+```
+
+### Normalize
+
+Use the `normalize` step to standardize column names and formats:
+
+```json
+{
+    "type": "normalize",
+    "mode": "all-in-one",
+    "targetCols": {
+        "employee_name": "Full name of the employee",
+        "department": "Work department name",
+        "salary": "Annual salary in USD as integer"
+    },
+    "helperPrompt": "This data contains HR employee records."
 }
 ```
 
 The normalize step supports three modes:
 
-- **all-in-one:** Uses a single prompt to normalize all columns at once
-- **field-by-field:** Normalizes each field individually for complex schemas
-- **embeddings:** Uses embeddings to match column names for large datasets
+| Mode             | Use case                                                       |
+| ---------------- | -------------------------------------------------------------- |
+| `all-in-one`     | Normalize all columns in a single pass. Best for most cases.   |
+| `field-by-field` | Normalize each field individually. Use for complex schemas.    |
+| `embeddings`     | Use embeddings to match column names. Best for large datasets. |
 
-#### Validate
+### Validate
 
 Use the `validate` step to verify data quality:
 
 ```json
 {
-  "type": "validate",
-  "mode": "fields",
-  "columns": ["email", "phone"]
+    "type": "validate",
+    "mode": "fields",
+    "columns": ["email", "phone"]
 }
 ```
 
 Validation modes:
 
-- **rows:** Validates entire rows against expected patterns
-- **fields:** Validates specific columns
-- **regex:** Validates using regular expressions
+| Mode     | Behavior                                        |
+| -------- | ----------------------------------------------- |
+| `rows`   | Validates entire rows against expected patterns |
+| `fields` | Validates specific columns                      |
+| `regex`  | Validates using regular expressions             |
 
-#### ReverseGeo
+### ReverseGeo
 
 Use the `reverseGeo` step to extract location data from coordinates:
 
 ```json
 {
-  "type": "reverseGeo",
-  "deriveFrom": "coordinates"
+    "type": "reverseGeo",
+    "deriveFrom": "coordinates"
 }
 ```
 
 ## Uploading large files
 
-For files larger than 5MB, use the multipart upload flow to improve reliability. This approach splits the file into parts and uploads them separately.
-
-### Step 1: Prepare the upload
-
-Call the prepare endpoint to get presigned URLs for each part:
-
-```python
-import os
-import json
-import requests
-
-BASE_URL = "https://api.datalinks.com/api/v1"
-token = os.environ["DATALINKS_TOKEN"]
-username = "your_username"
-namespace = "hr_demo"
-dataset_name = "employee_records"
-
-# Step 1: Prepare the multipart upload
-prepare_url = f"{BASE_URL}/multipart/prepare/{username}/{namespace}/{dataset_name}"
-
-headers = {
-    "Authorization": f"Bearer {token}",
-    "Content-Type": "application/json",
-}
-
-file_size = os.path.getsize("large_data.json")
-
-prepare_payload = {
-    "filename": "large_data.json",
-    "size": file_size,
-}
-
-response = requests.post(prepare_url, headers=headers, json=prepare_payload)
-upload_info = response.json()
-
-upload_id = upload_info["uploadId"]
-presigned_urls = upload_info["presignedUrls"]
-s3_key = upload_info["key"]
-```
-
-### Step 2: Upload each part
-
-```python
-# Step 2: Upload each part
-parts = []
-part_size = 5 * 1024 * 1024  # 5MB per part
-
-with open("large_data.json", "rb") as f:
-    for i, url in enumerate(presigned_urls):
-        part_data = f.read(part_size)
-        part_response = requests.put(url, data=part_data)
-        
-        etag = part_response.headers["ETag"]
-        parts.append({
-            "partNumber": i + 1,
-            "etag": etag.strip('"')
-        })
-```
-
-### Step 3: Complete the upload
-
-```python
-# Step 3: Finish the multipart upload
-finish_url = f"{BASE_URL}/multipart/finish/{username}/{namespace}/{dataset_name}"
-
-finish_payload = {
-    "uploadId": upload_id,
-    "key": s3_key,
-    "parts": parts,
-}
-
-response = requests.post(finish_url, headers=headers, json=finish_payload)
-print("Upload complete:", response.json())
-```
-
-### Aborting an upload
-
-If an upload fails or needs to be canceled, use the abort endpoint:
-
-```python
-abort_url = f"{BASE_URL}/multipart/abort/{username}/{namespace}/{dataset_name}"
-
-abort_payload = {
-    "uploadId": upload_id,
-    "key": s3_key,
-}
-
-response = requests.post(abort_url, headers=headers, json=abort_payload)
-```
+For files larger than 5MB, use multipart upload for better reliability.
 
 ## Ingest data in the web platform
 
