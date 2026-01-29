@@ -22,9 +22,8 @@ curl -H "Authorization: Bearer token1234abcdefg"
               }'
 ```
 
-* The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps such as **table**, **rows**, **normalize**, **validate**, and **reverseGeo**.
-
-* In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
+- The inference can have multiple steps which are combined by our AI. The example above extracts a simple table, but you can have other steps such as **table**, **rows**, **normalize**, **validate**, and **reverseGeo**.
+- In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
 
 # Available steps
 
@@ -33,7 +32,7 @@ curl -H "Authorization: Bearer token1234abcdefg"
 The Table Step is designed to extract a table from any text input, whether it's free-form text such as a restaurant review, a flight log report, or a financial instrument notice. When used independently, this step may produce columns that are somewhat arbitrary and often require normalization afterward. It functions by extracting data to create new columns and appending them to the rows of the existing table.
 
 <Tip>
-    **Pro tip:** Calling an extraction with just the **table** step is a great way to see what kind of **structured** data can be generated from your unstructured data.
+  **Pro tip:** Calling an extraction with just the **table** step is a great way to see what kind of **structured** data can be generated from your unstructured data.
 </Tip>
 
 ```json
@@ -98,11 +97,16 @@ Validated rows will include a `__valid` field indicating whether the validation 
 
 The ReverseGeo step adds geographical coordinates (latitude and longitude) based on location names in a specified column.
 
+<Note>
+  ReverseGeo is an optional feature not enabled by default. Contact your account representative to add it to your workspace.
+</Note>
+
+This step will add a new column named `{locationColumnName}_latlong` containing the coordinates.
+
+
 ```json
 {
   "type": "reverseGeo",
   "deriveFrom": "locationColumnName"
 }
 ```
-
-This step will add a new column named `{locationColumnName}_latlong` containing the coordinates.
