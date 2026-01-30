@@ -40,7 +40,7 @@
                 "group": "MCP Guides",
                 "pages": [
                   "mcp/general-mcp",
-                  "mcp/docs",
+                  "mcp/docs-mcp",
                   "mcp/claude-desktop"
                 ]
               }
