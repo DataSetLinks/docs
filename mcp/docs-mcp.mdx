@@ -1,0 +1,85 @@
+---
+title: "DataLinks Docs MCP Server"
+description: "Access the DataLinks docs via MCP as well as the AP"
+sidebarTitle: "DataLinks Docs MCP"
+---
+
+The DataLinks Docs MCP server provides direct access to the DataLinks documentation from within MCP-compatible tools. Once connected, your AI assistant can search, retrieve, and reference documentation content in real time. This allows you to get immediate answers to questions about the DataLinks platform without leaving your workflow.
+
+<Info>
+  This guide covers the DataLinks Docs MCP server, which provides access to documentation. If you want to query your data, manage datasets, or interact with the DataLinks platform, see the [DataLinks Platform MCP Server](/mcp/general-mcp) guide instead.
+</Info>
+
+## Configuration
+
+To connect to the DataLinks Docs MCP server, add the following configuration to your MCP client. The exact location of your configuration file depends on the tool you are using.
+
+```json
+{
+  "mcpServers": {
+    "datalinks-docs": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://docs.datalinks.com/mcp"
+      ]
+    }
+  }
+}
+```
+
+## Using both MCP servers together
+
+For the best experience, configure both the [DataLinks platform MCP server ](/mcp/general-mcp)and the Docs MCP server in the same environment. This allows your AI assistant to:
+
+1. Execute queries and manage data through the platform API
+2. Reference documentation to answer questions or verify correct usage
+3. Troubleshoot issues by looking up relevant guides in real time
+
+Here is an example configuration that includes both servers:
+
+```json
+{
+  "mcpServers": {
+    "datalinks": {
+      "command": "C:\\\\PROGRA~1\\\\nodejs\\\\npx.cmd",
+      "args": [
+        "mcp-remote",
+        "https://mcp.datalinks.com/mcp/",
+        "--header",
+        "Authorization: Bearer <your-token-here>"
+      ]
+    },
+    "datalinks-docs": {
+      "command": "C:\\\\PROGRA~1\\\\nodejs\\\\npx.cmd",
+      "args": [
+        "mcp-remote",
+        "https://docs.datalinks.com/mcp"
+      ]
+    }
+  }
+}
+```
+
+## Verifying the connection
+
+After adding the configuration and restarting your MCP client, you can verify the setup by asking your assistant something like:
+
+> Can you search the DataLinks documentation for information about managing connections?
+
+If the Docs MCP server is connected, your assistant will be able to retrieve and summarize relevant documentation content.
+
+## Why use the Docs MCP server?
+
+When working with DataLinks through an agentic tool like Claude Desktop, you may have questions about how to use specific features, structure queries, or troubleshoot issues. The Docs MCP server gives your AI assistant the ability to look up this information on demand.
+
+Combined with the DataLinks platform MCP server, you get both capabilities in one environment: your assistant can query your data through the platform API while also referencing documentation to guide its actions or answer your questions. This is especially useful when you need help understanding a feature mid-task or want to verify the correct syntax for a query.
+
+## Use cases
+
+The Docs MCP server is helpful when you want to:
+
+- Ask questions about DataLinks features while working in Claude Desktop or another MCP-compatible tool
+- Get guidance on query syntax, API endpoints, or SDK methods without switching to a browser
+- Let your AI assistant self-reference documentation to improve the accuracy of its responses
+- Combine documentation lookups with live data queries in a single workflow
