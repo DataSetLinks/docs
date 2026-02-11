@@ -133,7 +133,7 @@ To upload and transform your data, follow the steps below:
 
 ## Part 5: Manage connections
 
-By default, no connections are established when you create datasets. Creating proper connections between datasets significantly increases the quality of query responses and insights into your data. To manage connections, follow these steps: 
+By default, no connections are established when you create datasets. Creating proper connections between datasets significantly increases the quality of query responses and insights into your data. To manage connections, follow these steps:
 
 1. Open the DataLinks web platform again and return to the **Home** page.
 1. Click the **customer_list** dataset in the `dental_prospects` namespace.
@@ -142,6 +142,22 @@ By default, no connections are established when you create datasets. Creating pr
 1. Click **Save connections**. This will remove all active links.
 1. Click the row containing `customer_list.full_name` and `society_members.membername`.
 1. Click **Add connections**.
+
+## Part 6: Try your first query
+
+Now that your data is ingested and connected, you can start using the DataLinks platform to query it and extract insights. In this example, we'll use DataLinks to identify customers from our `customer_list `who also area members of the society we're interested in targeting. To query your data, follow the steps below:
+
+1. Open the **customer_list** dataset.
+2. Verify you're on the **Preview&Query** tab. 
+3. In the chat area to the right, verify the **Natural language** tab is selected, then enter the following query and submit: Find people associated with my customer `Andrew Williams, and let me know why I should engage with them.`
+
+<Tip>
+  Notice how your table data filters with your query.
+</Tip>
+
+If you want to query all the data in your namespace, click **Connections Overview** in the left menu, ensure your `dental_prospects_web` namespace is selected, and use that natural language search instead.
+
+Remember that the **Preview&Query** tab allows you **search a specific dataset**, whereas the **Connections Overview** page allows you to **search all datasets in the namespace**.
 
 ## Next steps
 

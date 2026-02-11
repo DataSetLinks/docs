@@ -46,7 +46,7 @@ With these things in place, you're ready to get started!
 ## Part 1: Create your namespace and first dataset
 
 <Frame>
-  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-1.mp4" alt="DataLinks" controls autoPlay muted loop />
+  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-1.mp4" alt="DataLinks" controls={true} autoPlay={true} muted={true} loop={true} />
 </Frame>
 
 1. Log in to the DataLinks platform.
@@ -69,7 +69,7 @@ With these things in place, you're ready to get started!
 Now that you've created an empty dataset, you need to populate it with data. To do so, follow these steps:
 
 <Frame>
-  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-2.mp4" alt="DataLinks" controls autoPlay muted loop />
+  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-2.mp4" alt="DataLinks" controls={true} autoPlay={true} muted={true} loop={true} />
 </Frame>
 
 1. Click anywhere in the **Click to upload** area to open the file explorer.
@@ -88,7 +88,7 @@ Now that you've created an empty dataset, you need to populate it with data. To 
 Now that you have your customer list uploaded, you need to upload the list of dental society members you want to compare it against.
 
 <Frame>
-  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-3.mp4" alt="DataLinks" controls autoPlay muted loop />
+  <video className="block mx-auto" src="https://docs.cdn.datalinks.com/docs/quickstart-web/screencaptures/qa-web-3.mp4" alt="DataLinks" controls={true} autoPlay={true} muted={true} loop={true} />
 </Frame>
 
 1. Return to Home.
@@ -148,6 +148,22 @@ DataLinks does not establish connections by default. Adding connections between 
 <Check>
   You've now connected the names in your customer list to the names in the society members list.
 </Check>
+
+## Part 6: Try your first query
+
+Now that your data is ingested and connected, you can start using the DataLinks platform to query it and extract insights. In this example, we'll use DataLinks to identify customers from our `customer_list `who also area members of the society we're interested in targeting. To query your data, follow the steps below:
+
+1. Open the **customer_list** dataset.
+2. Verify you're on the **Preview&Query** tab. 
+3. In the chat area to the right, verify the **Natural language** tab is selected, then enter the following query and submit: Find people associated with my customer `Andrew Williams, and let me know why I should engage with them.`
+
+<Tip>
+  Notice how your table data filters with your query.
+</Tip>
+
+If you want to query all the data in your namespace, click **Connections Overview** in the left menu, ensure your `dental_prospects_web` namespace is selected, and use that natural language search instead.
+
+Remember that the **Preview&Query** tab allows you **search a specific dataset**, whereas the **Connections Overview** page allows you to **search all datasets in the namespace**.
 
 ## Next steps
 
