@@ -3,21 +3,19 @@ title: "AI Inference"
 sidebarTitle: "AI Inference"
 ---
 
-## Overview
-
 When you ingest data into DataLinks, you can include an inference pipeline that transforms your data before it is stored. The pipeline is a sequence of steps that extract structure from unstructured text, normalize column names to a target schema, validate data quality, and enrich records with geographic coordinates.
 
 Inference steps are specified in the `infer.steps` array of an ingestion or preview request. Steps execute in order: the output of each step becomes the input for the next.
 
 ### Step types at a glance
 
-| Step | `type` value | Uses LLM | Purpose |
-|------|-------------|----------|---------|
-| [Table extraction](#table-extraction) | `table` | Yes | Extract structured columns from unstructured text |
-| [Rows](#rows) | `rows` | No | Expand a JSON array stored in a column into rows |
-| [Normalize](#normalize) | `normalize` | Depends on mode | Map extracted column names to a target schema |
-| [Validate](#validate) | `validate` | Yes | Check data quality and flag invalid rows |
-| [ReverseGeo](#reversegeo) | `reverseGeo` | No | Add latitude/longitude from location names |
+| Step                                  | `type` value | Uses LLM        | Purpose                                           |
+| ------------------------------------- | ------------ | --------------- | ------------------------------------------------- |
+| [Table extraction](#table-extraction) | `table`      | Yes             | Extract structured columns from unstructured text |
+| [Rows](#rows)                         | `rows`       | No              | Expand a JSON array stored in a column into rows  |
+| [Normalize](#normalize)               | `normalize`  | Depends on mode | Map extracted column names to a target schema     |
+| [Validate](#validate)                 | `validate`   | Yes             | Check data quality and flag invalid rows          |
+| [ReverseGeo](#reversegeo)             | `reverseGeo` | No              | Add latitude/longitude from location names        |
 
 ## Testing with Preview
 
@@ -53,7 +51,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ```
 
 <Tip>
-Always start with Preview. Inference uses LLM calls that are easier to tune in a tight feedback loop before you commit to a full ingestion run.
+  Always start with Preview. Inference uses LLM calls that are easier to tune in a tight feedback loop before you commit to a full ingestion run.
 </Tip>
 
 ## How the pipeline works
@@ -82,5 +80,300 @@ The full request structure looks like this:
       { "type": "validate", "mode": "...", "columns": [ ... ] }
     ]
   }
+}
+```
+## Step reference
+
+### Table extraction
+
+Extracts structured columns from unstructured text in a specified column. The LLM reads the text and produces one or more new columns per row.
+
+```json
+{
+  "type": "table",
+  "deriveFrom": "source_column",
+  "helperPrompt": "Optional prompt to guide extraction."
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | Yes | Must be `"table"` |
+| `deriveFrom` | Yes | Name of the column containing unstructured text |
+| `helperPrompt` | No | Instructions to the LLM about what to extract and how |
+
+When processing diverse inputs, the LLM will invent column names based on what it finds. Different rows may produce different names for the same concept (e.g., `phone_number` vs `telephone`). Follow table extraction with a [normalize](#normalize) step to consolidate these into a consistent schema.
+
+<Tip>
+Running table extraction alone (without normalize) is a good way to explore what structured data the LLM can pull from your unstructured source. Use Preview to experiment.
+</Tip>
+
+### Rows
+
+If a column contains a JSON array of objects, the Rows step expands it: each object in the array becomes a row, with each key mapped to a new column.
+
+```json
+{
+  "type": "rows",
+  "deriveFrom": "json_column"
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | Yes | Must be `"rows"` |
+| `deriveFrom` | Yes | Name of the column containing a JSON array |
+
+For example, if a column contains `[{"name": "Alice", "age": 34}, {"name": "Bob", "age": 28}]`, the Rows step produces two rows with `name` and `age` columns.
+
+### Normalize
+
+Maps extracted columns to a target schema you define. This is how you ensure that regardless of what column names the table extraction step produces, the final dataset has a consistent, predictable structure.
+
+```json
+{
+  "type": "normalize",
+  "mode": "all-in-one",
+  "targetCols": {
+    "full_name": "The person's full name, without titles like Dr. or Mr.",
+    "age": "Age as a number",
+    "company": "Company or organization name",
+    "email": "Email address"
+  },
+  "helperPrompt": "This data comes from professional directory listings."
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | Yes | Must be `"normalize"` (or `"normalise"`) |
+| `mode` | Yes | One of `"all-in-one"`, `"field-by-field"`, or `"embeddings"` |
+| `targetCols` | Yes | Object mapping desired column names to descriptions |
+| `helperPrompt` | No | Domain context to help the LLM interpret column names |
+
+#### Choosing a mode
+
+| Mode | How it works | Best for |
+|------|-------------|----------|
+| `all-in-one` | Single LLM call maps all columns at once | Good default for most cases. Fast and effective when columns are reasonably self-explanatory. |
+| `field-by-field` | One LLM call per target column | Complex schemas where columns may be ambiguous. More accurate but slower. |
+| `embeddings` | Matches column names by semantic similarity, no LLM call | High-volume ingestion with predictable, consistent source schemas. Fastest option. |
+
+The descriptions you provide in `targetCols` matter. They are the primary signal the LLM uses to decide which extracted column maps to which target. Be specific: `"Email address"` is better than `"email"`, and `"Annual salary in USD"` is better than `"salary"`.
+
+### Validate
+
+Checks data quality by validating the content of specified columns. Rows that fail validation are flagged with a `__valid` field set to `false`.
+
+```json
+{
+  "type": "validate",
+  "mode": "fields",
+  "columns": ["email", "phone"]
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | Yes | Must be `"validate"` |
+| `mode` | Yes | One of `"regex"`, `"rows"`, or `"fields"` |
+| `columns` | Yes | Array of column names to validate |
+
+#### Validation modes
+
+| Mode | How it works |
+|------|-------------|
+| `regex` | Validates columns using regular expression patterns |
+| `rows` | Evaluates entire rows against the specified columns for consistency |
+| `fields` | Validates each field individually |
+
+Each row in the output will include a `__valid` field:
+
+```json
+[
+  { "email": "alice@example.com", "phone": "+1-555-0100", "__valid": true },
+  { "email": "not-an-email",      "phone": "",             "__valid": false }
+]
+```
+
+You can use this field to filter or quarantine invalid records after ingestion.
+
+### ReverseGeo
+
+Adds geographic coordinates (latitude and longitude) based on location names in a specified column. This step produces a new column named `{deriveFrom}_latlong`.
+
+<Warning>
+ReverseGeo is an optional feature not enabled by default. Contact your account representative to add it to your workspace.
+</Warning>
+
+```json
+{
+  "type": "reverseGeo",
+  "deriveFrom": "city"
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | Yes | Must be `"reverseGeo"` |
+| `deriveFrom` | Yes | Name of the column containing location names |
+
+Example output:
+
+| city | city_latlong |
+|------|-------------|
+| New York | 40.7128,-74.0060 |
+| London | 51.5074,-0.1278 |
+
+## Writing effective helper prompts
+
+The `helperPrompt` field is available on both the table extraction and normalize steps. It is the most impactful parameter for inference quality. A good prompt gives the LLM the context it needs to make accurate decisions.
+
+**Be specific about the schema you expect.** Name the columns and describe their format:
+
+```
+Extract the following fields: MemberName (full name without academic
+titles like Dr. or Prof.), Address (street address), City, Country
+(normalize all country names to English), Phone (include country code,
+replacing a leading 0 with the appropriate code), Email, Website.
+```
+
+**Describe the source format** so the LLM knows how to parse it:
+
+```
+This text contains a semicolon-delimited table. Columns are separated
+by commas and rows are separated by semicolons.
+```
+
+**Call out edge cases and transformation rules:**
+
+```
+If a phone number does not include a country code (+XX), add the
+appropriate code based on the country. If latitude/longitude are
+present, format them as "lat,long".
+```
+
+**State what to include and exclude:**
+
+```
+Extract all entries. Do not skip any. Omit personal honorifics like
+Ms., Mr., Frau, Herr from names.
+```
+
+## Choosing an LLM
+
+Steps that use LLM inference (table extraction, normalize, and validate) accept optional `model` and `provider` fields to specify which model runs the step.
+
+```json
+{
+  "type": "table",
+  "deriveFrom": "notes",
+  "helperPrompt": "Extract product names and prices.",
+  "model": "gpt-4.1-nano-2025-04-14",
+  "provider": "openai"
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `model` | No | The model identifier (e.g., `"gpt-4.1-nano-2025-04-14"`) |
+| `provider` | No | The provider name (e.g., `"openai"`, `"ollama"`) |
+
+When omitted, DataLinks uses its default model. Smaller models are faster and cheaper for simple extractions; larger models handle ambiguous or complex text better.
+
+## Complete example
+
+This example takes unstructured directory entries, extracts structured fields, normalizes the schema, and validates the results:
+
+```bash
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     -H "Content-Type: application/json" \
+     -X POST https://api.datalinks.com/api/preview \
+     --data '{
+       "data": [
+         {"entry": "Dr. Alice Chen, Northwind Dental, 42 Oak St, Springfield, (555) 012-3456, alice@northwind.com"},
+         {"entry": "Bob Martinez - Rivera Family Dentistry. 100 Main Ave, Portland OR 97201. bob@riveradental.com"}
+       ],
+       "infer": {
+         "steps": [
+           {
+             "type": "table",
+             "deriveFrom": "entry",
+             "helperPrompt": "Each entry is a dental practice listing. Extract the practitioner name (without Dr. or similar titles), practice name, street address, city, state, phone number (with +1 country code), and email."
+           },
+           {
+             "type": "normalize",
+             "mode": "all-in-one",
+             "targetCols": {
+               "practitioner": "Full name of the dentist, without titles",
+               "practice_name": "Name of the dental practice",
+               "address": "Street address",
+               "city": "City name",
+               "state": "US state name or abbreviation",
+               "phone": "Phone number with +1 country code",
+               "email": "Email address"
+             },
+             "helperPrompt": "These are US-based dental practices."
+           },
+           {
+             "type": "validate",
+             "mode": "fields",
+             "columns": ["email", "phone"]
+           }
+         ]
+       }
+     }'
+```
+
+## Python SDK equivalent
+
+The same pipeline using the DataLinks Python SDK:
+
+```python
+from datalinks.pipeline import (
+    Pipeline, ProcessUnstructured, Normalize,
+    Validate, ValidateModes
+)
+
+steps = Pipeline(
+    ProcessUnstructured(
+        derive_from="entry",
+        helper_prompt="Each entry is a dental practice listing. Extract the practitioner name...",
+    ),
+    Normalize(
+        target_cols={
+            "practitioner": "Full name of the dentist, without titles",
+            "practice_name": "Name of the dental practice",
+            "address": "Street address",
+            "city": "City name",
+            "state": "US state name or abbreviation",
+            "phone": "Phone number with +1 country code",
+            "email": "Email address",
+        },
+        mode="all-in-one",
+        helper_prompt="These are US-based dental practices.",
+    ),
+    Validate(
+        mode=ValidateModes.FIELDS,
+        columns=["email", "phone"],
+    ),
+)
+
+# Preview without saving
+results = api.ingest(data=records, inference_steps=steps, entity_resolution=None)
+```
+
+See the [Python SDK guide](/pythonsdk/sdk-install) for setup and additional options, including how to specify `model` and `provider` per step.
+
+## Saving inference definitions
+
+When you create a dataset, you can save a data description and field definition that DataLinks uses during future ingestion calls. This avoids repeating the same configuration on every request.
+
+Set the definition at creation time via the `inferDefinition` field on [Create new dataset](/api-reference/dataset/create-new-dataset), or update it later with [Update infer definition](/api-reference/dataset/update-inference-definition).
+
+```json
+{
+  "dataDescription": "Dental practice directory entries with contact information.",
+  "fieldDefinition": "practitioner=Full name without titles\npractice_name=Name of the dental practice\naddress=Street address\ncity=City\nstate=US state\nphone=Phone with country code\nemail=Email address"
 }
 ```
