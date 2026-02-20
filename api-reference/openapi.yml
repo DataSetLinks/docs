@@ -500,6 +500,55 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /ontology/curate-links:
+    post:
+      summary: Curate ontology links
+      description: Run the OntologyCurator agent to analyze computed links for a dataset or all datasets in a namespace. When activate is true, the curated links are added to the ontology. When activate is false (default), only returns the curated links without activating them.
+      operationId: curateLinks
+      tags:
+        - ontology
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurateLinkRequest'
+            examples:
+              curateDataset:
+                summary: Curate links for a specific dataset (without activating)
+                value:
+                  namespace: "my_namespace"
+                  dataset: "my_dataset"
+              curateAndActivate:
+                summary: Curate and activate links
+                value:
+                  namespace: "my_namespace"
+                  dataset: "my_dataset"
+                  activate: true
+              curateNamespace:
+                summary: Curate links for all datasets in a namespace
+                value:
+                  namespace: "my_namespace"
+              curateWithModel:
+                summary: Curate using a specific LLM model
+                value:
+                  namespace: "my_namespace"
+                  dataset: "my_dataset"
+                  model: "gpt-4"
+                  provider: "openai"
+      responses:
+        '200':
+          description: Links curated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurateLinkResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /schema/datasets/all:
     get:
       summary: List all datasets
@@ -606,6 +655,26 @@ paths:
       responses:
         '200':
           description: Deletes the specified token.
+  /user/tokens/{tokenId}/permissions:
+    get:
+      summary: List token permissions
+      description: List all permissions assigned to the specified token.
+      operationId: listTokenPermissions
+      tags:
+        - user
+      parameters:
+        - $ref: '#/components/parameters/TokenId'
+      responses:
+        '200':
+          description: Returns the permissions assigned to the token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPermissionsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /links/add:
     post:
       summary: Add a new link
@@ -717,8 +786,12 @@ paths:
             schema:
               $ref: '#/components/schemas/FinishedMultipartRequest'
       responses:
-        '200':
-          description: Completes the multipart upload.
+        '201':
+          description: Completes the multipart upload and returns the ingestion id.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedIngestionTrackingResponse"
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -759,6 +832,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /ingestionTracking/{ingestionId}/retry:
+    post:
+      summary: Retry ingestion
+      description: Creates a new ingestion record copying data from the original and starts the ingestion process in the background. Returns the new ingestion ID.
+      operationId: retryIngestion
+      tags:
+        - ingestionTracking
+      parameters:
+        - $ref: "#/components/parameters/IngestionId"
+      responses:
+        '201':
+          description: New ingestion created and started successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedIngestionTrackingResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /ingestionTracking/{ingestionId}/seen:
+    post:
+      summary: Mark ingestion as seen
+      description: Update seenAt timestamp for the specified ingestion.
+      operationId: markIngestionSeen
+      tags:
+        - ingestionTracking
+      parameters:
+        - $ref: '#/components/parameters/IngestionId'
+      responses:
+        '204':
+          description: Ingestion marked as seen successfully.
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   parameters:
     DatasetName:
@@ -788,6 +897,19 @@ components:
       in: path
       required: true
       description: Token ID
+      schema:
+        type: string
+    IngestionId:
+      name: ingestionId
+      in: path
+      required: true
+      description: Ingestion ID
+      schema:
+        type: string
+    PermissionId:
+      name: permissionId
+      in: path
+      required: true
       schema:
         type: string
     Username:
@@ -996,8 +1118,38 @@ components:
           type: string
         name:
           type: string
+        accessRestrictedTo:
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenPermissionEntry'
+          required:
+            - datasets
+            - namespaces
       required:
         - name
+    TokenPermissionEntry:
+      type: object
+      properties:
+        username:
+          type: string
+        namespace:
+          type: string
+        dataset:
+          type: string
+      required:
+        - username
+        - namespace
+    TokenPermissionsResponse:
+      type: object
+      properties:
+        restricted:
+          type: boolean
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenPermissionEntry'
+      required:
+        - restricted
     DatasetResponse:
       type: object
       properties:
@@ -1121,6 +1273,9 @@ components:
                   - $ref: '#/components/schemas/ReverseGeoStep'
         link:
           $ref: '#/components/schemas/LinkConfig'
+        curate:
+          type: boolean
+          nullable: true
       required:
         - data
     LinkConfig:
@@ -1209,6 +1364,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ApiLink'
+    CurateLinkRequest:
+      type: object
+      description: Request to curate ontology links for a dataset or namespace using the OntologyCurator agent.
+      properties:
+        namespace:
+          type: string
+          description: The namespace containing the dataset(s) to curate.
+          example: "my_namespace"
+        dataset:
+          type: string
+          description: Optional. If specified, curates links only for this dataset. If omitted, curates all datasets in the namespace.
+          example: "my_dataset"
+        model:
+          type: string
+          description: Optional. The LLM model to use for curation (e.g., "gpt-4", "claude-3-5-sonnet-20241022").
+          example: "gpt-4"
+        provider:
+          type: string
+          description: Optional. The LLM provider to use (e.g., "openai", "anthropic").
+          example: "openai"
+        activate:
+          type: boolean
+          description: Optional. If true, the curated links will be activated (added to the ontology). If false, only returns the curated links without activating them.
+          default: false
+      required:
+        - namespace
+    CurateLinkResponse:
+      type: object
+      description: Response containing curation statistics and optionally the curated links when activate is false.
+      properties:
+        datasetsProcessed:
+          type: integer
+          description: Number of datasets that were processed.
+          example: 5
+        totalSelected:
+          type: integer
+          description: Total number of links selected by the curator agent.
+          example: 45
+        curatedLinks:
+          type: array
+          description: The curated links. Only included in the response when activate is false.
+          items:
+            $ref: '#/components/schemas/ApiLink'
+      required:
+        - datasetsProcessed
+        - totalSelected
     NormaliseStep:
       type: object
       properties:
@@ -1227,6 +1428,12 @@ components:
         helperPrompt:
           type: string
           description: Prompt to help the LLM understand the domain.
+        model:
+          type: string
+          description: The LLM model to use for this step.
+        provider:
+          type: string
+          description: The LLM provider to use for this step.
       required:
         - type
         - mode
@@ -1320,6 +1527,12 @@ components:
           type: string
           description: Prompt to guide the AI system for higher accuracy during extraction.
           example: "This text contains a table comma separated, but instead of line breaks we are using a ';'."
+        model:
+          type: string
+          description: The LLM model to use for this step.
+        provider:
+          type: string
+          description: The LLM provider to use for this step.
       required:
         - type
         - deriveFrom
@@ -1364,6 +1577,12 @@ components:
           items:
             type: string
           description: Columns to validate.
+        model:
+          type: string
+          description: The LLM model to use for this step.
+        provider:
+          type: string
+          description: The LLM provider to use for this step.
       required:
         - type
         - mode
@@ -1437,6 +1656,10 @@ components:
             $ref: "#/components/schemas/FinishedMultipartItem"
           description: Array of completed parts with their ETags.
           minItems: 1
+        name:
+          type: string
+          description: Optional name/label for the ingestion (e.g., original filename).
+          example: "sales-data-2024.csv"
       required:
         - uploadId
         - key
@@ -1455,6 +1678,16 @@ components:
       required:
         - partNumber
         - etag
+    CreatedIngestionTrackingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Ingestion id created for background ingestion.
+          example: '550e8400-e29b-41d4-a716-446655440000'
+      required:
+        - id
     AbortMultipartRequest:
       type: object
       properties:
@@ -1676,12 +1909,35 @@ components:
         processedRows:
           type: integer
           format: int64
+        attributes:
+          $ref: '#/components/schemas/IngestionItemAttributes'
       required:
         - id
-        - datasetName
         - status
         - expectedTotalBytes
-        - createdBy
+    IngestionItemAttributes:
+      type: object
+      description: Additional attributes for the ingestion.
+      nullable: true
+      properties:
+        name:
+          type: string
+          description: Filename or identifier for the ingestion.
+          nullable: true
+        seenAt:
+          type: string
+          format: date-time
+          description: Timestamp when the ingestion was first seen.
+          nullable: true
+        originalIngestionId:
+          type: string
+          format: uuid
+          description: In case of retry, it's the original ingestion id.
+        lastRetryAt:
+          type: string
+          format: date-time
+          description: Timestamp of the last retry attempt.
+          nullable: true
   responses:
     QueryResponse:
       description: Returns query results.
