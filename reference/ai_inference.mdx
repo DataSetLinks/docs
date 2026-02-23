@@ -37,7 +37,7 @@ The full request structure looks like this:
 import requests
 
 response = requests.post(
-    "https://api.datalinks.com/api/ingest/namespace/datasetName",
+    "https://api.prod.datalinks.com/api/v1/ingest/namespace/datasetName",
     headers={"Authorization": "Bearer YOUR_TOKEN"},
     json={
         "data": [
@@ -300,7 +300,7 @@ inference_steps = {
 
 # Make the API request
 response = requests.post(
-    f"https://api.datalinks.com/api/ingest/{NAMESPACE}/{DATASET}",
+    f"https://api.prod.datalinks.com/api/v1/ingest/{NAMESPACE}/{DATASET}",
     headers={
         "Authorization": f"Bearer {API_TOKEN}",
         "Content-Type": "application/json"
