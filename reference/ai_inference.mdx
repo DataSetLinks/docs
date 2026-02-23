@@ -33,19 +33,28 @@ You can use any combination of steps. A single step is fine. So is skipping stra
 
 The full request structure looks like this:
 
-```bash
-curl -H "Authorization: Bearer token1234abcdefg"
-     -X POST https://api.datalinks.com/api/ingest/namespace/datasetName
-     --data '{
-               "data": [{"col1": 123, "col2": "foo", "colWithATable": "direction,size;up,large"}, {"col1": 444, "col2": "bar"}],
-                 "infer": {
-                   "steps": [{
-                      "type": "table",
-                      "deriveFrom": "colWithATable",
-                      "helperPrompt": "This text contains a table comma separated, but instead of line breaks we are using a ';'."
-                   }]
-                 }
-              }'
+```python
+import requests
+
+response = requests.post(
+    "https://api.datalinks.com/api/ingest/namespace/datasetName",
+    headers={"Authorization": "Bearer YOUR_TOKEN"},
+    json={
+        "data": [
+            {"col1": 123, "col2": "foo", "colWithATable": "direction,size;up,large"},
+            {"col1": 444, "col2": "bar"}
+        ],
+        "infer": {
+            "steps": [
+                {
+                    "type": "table",
+                    "deriveFrom": "colWithATable",
+                    "helperPrompt": "This text contains a table comma separated, but instead of line breaks we are using a ';'."
+                }
+            ]
+        }
+    }
+)
 ```
 
 In this specific example we specify we want a **table** extracted from a specific column. This will extract all columns available from the text provided. You can use the **helperPrompt** to guide the AI system to have higher accuracy during extraction.
@@ -56,11 +65,11 @@ In this specific example we specify we want a **table** extracted from a specifi
 
 The Table step is designed to extract a table from any text input, whether it's free-form text such as a restaurant review, a flight log report, or a financial instrument notice. When used independently, this step may produce columns that are somewhat arbitrary and often require normalization afterward. It functions by extracting data to create new columns and appending them to the rows of the existing table.
 
-```json
+```python
 {
-  "type": "table",
-  "deriveFrom": "source_column",
-  "helperPrompt": "Optional prompt to guide extraction."
+    "type": "table",
+    "deriveFrom": "source_column",
+    "helperPrompt": "Optional prompt to guide extraction."
 }
 ```
 
@@ -78,10 +87,10 @@ When processing diverse inputs, the LLM will invent column names based on what i
 
 If a table is stored in JSON format within a column, you can directly transform it into a structured table. The JSON should consist of an array of objects, with each key in the objects mapped to a new column.
 
-```json
+```python
 {
-  "type": "rows",
-  "deriveFrom": "json_column"
+    "type": "rows",
+    "deriveFrom": "json_column"
 }
 ```
 
@@ -96,17 +105,17 @@ For example, if a column contains `[{"name": "Alice", "age": 34}, {"name": "Bob"
 
 Use the Normalize step to consolidate the schema or column space. In this step, specify the columns you want to include in the final table that will be indexed into DataLinks.
 
-```json
+```python
 {
-  "type": "normalize",
-  "mode": "all-in-one",
-  "targetCols": {
-    "full_name": "The person's full name, without titles like Dr. or Mr.",
-    "age": "Age as a number",
-    "company": "Company or organization name",
-    "email": "Email address"
-  },
-  "helperPrompt": "This data comes from professional directory listings."
+    "type": "normalize",
+    "mode": "all-in-one",
+    "targetCols": {
+        "full_name": "The person's full name, without titles like Dr. or Mr.",
+        "age": "Age as a number",
+        "company": "Company or organization name",
+        "email": "Email address"
+    },
+    "helperPrompt": "This data comes from professional directory listings."
 }
 ```
 
@@ -133,11 +142,11 @@ The descriptions you provide in `targetCols` matter. They are the primary signal
 
 The Validate step ensures data quality by validating the content of specified columns. It supports three validation modes:
 
-```json
+```python
 {
-  "type": "validate",
-  "mode": "regex|rows|fields",
-  "columns": ["column1", "column2"]
+    "type": "validate",
+    "mode": "regex|rows|fields",
+    "columns": ["column1", "column2"]
 }
 ```
 
@@ -161,10 +170,10 @@ The ReverseGeo step adds geographical coordinates (latitude and longitude) based
 
 > **Note:** ReverseGeo is an optional feature not enabled by default. Contact your account representative to add it to your workspace.
 
-```json
+```python
 {
-  "type": "reverseGeo",
-  "deriveFrom": "locationColumnName"
+    "type": "reverseGeo",
+    "deriveFrom": "locationColumnName"
 }
 ```
 
@@ -221,13 +230,13 @@ Ms., Mr., Frau, Herr from names.
 
 Steps that use LLM inference (table extraction and normalize) accept optional `model` and `provider` fields to specify which model runs the step.
 
-```json
+```python
 {
-  "type": "table",
-  "deriveFrom": "notes",
-  "helperPrompt": "Extract product names and prices.",
-  "model": "your-model-here",
-  "provider": "openai"
+    "type": "table",
+    "deriveFrom": "notes",
+    "helperPrompt": "Extract product names and prices.",
+    "model": "your-model-here",
+    "provider": "openai"
 }
 ```
 
@@ -242,44 +251,73 @@ When omitted, DataLinks uses its default model. Smaller models are faster and ch
 
 This example takes unstructured directory entries, extracts structured fields, normalizes the schema, and validates the results:
 
-```bash
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-     -H "Content-Type: application/json" \
-     -X POST https://api.datalinks.com/api/ingest/NAMESPACE/DATASET_NAME \
-     --data '{
-       "data": [
-         {"entry": "Dr. Alice Chen, Northwind Dental, 42 Oak St, Springfield, (555) 012-3456, alice@northwind.com"},
-         {"entry": "Bob Martinez - Rivera Family Dentistry. 100 Main Ave, Portland OR 97201. bob@riveradental.com"}
-       ],
-       "infer": {
-         "steps": [
-           {
-             "type": "table",
-             "deriveFrom": "entry",
-             "helperPrompt": "Each entry is a dental practice listing. Extract the practitioner name (without Dr. or similar titles), practice name, street address, city, state, phone number (with +1 country code), and email."
-           },
-           {
-             "type": "normalize",
-             "mode": "all-in-one",
-             "targetCols": {
-               "practitioner": "Full name of the dentist, without titles",
-               "practice_name": "Name of the dental practice",
-               "address": "Street address",
-               "city": "City name",
-               "state": "US state name or abbreviation",
-               "phone": "Phone number with +1 country code",
-               "email": "Email address"
-             },
-             "helperPrompt": "These are US-based dental practices."
-           },
-           {
-             "type": "validate",
-             "mode": "fields",
-             "columns": ["email", "phone"]
-           }
-         ]
-       }
-     }'
+```python
+import requests
+
+# Configuration
+API_TOKEN = "YOUR_TOKEN"
+NAMESPACE = "your_namespace"
+DATASET = "dental_practices"
+
+# Sample data: unstructured directory entries
+data = [
+    {"entry": "Dr. Alice Chen, Northwind Dental, 42 Oak St, Springfield, (555) 012-3456, alice@northwind.com"},
+    {"entry": "Bob Martinez - Rivera Family Dentistry. 100 Main Ave, Portland OR 97201. bob@riveradental.com"}
+]
+
+# Inference pipeline configuration
+inference_steps = {
+    "steps": [
+        # Step 1: Extract structured fields from free text
+        {
+            "type": "table",
+            "deriveFrom": "entry",
+            "helperPrompt": "Each entry is a dental practice listing. Extract the practitioner name (without Dr. or similar titles), practice name, street address, city, state, phone number (with +1 country code), and email."
+        },
+        # Step 2: Normalize to consistent schema
+        {
+            "type": "normalize",
+            "mode": "all-in-one",
+            "targetCols": {
+                "practitioner": "Full name of the dentist, without titles",
+                "practice_name": "Name of the dental practice",
+                "address": "Street address",
+                "city": "City name",
+                "state": "US state name or abbreviation",
+                "phone": "Phone number with +1 country code",
+                "email": "Email address"
+            },
+            "helperPrompt": "These are US-based dental practices."
+        },
+        # Step 3: Validate email and phone fields
+        {
+            "type": "validate",
+            "mode": "fields",
+            "columns": ["email", "phone"]
+        }
+    ]
+}
+
+# Make the API request
+response = requests.post(
+    f"https://api.datalinks.com/api/ingest/{NAMESPACE}/{DATASET}",
+    headers={
+        "Authorization": f"Bearer {API_TOKEN}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "data": data,
+        "infer": inference_steps
+    }
+)
+
+# Check result
+if response.status_code == 200:
+    print("Ingestion successful!")
+    print(response.json())
+else:
+    print(f"Error: {response.status_code}")
+    print(response.text)
 ```
 
 ## Saving inference definitions
@@ -288,9 +326,9 @@ When you create a dataset, you can save a data description and field definition 
 
 Set the definition at creation time via the `inferDefinition` field on [Create new dataset](/api-reference/ingest/create-new-dataset), or update it later with [Update infer definition](/api-reference/dataset/update-inference-definition).
 
-```json
+```python
 {
-  "dataDescription": "Dental practice directory entries with contact information.",
-  "fieldDefinition": "practitioner=Full name without titles\npractice_name=Name of the dental practice\naddress=Street address\ncity=City\nstate=US state\nphone=Phone with country code\nemail=Email address"
+    "dataDescription": "Dental practice directory entries with contact information.",
+    "fieldDefinition": "practitioner=Full name without titles\npractice_name=Name of the dental practice\naddress=Street address\ncity=City\nstate=US state\nphone=Phone with country code\nemail=Email address"
 }
 ```
