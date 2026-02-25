@@ -675,6 +675,52 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+  /user/usage/history:
+    get:
+      summary: Get user usage history
+      description: Retrieve historical usage data for the authenticated user.
+      operationId: getUserUsageHistory
+      tags:
+        - user
+      parameters:
+        - name: onOrAfter
+          in: query
+          description: Return usage records on or after this timestamp.
+          schema:
+            type: string
+            format: date-time
+            example: "2021-01-01T00:00:00.000Z"
+        - name: before
+          in: query
+          description: Return usage records before this timestamp.
+          schema:
+            type: string
+            format: date-time
+            example: "2021-12-31T23:59:59.999Z"
+        - name: pageSize
+          in: query
+          description: Maximum number of results to return.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - name: pageCursor
+          in: query
+          description: Cursor for pagination (JSON object).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUsageHistoryCursor'
+      responses:
+        '200':
+          description: Returns usage history.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUsageHistoryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /links/add:
     post:
       summary: Add a new link
@@ -1938,6 +1984,67 @@ components:
           format: date-time
           description: Timestamp of the last retry attempt.
           nullable: true
+    UserUsageHistoryResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserUsageHistoryItem'
+        meta:
+          $ref: '#/components/schemas/UserUsageHistoryMeta'
+      required:
+        - data
+        - meta
+    UserUsageHistoryItem:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: The timestamp of the usage record.
+          example: "2021-01-01T12:12:12.000Z"
+        tokensUsed:
+          type: integer
+          format: int64
+          description: Number of tokens used.
+          example: 1241
+        costUSD:
+          type: number
+          format: double
+          description: Cost in USD for this usage.
+          example: 0.0001
+      required:
+        - timestamp
+        - tokensUsed
+        - costUSD
+    UserUsageHistoryCursor:
+      type: object
+      properties:
+        lastStartTime:
+          type: string
+          format: date-time
+          description: The start time of the last observation in the current page.
+          example: "2021-01-01T12:12:12.000Z"
+        lastObservationId:
+          type: string
+          description: The observation ID of the last observation in the current page.
+          example: "obs_12345"
+      required:
+        - lastStartTime
+        - lastObservationId
+    UserUsageHistoryMeta:
+      type: object
+      properties:
+        pageCursor:
+          $ref: '#/components/schemas/UserUsageHistoryCursor'
+          description: Cursor for fetching the next page of results.
+        pageSize:
+          type: integer
+          description: Number of items per page.
+          example: 100
+      required:
+        - pageSize
   responses:
     QueryResponse:
       description: Returns query results.
