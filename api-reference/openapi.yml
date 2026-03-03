@@ -382,6 +382,40 @@ paths:
           $ref: '#/components/responses/AutoRagResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /query/ask:
+    post:
+      summary: Run AutoRAG agent with streaming response
+      description: |
+        Uses the AutoRAG agent to answer a question about any data that the user can access.
+        Returns results as a Server-Sent Events (SSE) stream with incremental updates.
+
+        The stream emits the following event types in order:
+        - `plan`: The execution plan with a list of steps to be performed.
+        - `step`: One event per step, containing the instruction, query, and result data.
+        - `answer`: The final synthesized answer to the user's question.
+        - `error`: Emitted if an error occurs during processing (instead of answer).
+      operationId: autoragStream
+      tags:
+        - autorag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoRagRequest'
+      responses:
+        '200':
+          description: SSE stream of AutoRAG execution events.
+          content:
+            text/event-stream:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AutoRagPlanEvent'
+                  - $ref: '#/components/schemas/AutoRagStepEvent'
+                  - $ref: '#/components/schemas/AutoRagAnswerEvent'
+                  - $ref: '#/components/schemas/AutoRagErrorEvent'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /links/{username}/{namespace}/{datasetName}:
     get:
       summary: Load links
@@ -675,6 +709,59 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+  /user/usage/history:
+    get:
+      summary: Get user usage history
+      description: Retrieve historical usage data for the authenticated user.
+      operationId: getUserUsageHistory
+      tags:
+        - user
+      parameters:
+        - $ref: '#/components/parameters/TimeRangeOnOrAfter'
+        - $ref: '#/components/parameters/TimeRangeBefore'
+        - $ref: '#/components/parameters/PageSize'
+        - name: pageCursor
+          in: query
+          description: Cursor for pagination (JSON object).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUsageHistoryCursor'
+      responses:
+        '200':
+          description: Returns usage history.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUsageHistoryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /user/usage/by-day:
+    get:
+      summary: Get user usage aggregated by day
+      description: Retrieve usage data aggregated by day for the authenticated user, with timezone support.
+      operationId: getUserUsageByDay
+      tags:
+        - user
+      parameters:
+        - $ref: '#/components/parameters/TimeRangeOnOrAfter'
+        - $ref: '#/components/parameters/TimeRangeBefore'
+        - name: timeZoneForAggregation
+          in: query
+          description: Timezone for date aggregation (e.g., "America/New_York", "Europe/London"). Defaults to UTC.
+          schema:
+            type: string
+            default: "UTC"
+            example: "America/New_York"
+      responses:
+        '200':
+          description: Returns usage aggregated by day.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUsageByDayResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /links/add:
     post:
       summary: Add a new link
@@ -937,6 +1024,22 @@ components:
         minimum: 1
         default: 25
         maximum: 100
+    TimeRangeOnOrAfter:
+      name: onOrAfter
+      in: query
+      description: Return records on or after this timestamp.
+      schema:
+        type: string
+        format: date-time
+        example: "2021-01-01T00:00:00.000Z"
+    TimeRangeBefore:
+      name: before
+      in: query
+      description: Return records before this timestamp.
+      schema:
+        type: string
+        format: date-time
+        example: "2021-12-31T23:59:59.999Z"
   schemas:
     DataArray:
       type: array
@@ -1759,6 +1862,55 @@ components:
       required:
         - response
         - steps
+    AutoRagPlanEvent:
+      type: object
+      description: SSE event containing the execution plan. Event name is "plan".
+      properties:
+        steps:
+          type: array
+          description: List of step descriptions that will be executed.
+          items:
+            type: string
+      required:
+        - steps
+    AutoRagStepEvent:
+      type: object
+      description: SSE event containing the result of a single execution step. Event name is "step".
+      properties:
+        index:
+          type: integer
+          description: Zero-based index of this step in the plan.
+        instruction:
+          type: string
+          description: The instruction generated and executed for this step.
+        query:
+          type: string
+          description: The query derived from the instruction.
+        data:
+          $ref: '#/components/schemas/DataArray'
+      required:
+        - index
+        - instruction
+        - query
+        - data
+    AutoRagAnswerEvent:
+      type: object
+      description: SSE event containing the final answer. Event name is "answer".
+      properties:
+        response:
+          type: string
+          description: The final synthesized answer to the user's question.
+      required:
+        - response
+    AutoRagErrorEvent:
+      type: object
+      description: SSE event emitted when an error occurs. Event name is "error".
+      properties:
+        message:
+          type: string
+          description: Error message describing what went wrong.
+      required:
+        - message
     ExactMatchConfig:
       type: object
       nullable: true
@@ -1938,6 +2090,110 @@ components:
           format: date-time
           description: Timestamp of the last retry attempt.
           nullable: true
+    UserUsageHistoryResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserUsageHistoryItem'
+        meta:
+          $ref: '#/components/schemas/UserUsageHistoryMeta'
+      required:
+        - data
+        - meta
+    UserUsageHistoryItem:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: The timestamp of the usage record.
+          example: "2021-01-01T12:12:12.000Z"
+        tokensUsed:
+          type: integer
+          format: int64
+          description: Number of tokens used.
+          example: 1241
+        costUSD:
+          type: number
+          format: double
+          description: Cost in USD for this usage.
+          example: 0.0001
+      required:
+        - timestamp
+        - tokensUsed
+        - costUSD
+    UserUsageHistoryCursor:
+      type: object
+      properties:
+        lastStartTime:
+          type: string
+          format: date-time
+          description: The start time of the last observation in the current page.
+          example: "2021-01-01T12:12:12.000Z"
+        lastObservationId:
+          type: string
+          description: The observation ID of the last observation in the current page.
+          example: "obs_12345"
+      required:
+        - lastStartTime
+        - lastObservationId
+    UserUsageHistoryMeta:
+      type: object
+      properties:
+        pageCursor:
+          $ref: '#/components/schemas/UserUsageHistoryCursor'
+          description: Cursor for fetching the next page of results.
+        pageSize:
+          type: integer
+          description: Number of items per page.
+          example: 100
+      required:
+        - pageSize
+    UserUsageByDayResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserUsageByDayItem'
+        meta:
+          $ref: '#/components/schemas/UserUsageByDayMeta'
+      required:
+        - data
+        - meta
+    UserUsageByDayItem:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: The day of the aggregated usage.
+          example: 2021-01-21
+        tokensUsed:
+          type: integer
+          format: int64
+          description: Total number of tokens used in this day.
+          example: 125000
+        costUSD:
+          type: number
+          format: double
+          description: Total cost in USD for this day.
+          example: 12.50
+      required:
+        - date
+        - tokensUsed
+        - costUSD
+    UserUsageByDayMeta:
+      type: object
+      properties:
+        timeZoneForAggregation:
+          type: string
+          description: The timezone used for date aggregation.
+          example: "America/New_York"
+      required:
+        - timeZoneForAggregation
   responses:
     QueryResponse:
       description: Returns query results.
