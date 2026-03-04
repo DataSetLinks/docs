@@ -64,30 +64,21 @@ autorag(
 
 ## How AutoRAG Works
 
-1. **Interpretation** — Analyzes your question to identify relevant entities and relationships
-2. **Retrieval** — Searches across _all_ datasets in the namespace using semantic search, following links between datasets
-3. **Synthesis** — Generates a grounded answer anchored to the retrieved data
+When you submit a query, AutoRAG first interprets your question to identify the relevant entities and relationships it needs to find. It then retrieves data by searching across all datasets in your namespace using semantic search, following any links you've set up between datasets to discover related information. Finally, it synthesizes a response grounded in the actual data it retrieved, ensuring the answer is anchored to real records rather than hallucinated. 
 
-Key: AutoRAG searches **all datasets in a namespace**, not just one. You can split data across multiple datasets and it will search them all.
+<Info>
+  AutoRAG searches **all datasets in a namespace**, not just one. You can split data across multiple datasets and it will search them all.
+</Info>
 
 ## Preparing Data for AutoRAG
 
-**Dataset Design**
+AutoRAG works best with simple, well-described datasets. Keep your schemas narrow, ideally three to five columns per dataset, since wider schemas with ten or more columns can cause errors or degrade retrieval quality. 
 
-- **Keep schemas minimal** — 3-5 columns per dataset works best. Wider schemas (10+) cause errors.
-- **Use descriptive column names** — `article_title` not `col1`
-- **Include text-rich columns** — semantic search needs substantial text to match against
-- **Provide dataset descriptions** when creating:
+Use descriptive column names like `article_title` rather than `col1` so AutoRAG understands what each field contains. If possible, include at least one text-rich column with substantial content like paragraphs or descriptions, because semantic search needs meaningful text to match against. 
 
-```
-requests.post(f"{API_BASE}/ingest/new/{namespace}/{dataset_name}", json={
-    "visibility": "Private",
-    "inferDefinition": {
-        "dataDescription": "Wikipedia article excerpts about historical events.",
-        "fieldDefinition": "title=Article title\ncontent=Full text\ndate=Event date"
-    }
-})
-```
+<Tip>
+  When creating a dataset, provide a clear data descriptions and field definitions wherever possible so AutoRAG has context about what your data represents.
+</Tip>
 
 **Multi-Dataset Strategy**
 
@@ -150,10 +141,10 @@ Answer rules:
 
 ## Best Practices
 
-1. **Keep schemas narrow** — 3-5 columns per dataset
+1. **Keep schemas narrow**: 3-5 columns per dataset
 2. **Use multiple datasets** rather than one wide one
 3. **Create bidirectional links** between datasets sharing common fields
 4. **Use** `helperPrompt` for format control, keep queries clean
 5. **Include text-rich columns** for better semantic matching
 6. **Provide dataset descriptions** so AutoRAG understands your data
-7. **Test incrementally** — start small, verify retrieval, then scale
+7. **Test incrementally**: start small, verify retrieval, then scale
