@@ -4,6 +4,8 @@ title: "How to Use AutoRAG to query data"
 
 AutoRAG is DataLinks' retrieval-augmented generation agent. It answers natural language questions by searching across all datasets in a namespace, retrieving relevant data, and synthesizing a response using an LLM.
 
+There are two ways to use AutoRAG to query your data: in the DataLinks web platform, and by using the API. 
+
 ## Prerequisites
 
 - A DataLinks account with an API token
@@ -12,7 +14,7 @@ AutoRAG is DataLinks' retrieval-augmented generation agent. It answers natural l
 
 ## Quick Start (Python)
 
-```
+```text
 import requests
 
 API_BASE = "https://api.datalinks.com/api/v1"
@@ -37,7 +39,7 @@ print(result["response"])
 
 If you have the DataLinks MCP server configured, AutoRAG is available as a tool:
 
-```
+```text
 autorag(
     username: "your-username",
     namespace: "your-namespace",
@@ -64,7 +66,7 @@ autorag(
 
 ## How AutoRAG Works
 
-When you submit a query, AutoRAG first interprets your question to identify the relevant entities and relationships it needs to find. It then retrieves data by searching across all datasets in your namespace using semantic search, following any links you've set up between datasets to discover related information. Finally, it synthesizes a response grounded in the actual data it retrieved, ensuring the answer is anchored to real records rather than hallucinated. 
+When you submit a query, AutoRAG first interprets your question to identify the relevant entities and relationships it needs to find. It then retrieves data by searching across all datasets in your namespace using semantic search, following any links you've set up between datasets to discover related information. Finally, it synthesizes a response grounded in the actual data it retrieved, ensuring the answer is anchored to real records rather than hallucinated.
 
 <Info>
   AutoRAG searches **all datasets in a namespace**, not just one. You can split data across multiple datasets and it will search them all.
@@ -72,9 +74,9 @@ When you submit a query, AutoRAG first interprets your question to identify the 
 
 ## Preparing Data for AutoRAG
 
-AutoRAG works best with simple, well-described datasets. Keep your schemas narrow, ideally three to five columns per dataset, since wider schemas with ten or more columns can cause errors or degrade retrieval quality. 
+AutoRAG works best with simple, well-described datasets. Keep your schemas narrow, ideally three to five columns per dataset, since wider schemas with ten or more columns can cause errors or degrade retrieval quality.
 
-Use descriptive column names like `article_title` rather than `col1` so AutoRAG understands what each field contains. If possible, include at least one text-rich column with substantial content like paragraphs or descriptions, because semantic search needs meaningful text to match against. 
+Use descriptive column names like `article_title` rather than `col1` so AutoRAG understands what each field contains. If possible, include at least one text-rich column with substantial content like paragraphs or descriptions, because semantic search needs meaningful text to match against.
 
 <Tip>
   When creating a dataset, provide a clear data descriptions and field definitions wherever possible so AutoRAG has context about what your data represents.
@@ -92,7 +94,7 @@ Create multiple datasets in the same namespace for different retrieval surfaces:
 
 Links tell AutoRAG how datasets relate. When datasets share common values, create ExactMatch links:
 
-```
+```text
 requests.post(f"{API_BASE}/link/add", json={
     "from": {"username": "you", "namespace": "ns", "dataset": "paragraphs", "columnName": "title"},
     "to": {"username": "you", "namespace": "ns", "dataset": "entities", "columnName": "title"},
@@ -108,7 +110,7 @@ The `helperPrompt` is a system instruction that guides how the LLM reasons and f
 
 **Example: Concise factual answers**
 
-```
+```text
 Answer with ONLY the exact name, number, or term asked for.
 Maximum 1-3 words. Do not add titles, qualifiers, or extra context.
 Give the shortest commonly-used form of names.
@@ -117,7 +119,7 @@ Just the bare factual answer, nothing else.
 
 **Example: Multi-hop reasoning**
 
-```
+```text
 You answer multi-hop factual questions. Each question requires
 connecting information across multiple passages.
 
