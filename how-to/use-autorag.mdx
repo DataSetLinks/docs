@@ -18,7 +18,7 @@ The simplest way to use AutoRAG is through the DataLinks dashboard. To open the 
 
 1. Log in to your DataLinks account.
 2. Click **Connections Overview** in the left sidebar.
-3. Select the namespace you want to query from the **Namespace in Use** dropdown in the top right corner. 
+3. Select the namespace you want to query from the **Namespace in Use** dropdown in the top right corner.
 4. (Optional) Click the three dots at the top of the chatbot, then click **Update helper prompt**, enter your prompt, then click **Update prompt**.
 
 Type a natural language question into the "Ask a question about your data..." input at the bottom and click send. AutoRAG will search across all datasets in the selected namespace and return an answer directly in the chat panel.
@@ -178,19 +178,19 @@ If omitted, DataLinks uses its default model. Specify with:
 
 ## Troubleshooting
 
-### "I am sorry" / Refusal Responses
+**"I am sorry" / Refusal Responses**
 
 AutoRAG could not find relevant data to answer the question. This usually means the information is not in any dataset in the namespace, or the question uses different terminology than the data. Try rephrasing the question or adding a `helperPrompt` that discourages refusals.
 
-### Timeouts (120s)
+**Timeouts (120s)**
 
 Complex queries across large or linked datasets can exceed the default timeout. Reduce the number of datasets or rows in the namespace, simplify dataset schemas, or reduce the number of active links.
 
-### Wrong Answers
+**Wrong Answers**
 
 AutoRAG retrieved data but the LLM reasoned incorrectly. Try adding a `helperPrompt` with reasoning guidance, checking whether the answer actually exists in your data, or verifying that links between datasets are correctly configured.
 
-### 500 Errors
+**500 Errors**
 
 Usually caused by overly wide schemas (10+ columns). Keep datasets to 5 columns or fewer for reliable performance.
 
