@@ -34,6 +34,7 @@
               "how-to/create-namespace",
               "how-to/get-api-token",
               "how-to/manage-connections",
+              "how-to/use-autorag",
               "how-to/query-data",
               "how-to/connect-app-builder",
               {
