@@ -4,7 +4,7 @@ title: "How to Use AutoRAG to query data"
 
 AutoRAG is DataLinks' retrieval-augmented generation agent. It answers natural language questions by searching across all datasets in a namespace, retrieving relevant data, and synthesizing a response using an LLM.
 
-There are two ways to use AutoRAG to query your data: in the DataLinks web platform, and by using the API. 
+You can use AutoRAG in two ways: through the DataLinks web platform, or programmatically via the API.
 
 ## Prerequisites
 
@@ -12,9 +12,24 @@ There are two ways to use AutoRAG to query your data: in the DataLinks web platf
 - At least one dataset with data ingested into a namespace
 - Your username, namespace name, and token ready
 
-## Quick Start (Python)
+## Using AutoRAG in the Web Platform
 
-```text
+The simplest way to use AutoRAG is through the DataLinks dashboard. To open the AutoRAG chatbot, follow the steps below:
+
+1. Log in to your DataLinks account.
+2. Click **Connections Overview** in the left sidebar.
+3. Select the namespace you want to query from the **Namespace in Use** dropdown in the top right corner. 
+4. (Optional) Click the three dots at the top of the chatbot, then click **Update helper prompt**, enter your prompt, then click **Update prompt**.
+
+Type a natural language question into the "Ask a question about your data..." input at the bottom and click send. AutoRAG will search across all datasets in the selected namespace and return an answer directly in the chat panel.
+
+This is ideal for ad-hoc exploration, verifying that your data is queryable, and testing questions before building them into an automated pipeline.
+
+## Using AutoRAG via the API
+
+### Quick Start (Python)
+
+```python
 import requests
 
 API_BASE = "https://api.datalinks.com/api/v1"
@@ -35,38 +50,46 @@ result = response.json()
 print(result["response"])
 ```
 
-## Quick Start (MCP / Claude Desktop)
-
-If you have the DataLinks MCP server configured, AutoRAG is available as a tool:
-
-```text
-autorag(
-    username: "your-username",
-    namespace: "your-namespace",
-    query: "Which supplier serves both European and Asian operations?"
-)
-```
-
-## API Reference
+### API Reference
 
 **Endpoint:** `POST /query/autorag`
 
-| **Parameter**  | **Type** | **Required** | **Description**                                      |
-| :------------- | :------- | :----------- | :--------------------------------------------------- |
-| `username`     | string   | Yes          | Your DataLinks username                              |
-| `namespace`    | string   | Yes          | Namespace to search across                           |
-| `query`        | string   | Yes          | Natural language question                            |
-| `helperPrompt` | string   | No           | System-level instruction to guide the LLM's behavior |
-| `model`        | string   | No           | LLM model (e.g., `gemini-3-flash-preview`)           |
-| `provider`     | string   | No           | Model provider (e.g., `gcloud`, `openai`)            |
+| Parameter      | Type   | Required | Description                                          |
+| -------------- | ------ | -------- | ---------------------------------------------------- |
+| `username`     | string | Yes      | Your DataLinks username                              |
+| `namespace`    | string | Yes      | Namespace to search across                           |
+| `query`        | string | Yes      | Natural language question                            |
+| `helperPrompt` | string | No       | System-level instruction to guide the LLM's behavior |
+| `model`        | string | No       | LLM model to use (e.g., `gemini-3-flash-preview`)    |
+| `provider`     | string | No       | Model provider (e.g., `gcloud`, `openai`)            |
 
-**Response** includes `response` (the answer) and `steps` (the reasoning chain showing what was searched and retrieved at each step).
+**Response:**
 
-**Streaming:** `POST /query/ask` returns SSE events (`plan`, `step`, `answer`, `error`) for real-time progress.
+```json
+{
+  "response": "Acme Corp serves both European and Asian operations.",
+  "steps": [
+    {
+      "instruction": "Search for suppliers operating in Europe",
+      "query": "Ontology(\"suppliers\").filter(region == \"Europe\")",
+      "data": [{"name": "Acme Corp", "region": "Europe"}]
+    },
+    {
+      "instruction": "Check which of these also operate in Asia",
+      "query": "Ontology(\"suppliers\").filter(name == \"Acme Corp\", region == \"Asia\")",
+      "data": [{"name": "Acme Corp", "region": "Asia"}]
+    }
+  ]
+}
+```
+
+The `steps` array shows AutoRAG's reasoning chain: what it searched for, the query it generated, and the data it retrieved at each step.
+
+**Streaming:** `POST /query/ask` returns Server-Sent Events for real-time progress. Event types are `plan` (the query plan), `step` (each retrieval step as it executes), `answer` (the final response), and `error` (if something goes wrong). Use streaming for user-facing applications where you want to show progress rather than waiting for the full response.
 
 ## How AutoRAG Works
 
-When you submit a query, AutoRAG first interprets your question to identify the relevant entities and relationships it needs to find. It then retrieves data by searching across all datasets in your namespace using semantic search, following any links you've set up between datasets to discover related information. Finally, it synthesizes a response grounded in the actual data it retrieved, ensuring the answer is anchored to real records rather than hallucinated.
+When you submit a query, AutoRAG first interprets your question to identify the relevant entities and relationships it needs to find. It then retrieves data by searching across all datasets in your namespace using semantic search, following any links you have set up between datasets to discover related information. Finally, it synthesizes a response grounded in the actual data it retrieved, ensuring the answer is anchored to real records rather than hallucinated.
 
 <Info>
   AutoRAG searches **all datasets in a namespace**, not just one. You can split data across multiple datasets and it will search them all.
@@ -74,39 +97,29 @@ When you submit a query, AutoRAG first interprets your question to identify the 
 
 ## Preparing Data for AutoRAG
 
-AutoRAG works best with simple, well-described datasets. Keep your schemas narrow, ideally three to five columns per dataset, since wider schemas with ten or more columns can cause errors or degrade retrieval quality.
-
-Use descriptive column names like `article_title` rather than `col1` so AutoRAG understands what each field contains. If possible, include at least one text-rich column with substantial content like paragraphs or descriptions, because semantic search needs meaningful text to match against.
+AutoRAG works best with simple, well-described datasets. Keep your schemas narrow wherever possible. Use descriptive column names like `article_title` rather than `col1` so AutoRAG understands what each field contains. If possible, include at least one text-rich column with substantial content like paragraphs or descriptions, because semantic search needs meaningful text to match against.
 
 <Tip>
-  When creating a dataset, provide a clear data descriptions and field definitions wherever possible so AutoRAG has context about what your data represents.
+  When creating a dataset, provide clear data descriptions and field definitions wherever possible so AutoRAG has context about what your data represents.
 </Tip>
 
-**Multi-Dataset Strategy**
+## Multi-Dataset Strategy
 
 Create multiple datasets in the same namespace for different retrieval surfaces:
 
-- **paragraphs** — granular text chunks for detailed retrieval
-- **articles** — full concatenated text for broad context
-- **entities** — extracted people, places, dates for entity lookup
+- **paragraphs** -- granular text chunks for detailed retrieval
+- **articles** -- full concatenated text for broad context
+- **entities** -- extracted people, places, dates for entity lookup
 
-**Connecting Datasets with Links**
+## Connecting Datasets with Links
 
-Links tell AutoRAG how datasets relate. When datasets share common values, create ExactMatch links:
+Links tell AutoRAG how datasets relate. Create links in **both directions** for best results. Always create links as a separate step after ingestion is complete.
 
-```text
-requests.post(f"{API_BASE}/link/add", json={
-    "from": {"username": "you", "namespace": "ns", "dataset": "paragraphs", "columnName": "title"},
-    "to": {"username": "you", "namespace": "ns", "dataset": "entities", "columnName": "title"},
-    "matchType": "ExactMatch"
-})
-```
-
-Create links in **both directions** for best results. Always link _after_ ingestion is complete — use `{"ExactMatch": None}` during ingestion for auto-discovery.
+During ingestion, pass `"link": {"ExactMatch": null}` to enable auto-discovery. DataLinks will analyze the ingested data and identify columns across datasets that share matching values. You can then review the discovered links in the Connections Overview and choose which ones to save.
 
 ## Using the helperPrompt
 
-The `helperPrompt` is a system instruction that guides how the LLM reasons and formats answers. It does **not** affect retrieval — only the model's response.
+The `helperPrompt` is a system instruction that guides how the LLM reasons and formats answers. It does **not** affect retrieval, only the model's response.
 
 **Example: Concise factual answers**
 
@@ -134,20 +147,59 @@ Answer rules:
 - No titles, qualifiers, categories, or explanations
 ```
 
+**Example: Detailed analytical answers**
+
+```text
+Provide a thorough answer based on the retrieved data.
+Include specific data points, dates, and names where available.
+If the data contains conflicting information, note the discrepancy.
+Cite which records your answer draws from.
+```
+
+**helperPrompt vs query suffix:** You can also append instructions directly to the query string (e.g., "Who founded Acme Corp? Answer in 1-3 words."). However, `helperPrompt` tends to produce better results because the query sent to semantic search remains a clean question, without format instructions mixed in that could confuse retrieval.
+
 ## Choosing a Model
 
-| **Model**                | **Provider** | **Notes**                           |
-| :----------------------- | :----------- | :---------------------------------- |
-| `gemini-3-flash-preview` | `gcloud`     | Best quality for QA, slower         |
-| `gpt-5.2-2025-12-11`     | `openai`     | Faster, lower quality on factual QA |
+AutoRAG supports multiple LLM backends. Available models may change over time; the following are currently supported:
+
+| Model                    | Provider | Characteristics                     |
+| ------------------------ | -------- | ----------------------------------- |
+| `gemini-3-flash-preview` | `gcloud` | Best quality for QA tasks, slower   |
+| `gpt-5.2-2025-12-11`     | `openai` | Faster, lower quality on factual QA |
+
+If omitted, DataLinks uses its default model. Specify with:
+
+```python
+{
+    "model": "gemini-3-flash-preview",
+    "provider": "gcloud"
+}
+```
+
+## Troubleshooting
+
+### "I am sorry" / Refusal Responses
+
+AutoRAG could not find relevant data to answer the question. This usually means the information is not in any dataset in the namespace, or the question uses different terminology than the data. Try rephrasing the question or adding a `helperPrompt` that discourages refusals.
+
+### Timeouts (120s)
+
+Complex queries across large or linked datasets can exceed the default timeout. Reduce the number of datasets or rows in the namespace, simplify dataset schemas, or reduce the number of active links.
+
+### Wrong Answers
+
+AutoRAG retrieved data but the LLM reasoned incorrectly. Try adding a `helperPrompt` with reasoning guidance, checking whether the answer actually exists in your data, or verifying that links between datasets are correctly configured.
+
+### 500 Errors
+
+Usually caused by overly wide schemas (10+ columns). Keep datasets to 5 columns or fewer for reliable performance.
 
 ## Best Practices
 
-1. **Keep schemas narrow**: 3-5 columns per dataset
-2. **Use multiple datasets** rather than one wide one
-3. **Create bidirectional links** between datasets sharing common fields
-4. **Use** `helperPrompt` for format control, keep queries clean
-5. **Include text-rich columns** for better semantic matching
-6. **Provide dataset descriptions** so AutoRAG understands your data
-7. **Test incrementally**: start small, verify retrieval, then scale
-
+1. **Keep schemas narrow**: fewer columns per dataset works best for AutoRAG answer retrieval.
+2. **Use multiple datasets**: rather than one wide one, AutoRAG searches all datasets in a namespace.
+3. **Create bidirectional links**: between datasets that share common fields.
+4. **Keep queries clean**: use `helperPrompt` for format control rather than appending instructions to your query.
+5. **Include text-rich columns**: semantic search needs substantial text to match against.
+6. **Provide dataset descriptions**: help AutoRAG understand the context of your data.
+7. **Test incrementally**: start with a small dataset, verify retrieval works, then scale up.
