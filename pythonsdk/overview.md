@@ -1,20 +1,11 @@
----
-title: "Overview"
-sidebarTitle: "Overview"
----
-
-<Note>
-  The Python SDK is an internal DataLinks tool that is made available for public use. It is intended for experimentation and lightweight integrations. Feature coverage and update timing may vary. For fully supported functionality and production use, please refer to the <a href="/api-reference/index">DataLinks API documentation</a>.
-</Note>
-
 The **DataLinks Python SDK** is designed to simplify data ingestion, normalization, linking, and querying processes with DataLinks.
 It integrates with the DataLinks API to provide a seamless development experience for managing data workflows, including entity resolution and inference steps, with robust configuration options.
 
 This SDK is designed to accelerate the development of applications with DataLinks by wrapping the API integrations with a Pythonic interface, supporting flexible chaining of inference and validation steps.
 
-Get started by [installing the SDK]() and viewing the [Quick Start guide]().
+Get started by [installing the SDK](/pythonsdk/sdk-install) and viewing the [Quick Start guide](/pythonsdk/sdk-quickstart).
 
-# Features
+## Features
 
 - **Ingestion API**: Easily ingest data into namespaces with built-in batching and retry mechanisms.
 - **Multipart Upload**: Reliable large file ingestion via chunked S3 uploads with automatic abort on failure.
