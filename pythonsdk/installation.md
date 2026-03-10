@@ -1,13 +1,8 @@
----
-title: "Installation"
-sidebarTitle: "Installation"
----
-
-# Installation
+## Installation
 
 To install the SDK, simply use `pip` or `uv`:
 
-```shell
+```shell script
 pip install datalinks
 # or
 uv add datalinks
@@ -19,7 +14,7 @@ If you want to install the package in editable development mode (includes pytest
 2. Create a virtual environment with your tool of choice.
 3. Run the following:
 
-```shell
+```shell script
 pip install -e ".[dev]"
 # or
 uv pip install -e ".[dev]"
