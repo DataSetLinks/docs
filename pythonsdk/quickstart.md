@@ -1,23 +1,14 @@
----
-title: "Quick Start"
-sidebarTitle: "Quick Start"
----
-
-<Note>
-  For a step-by-step walkthrough that uses real example data to solve a practical scenario, see the <a href="/get-started/quickstart-api">QuickStart API/SDK Guide</a>.
-</Note>
-
-# Quick Start
+## Quick Start
 
 This short guide shows you how to set up the SDK, ingest data, and run your first query.
 
-For a step-by-step walkthrough using real example data, see the [QuickStart API/SDK Guide]().
+For a step-by-step walkthrough using real example data, see the [QuickStart API/SDK Guide](/get-started/quickstart-api).
 
-## 1. Install
+### 1. Install
 
-[Install the DataLinks SDK]() if you haven’t already.
+[Install the DataLinks SDK](/pythonsdk/installation) if you haven't already.
 
-## 2. Configure
+### 2. Configure
 
 Ensure the required environment variables are set:
 
@@ -28,7 +19,7 @@ Ensure the required environment variables are set:
 
 Alternatively, you can use a `.env` file in the root of your project.
 
-## 3. Ingest and query
+### 3. Ingest and query
 
 ```python
 from datalinks.api import DataLinksAPI, DLConfig
@@ -53,7 +44,7 @@ data = client.query_data(include_metadata=False)
 print(data)
 ```
 
-## 4. CLI Usage
+### 4. CLI Usage
 
 The SDK also provides a built-in CLI that can be extended:
 
