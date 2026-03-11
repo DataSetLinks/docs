@@ -6,39 +6,55 @@ description: "Get started with SDK with a few simple steps."
 This short guide shows you how to set up the SDK, run a basic query, and get your first useful results.
 
 <Note>
-  For a step-by-step walkthrough that uses real example data to solve a practical scenario, see the [QuickStart API/SDK Guide](/get-started/quickstart-api).
+  For a step-by-step walkthrough that uses real example data to solve a practical scenario, see the <a href="/get-started/quickstart-api">QuickStart API/SDK Guide</a>.
 </Note>
 
-<Steps>
-  <Step title="Install">
-    [Install the DataLinks SDK](/pythonsdk/sdk-install) if you haven't already.
-  </Step>
-  <Step title="Configure">
-    1. Ensure the required environment variables for the DataLinks API are configured:
-       - `HOST`
-       - `DL_API_KEY`
-       - `NAMESPACE`
-       - `OBJECT_NAME` (optional)
+# 1. Install
 
-       <Info>
-         Alternatively, you can use a `.env` file in the root of your project for configuration.
-       </Info>
-  </Step>
-  <Step title="Example">
-    Import the SDK and initialize the configuration:
+[Install the DataLinks SDK](sdk-install) if you haven’t already.
 
-    ```python
-    from datalinks.api import DataLinksAPI, DLConfig
-    
-    # Initialize configuration
-    config = DLConfig.from_env()
-    
-    # Instantiate API client
-    client = DataLinksAPI(config=config)
-    
-    # Run a minimal query
-    data = client.query_data(query="*", include_metadata=False)
-    print(data)
-    ```
-  </Step>
-</Steps>
+# 2. Configure
+
+Ensure the required environment variables are set:
+
+- `HOST`
+- `DL_API_KEY`
+- `NAMESPACE`
+- `OBJECT_NAME` (optional)
+
+<Info>
+Alternatively, you can use a \`.env\` file in the root of your project.
+</Info>
+
+# 3. Ingest and query
+
+```python
+from datalinks.api import DataLinksAPI, DLConfig
+
+# Initialize configuration
+config = DLConfig.from_env()
+
+# Instantiate API client
+client = DataLinksAPI(config=config)
+
+# Sample rows
+rows = [
+    {"brand": "Gilette", "category": "Razor", "product": "Heated Razor"},
+    {"brand": "Oral-B",  "category": "Electric Toothbrush", "product": "iO Series 10"},
+]
+
+# Ingest pre-structured rows directly (no pipeline required)
+result = client.ingest(data=rows)
+
+# Query data
+data = client.query_data(include_metadata=False)
+print(data)
+```
+
+# CLI Usage
+
+The SDK also provides a built-in CLI that can be extended:
+
+```shell
+datalinks-client [-h] --verbose <input-folder>
+```
