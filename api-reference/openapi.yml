@@ -1817,6 +1817,14 @@ components:
           type: string
           description: Optional name/label for the ingestion (e.g., original filename).
           example: "sales-data-2024.csv"
+        link:
+          $ref: '#/components/schemas/LinkConfig'
+          nullable: true
+          description: Optional entity resolution configuration.
+        curate:
+          type: boolean
+          nullable: true
+          description: Whether to run the curation agent after ingestion.
       required:
         - uploadId
         - key
