@@ -1373,6 +1373,18 @@ components:
         link:
           ExactMatch: null
           GeoMatch: null
+    IngestRequestInfer:
+      type: object
+      properties:
+        steps:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/TableStep'
+              - $ref: '#/components/schemas/RowsStep'
+              - $ref: '#/components/schemas/NormaliseStep'
+              - $ref: '#/components/schemas/ValidateStep'
+              - $ref: '#/components/schemas/ReverseGeoStep'
     IngestRequest:
       type: object
       properties:
@@ -1383,17 +1395,7 @@ components:
             additionalProperties:
               type: string
         infer:
-          type: object
-          properties:
-            steps:
-              type: array
-              items:
-                oneOf:
-                  - $ref: '#/components/schemas/TableStep'
-                  - $ref: '#/components/schemas/RowsStep'
-                  - $ref: '#/components/schemas/NormaliseStep'
-                  - $ref: '#/components/schemas/ValidateStep'
-                  - $ref: '#/components/schemas/ReverseGeoStep'
+          $ref: '#/components/schemas/IngestRequestInfer'
         link:
           $ref: '#/components/schemas/LinkConfig'
         curate:
@@ -1817,6 +1819,10 @@ components:
           type: string
           description: Optional name/label for the ingestion (e.g., original filename).
           example: "sales-data-2024.csv"
+        infer:
+          $ref: '#/components/schemas/IngestRequestInfer'
+          nullable: true
+          description: Optional inference pipeline steps to run on each batch of data after reading from S3.
         link:
           $ref: '#/components/schemas/LinkConfig'
           nullable: true
