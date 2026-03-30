@@ -1373,13 +1373,53 @@ components:
         link:
           ExactMatch: null
           GeoMatch: null
+    IngestRequestInferStepsInner:
+      type: object
+      properties:
+        type:
+          type: string
+        deriveFrom:
+          type: string
+          description: Name of the source or location column.
+        helperPrompt:
+          type: string
+          description: Prompt to help the LLM understand the domain.
+        model:
+          type: string
+          description: The LLM model to use for this step.
+        provider:
+          type: string
+          description: The LLM provider to use for this step.
+        mode:
+          type: string
+          description: Validation or normalisation mode.
+        targetCols:
+          type: object
+          additionalProperties:
+            type: string
+          description: Target columns with their descriptions.
+        columns:
+          type: array
+          items:
+            type: string
+          description: Columns to validate.
+      required:
+        - type
     IngestRequestInfer:
       type: object
       properties:
         steps:
           type: array
           items:
-            oneOf:
+            discriminator:
+              propertyName: type
+              mapping:
+                table: '#/components/schemas/TableStep'
+                rows: '#/components/schemas/RowsStep'
+                normalise: '#/components/schemas/NormaliseStep'
+                validate: '#/components/schemas/ValidateStep'
+                reverseGeo: '#/components/schemas/ReverseGeoStep'
+            anyOf:
               - $ref: '#/components/schemas/TableStep'
               - $ref: '#/components/schemas/RowsStep'
               - $ref: '#/components/schemas/NormaliseStep'
@@ -1692,6 +1732,10 @@ components:
         provider:
           type: string
           description: The LLM provider to use for this step.
+        replaceOriginalColumn:
+          type: boolean
+          description: When true, the source column specified in deriveFrom is removed from the output after extraction.
+          default: false
       required:
         - type
         - deriveFrom
@@ -2083,30 +2127,51 @@ components:
         id:
           type: string
           description: Id of the step.
-        datasetIdToCount:
-          type: object
-          description: Maps each datasetId to the number of results returned for that dataset.
-          additionalProperties:
-            type: integer
-            format: int64
+          example: "930f9d0d-eb0e-4e2f-9b1f-91855efe6b94"
+        datasetQueriesStat:
+          $ref: '#/components/schemas/QueryExplainResponseDatasetQueriesStat'
         start:
           type: string
           format: date-time
           description: Timestamp of the step start.
-        durationNs:
-          type: integer
-          format: int64
-          description: Duration of the step in nanoseconds.
+          example: "2024-03-01T14:30:22.000Z"
+        duration:
+          type: string
+          format: duration
+          description: Duration of the step in ISO 8601 format.
+          example: "PT1M30S"
         children:
           type: array
           items:
             $ref: '#/components/schemas/QueryExplainResponse'
       required:
         - id
-        - datasetIdToCount
+        - datasetQueriesStat
         - start
-        - durationNs
+        - duration
         - children
+    QueryExplainResponseDatasetQueriesStat:
+      type: object
+      description: Contains how much data was queried from dataset.
+      properties:
+        username:
+          type: string
+          description: Username that dataset belong to
+        namespace:
+          type: string
+          description: Namespace dataset belongs to.
+        dataset:
+          type: string
+          description: Name of dataset.
+        resultCount:
+          type: integer
+          format: int64
+          description: Number of results returned from the dataset.
+      required:
+        - username
+        - namespace
+        - dataset
+        - resultCount
     ListIngestionsResponseData:
       type: object
       properties:
