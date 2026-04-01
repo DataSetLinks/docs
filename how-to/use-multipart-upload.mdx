@@ -4,7 +4,7 @@ sidebarTitle: "Use multipart upload"
 description: "Upload CSV files to DataLinks using multipart upload for files that are too large for standard ingestion."
 ---
 
-When your data lives in large CSV files, standard API ingestion may not be practical. Multipart upload lets you split a file into parts, upload each part directly to cloud storage using presigned URLs, and then tell DataLinks to process the assembled file. 
+When your data lives in large CSV files, standard API ingestion may not be practical. Multipart upload lets you split a file into parts, upload each part directly to cloud storage using presigned URLs, and then tell DataLinks to process the assembled file.
 
 <Note>
   If you are working with smaller files or JSON-formatted data, you may find it easier to use the standard [data ingestion endpoint](https://docs.datalinks.com/api-reference/ingest/ingest-data) instead.
@@ -104,7 +104,6 @@ This section walks through a complete multipart upload using Python.
 
     ```python
     import os
-    import json
     import requests
     
     BASE_URL = "https://api.datalinks.com/api/v1"
@@ -308,12 +307,9 @@ Multipart upload works with files of any size, but for small files (under 8 MB),
 
 For full endpoint specifications, see:
 
-- [**POST Prepare Multipart Upload**](/api-reference/multipart-upload/prepare-multipart-upload)
-  Initiate a multipart upload and receive presigned URLs for uploading file parts.
-- [**POST Finish Multipart Upload**](/api-reference/multipart-upload/finish-multipart-upload)
-  Complete a multipart upload by providing the assembled parts and their ETags.
-- [**POST Abort Multipart Upload**](/api-reference/multipart-upload/abort-multipart-upload)
-  Cancel an in-progress multipart upload and clean up partial data.
+- [**POST Prepare Multipart Upload**](/api-reference/multipart-upload/prepare-multipart-upload) Initiate a multipart upload and receive presigned URLs for uploading file parts.
+- [**POST Finish Multipart Upload**](/api-reference/multipart-upload/finish-multipart-upload) Complete a multipart upload by providing the assembled parts and their ETags.
+- [**POST Abort Multipart Upload**](/api-reference/multipart-upload/abort-multipart-upload) Cancel an in-progress multipart upload and clean up partial data.
 
 ## Next steps
 
