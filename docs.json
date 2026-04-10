@@ -47,7 +47,7 @@
               }
             ]
           },
-            {
+          {
             "group": "Understanding the UI",
             "pages": [
               "ui/home",
@@ -57,7 +57,7 @@
             ],
             "icon": "file-lines"
           },
-            {
+          {
             "group": "Reference",
             "pages": [
               "reference/ai_inference",
@@ -77,25 +77,26 @@
           }
         ]
       },
-{
-  "tab": "API Reference",
-  "icon": "code",
-  "groups": [
-    {
-      "group": "Overview",
-      "pages": ["api-reference/index"]
-    },
-    {
-      "group": "Endpoints",
-      "expanded": true,
-      "openapi": {
-        "source": "api-reference/openapi.yml",
-        "directory": "api-reference"
-      }
-    }
-  ]
-}
-,
+      {
+        "tab": "API Reference",
+        "icon": "code",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/index"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "expanded": true,
+            "openapi": {
+              "source": "api-reference/openapi.yml",
+              "directory": "api-reference"
+            }
+          }
+        ]
+      },
       {
         "tab": "Python SDK",
         "icon": "python",
@@ -106,7 +107,9 @@
             "pages": [
               "pythonsdk/index",
               "pythonsdk/sdk-install",
-              "pythonsdk/sdk-quickstart"
+              "pythonsdk/sdk-quickstart",
+              "pythonsdk/components",
+              "pythonsdk/examples"
             ],
             "icon": "notebook"
           },
