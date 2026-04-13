@@ -14,17 +14,15 @@
         "tab": "Docs",
         "icon": "file-lines",
         "pages": [
-          "index"
-        ],
-        "groups": [
+          "index",
           {
             "group": "Get Started",
+            "icon": "rocket",
             "pages": [
               "get-started/intro-datalinks",
               "get-started/quickstart",
               "get-started/quickstart-api"
-            ],
-            "icon": "rocket"
+            ]
           },
           {
             "group": "How-To Guides",
@@ -49,31 +47,32 @@
           },
           {
             "group": "Understanding the UI",
+            "icon": "file-lines",
             "pages": [
               "ui/home",
               "ui/new-dataset",
               "ui/ontology-explorer",
               "ui/settings"
-            ],
-            "icon": "file-lines"
+            ]
           },
           {
             "group": "Reference",
+            "icon": "file-lines",
             "pages": [
               "reference/ai_inference",
+              "reference/automodeler",
               "reference/query_commands"
-            ],
-            "icon": "file-lines"
+            ]
           },
           {
             "group": "Concepts",
+            "icon": "brain",
             "pages": [
               "concepts/datasets-namespaces",
               "concepts/ingest-clean",
               "concepts/interconnection",
               "concepts/query-insights"
-            ],
-            "icon": "brain"
+            ]
           }
         ]
       },
@@ -103,23 +102,21 @@
         "groups": [
           {
             "group": "Getting Started",
+            "icon": "notebook",
             "expanded": true,
             "pages": [
               "pythonsdk/index",
               "pythonsdk/sdk-install",
-              "pythonsdk/sdk-quickstart",
-              "pythonsdk/components",
-              "pythonsdk/examples"
-            ],
-            "icon": "notebook"
+              "pythonsdk/sdk-quickstart"
+            ]
           },
           {
             "group": "Library",
+            "icon": "books",
             "pages": [
               "pythonsdk/modules",
               "pythonsdk/datalinks"
-            ],
-            "icon": "books"
+            ]
           }
         ]
       }
