@@ -60,6 +60,7 @@
             "icon": "file-lines",
             "pages": [
               "reference/ai_inference",
+              "reference/automodeler",
               "reference/query_commands",
               "reference/automodeler"
             ]
