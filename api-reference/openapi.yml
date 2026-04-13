@@ -200,6 +200,31 @@ paths:
           description: The dataset was not found.
         '400':
           description: Bad request
+  /data/{username}/{namespace}/rename:
+    post:
+      summary: Rename a namespace
+      description: Rename the specified namespace.
+      operationId: renameNamespace
+      tags:
+        - dataset
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Username'
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Renames the specified namespace.
+        '400':
+          description: Bad request
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: The namespace was not found or the user cannot modify it.
   /data/{username}/{namespace}/{datasetName}/rename:
     post:
       summary: Rename a dataset
