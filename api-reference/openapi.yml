@@ -1165,15 +1165,16 @@ components:
           maxLength: 10000
           example: "Employee dataset containing demographics and compensation."
         fieldDefinition:
-          type: string
-          description: Definition of the dataset fields.
-          maxLength: 10000
-          example: |
-            id=unique employee identifier
-            name=full employee name
-            age=employee age in years
-            department=work department
-            salary=annual salary in USD
+          type: object
+          additionalProperties:
+            type: string
+          description: Definition of the dataset fields as a map of field name to description.
+          example:
+            id: unique employee identifier
+            name: full employee name
+            age: employee age in years
+            department: work department
+            salary: annual salary in USD
       required:
         - dataDescription
         - fieldDefinition
