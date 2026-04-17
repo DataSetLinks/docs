@@ -315,7 +315,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApiInferenceDefinition'
+              type: object
+              properties:
+                dataDescription:
+                  type: string
+                  description: A description of the dataset.
+                  maxLength: 10000
+                  example: "Employee dataset containing demographics and compensation."
+                schemaDefinition:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Schema definition as a map of field name to description.
+                  example:
+                    id: unique employee identifier
+                    name: full employee name
+                    age: employee age in years
+                    department: work department
+                    salary: annual salary in USD
       responses:
         '201':
           description: Creates a new inference definition.
@@ -1156,9 +1173,14 @@ components:
         - name
         - namespace
         - visibility
-    ApiInferenceDefinition:
+    ApiDatasetMetadata:
       type: object
       properties:
+        columnNames:
+          type: array
+          items: {type: string}
+          description: List of dataset column names.
+          example: ["id", "name", "age", "department", "salary"]
         dataDescription:
           type: string
           description: Data description of the dataset.
@@ -1175,29 +1197,6 @@ components:
             age: employee age in years
             department: work department
             salary: annual salary in USD
-      required:
-        - dataDescription
-        - schemaDefinition
-    ApiDatasetMetadata:
-      type: object
-      properties:
-        columnNames:
-          type: array
-          items: {type: string}
-          description: List of dataset column names.
-          example: ["id", "name", "age", "department", "salary"]
-        inferDefinition:
-          description: Inference definition for dataset.
-          allOf:
-            - $ref: "#/components/schemas/ApiInferenceDefinition"
-          example:
-            dataDescription: "Employee dataset containing demographics and compensation."
-            schemaDefinition: |
-              id=unique employee identifier
-              name=full employee name
-              age=employee age in years
-              department=work department
-              salary=annual salary in USD
         rowCount:
           type: integer
           format: int64
@@ -1250,8 +1249,22 @@ components:
     CreateDatasetRequest:
       type: object
       properties:
-        inferDefinition:
-          $ref: '#/components/schemas/ApiInferenceDefinition'
+        dataDescription:
+          type: string
+          description: A description of the dataset to help the AI system understand the context.
+          maxLength: 10000
+          example: "Employee dataset containing demographics and compensation."
+        schemaDefinition:
+          type: object
+          additionalProperties:
+            type: string
+          description: A schema definition for the dataset to guide the AI system in structuring the extracted data.
+          example:
+            id: unique employee identifier
+            name: full employee name
+            age: employee age in years
+            department: work department
+            salary: annual salary in USD
         visibility:
           type: string
           enum:
@@ -1304,10 +1317,6 @@ components:
       properties:
         dataset:
           $ref: '#/components/schemas/ApiDatasetDescription'
-        inferDefinition:
-          $ref: '#/components/schemas/ApiInferenceDefinition'
-          deprecated: true
-          description: "This field is deprecated and will be removed in a future version. Please use `metadata.inferDefinition` instead."
         metadata:
           $ref: '#/components/schemas/ApiDatasetMetadata'
       required:
@@ -1475,6 +1484,9 @@ components:
           additionalProperties:
             type: string
           description: A schema definition for the dataset to guide the AI system in structuring the extracted data.
+        additionalInstructions:
+          type: string
+          description: Additional instructions to guide the AI system during ingestion.
       required:
         - data
     LinkConfig:
