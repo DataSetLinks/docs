@@ -318,21 +318,9 @@ paths:
               type: object
               properties:
                 dataDescription:
-                  type: string
-                  description: A description of the dataset.
-                  maxLength: 10000
-                  example: "Employee dataset containing demographics and compensation."
+                  $ref: '#/components/schemas/DataDescription'
                 schemaDefinition:
-                  type: object
-                  additionalProperties:
-                    type: string
-                  description: Schema definition as a map of field name to description.
-                  example:
-                    id: unique employee identifier
-                    name: full employee name
-                    age: employee age in years
-                    department: work department
-                    salary: annual salary in USD
+                  $ref: '#/components/schemas/SchemaDefinition'
       responses:
         '201':
           description: Creates a new inference definition.
@@ -1182,21 +1170,9 @@ components:
           description: List of dataset column names.
           example: ["id", "name", "age", "department", "salary"]
         dataDescription:
-          type: string
-          description: Data description of the dataset.
-          maxLength: 10000
-          example: "Employee dataset containing demographics and compensation."
+          $ref: '#/components/schemas/DataDescription'
         schemaDefinition:
-          type: object
-          additionalProperties:
-            type: string
-          description: Definition of the dataset fields as a map of field name to description.
-          example:
-            id: unique employee identifier
-            name: full employee name
-            age: employee age in years
-            department: work department
-            salary: annual salary in USD
+          $ref: '#/components/schemas/SchemaDefinition'
         rowCount:
           type: integer
           format: int64
@@ -1250,21 +1226,9 @@ components:
       type: object
       properties:
         dataDescription:
-          type: string
-          description: A description of the dataset to help the AI system understand the context.
-          maxLength: 10000
-          example: "Employee dataset containing demographics and compensation."
+          $ref: '#/components/schemas/DataDescription'
         schemaDefinition:
-          type: object
-          additionalProperties:
-            type: string
-          description: A schema definition for the dataset to guide the AI system in structuring the extracted data.
-          example:
-            id: unique employee identifier
-            name: full employee name
-            age: employee age in years
-            department: work department
-            salary: annual salary in USD
+          $ref: '#/components/schemas/SchemaDefinition'
         visibility:
           type: string
           enum:
@@ -1477,13 +1441,9 @@ components:
           type: boolean
           nullable: true
         dataDescription:
-          type: string
-          description: A description of the dataset to help the AI system understand the context.
+          $ref: '#/components/schemas/DataDescription'
         schemaDefinition:
-          type: object
-          additionalProperties:
-            type: string
-          description: A schema definition for the dataset to guide the AI system in structuring the extracted data.
+          $ref: '#/components/schemas/SchemaDefinition'
         additionalInstructions:
           type: string
           description: Additional instructions to guide the AI system during ingestion.
@@ -1671,8 +1631,7 @@ components:
             type: string
           description: Target columns with their descriptions.
         dataDescription:
-          type: string
-          description: A description of the data to help the LLM understand the domain.
+          $ref: '#/components/schemas/DataDescription'
         model:
           type: string
           description: The LLM model to use for this step.
@@ -1921,6 +1880,17 @@ components:
           type: boolean
           nullable: true
           description: Whether to run the curation agent after ingestion.
+        inferBatchSize:
+          type: integer
+          nullable: true
+          description: Number of rows per LLM inference batch. Defaults to 1000. Reduce for large files to avoid S3 read timeouts caused by slow LLM processing.
+          example: 100
+        dataDescription:
+          $ref: '#/components/schemas/DataDescription'
+          nullable: true
+        schemaDefinition:
+          $ref: '#/components/schemas/SchemaDefinition'
+          nullable: true
       required:
         - uploadId
         - key
@@ -2397,6 +2367,22 @@ components:
           example: "America/New_York"
       required:
         - timeZoneForAggregation
+    DataDescription:
+      type: string
+      description: A description of the dataset to help the AI system understand the context.
+      maxLength: 10000
+      example: "Employee dataset containing demographics and compensation."
+    SchemaDefinition:
+      type: object
+      additionalProperties:
+        type: string
+      description: A schema definition mapping field names to descriptions, to guide the AI system in structuring the extracted data.
+      example:
+        id: unique employee identifier
+        name: full employee name
+        age: employee age in years
+        department: work department
+        salary: annual salary in USD
   responses:
     QueryResponse:
       description: Returns query results.
