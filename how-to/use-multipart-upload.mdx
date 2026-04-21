@@ -1,0 +1,316 @@
+---
+title: "How To Upload Large Files with Multipart Upload"
+sidebarTitle: "Use multipart upload"
+description: "Upload CSV files to DataLinks using multipart upload for files that are too large for standard ingestion."
+---
+
+When your data lives in large CSV files, standard API ingestion may not be practical. Multipart upload lets you split a file into parts, upload each part directly to cloud storage using presigned URLs, and then tell DataLinks to process the assembled file.
+
+<Note>
+  If you are working with smaller files or JSON-formatted data, you may find it easier to use the standard [data ingestion endpoint](https://docs.datalinks.com/api-reference/ingest/ingest-data) instead.
+</Note>
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- A DataLinks account
+- A valid bearer token for the DataLinks API
+- A dataset already created in your target namespace
+- A CSV file to upload
+- A Python environment set up for running scripts
+
+<Info>
+  If you have not yet created a dataset, follow the steps in [How To Create a New Dataset](/how-to/create-dataset) first.
+</Info>
+
+## How multipart upload works
+
+A multipart upload has three stages:
+
+1. **Prepare**: You tell DataLinks the filename and size. DataLinks returns an upload ID, an object key, and a presigned URL for each 8 MB part of the file.
+2. **Upload**: You upload each part of the file directly to cloud storage using the presigned URLs. Each successful upload returns an ETag that you need to save.
+3. **Finish**: You send the upload ID, object key, and all part ETags back to DataLinks. DataLinks assembles the parts and ingests the data into your dataset.
+
+If something goes wrong during upload, you can **abort** the upload to clean up any partial data.
+
+<Info>
+  Each part is 8 MB. DataLinks calculates how many parts your file needs and returns one presigned URL per part. A 25 MB file would produce four presigned URLs.
+</Info>
+
+## Upload a file using the API
+
+This section walks through a complete multipart upload using Python.
+
+### Step-by-step instructions
+
+<Steps>
+  <Step title="Install dependencies">
+    This guide uses direct HTTP calls with Python. Install the `requests` library if you do not already have it available:
+
+    ```text
+    pip install requests
+    ```
+  </Step>
+  <Step title="Configure environment variables">
+    Set the following environment variables so sensitive values are not hardcoded in your script:
+
+    <Tabs>
+      <Tab title="Windows">
+        **For the current session**
+
+        ```text
+        $env:DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
+        $env:DATALINKS_USERNAME="your-username"
+        $env:DATALINKS_NAMESPACE="your-namespace"
+        $env:DATALINKS_DATASET="your-dataset"
+        ```
+
+        **Persist across future sessions**
+
+        ```text
+        setx DATALINKS_TOKEN "YOUR_BEARER_TOKEN"
+        setx DATALINKS_USERNAME "your-username"
+        setx DATALINKS_NAMESPACE "your-namespace"
+        setx DATALINKS_DATASET "your-dataset"
+        ```
+
+        After using `setx`, open a new PowerShell window before running your script.
+      </Tab>
+      <Tab title="Linux">
+        ```text
+        export DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
+        export DATALINKS_USERNAME="your-username"
+        export DATALINKS_NAMESPACE="your-namespace"
+        export DATALINKS_DATASET="your-dataset"
+        ```
+
+        These apply to the current shell session. Add them to `~/.bashrc` or `~/.zshrc` if you want them to persist automatically.
+      </Tab>
+      <Tab title="MacOS">
+        ```text
+        export DATALINKS_TOKEN="YOUR_BEARER_TOKEN"
+        export DATALINKS_USERNAME="your-username"
+        export DATALINKS_NAMESPACE="your-namespace"
+        export DATALINKS_DATASET="your-dataset"
+        ```
+
+        These apply to the current terminal session. For persistence, place them in `~/.zshrc`.
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Create the upload script">
+    Create a Python file, for example `multipart_upload.py`, and add the following code:
+
+    ```python
+    import os
+    import requests
+    
+    BASE_URL = "https://api.datalinks.com/api/v1"
+    
+    token = os.environ["DATALINKS_TOKEN"]
+    username = os.environ["DATALINKS_USERNAME"]
+    namespace = os.environ["DATALINKS_NAMESPACE"]
+    dataset_name = os.environ["DATALINKS_DATASET"]
+    
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+    
+    file_path = "your-data.csv"
+    file_size = os.path.getsize(file_path)
+    
+    # Step 1: Prepare the multipart upload
+    prepare_url = f"{BASE_URL}/upload/multipart/{username}/{namespace}/{dataset_name}/prepare"
+    
+    prepare_response = requests.post(
+        prepare_url,
+        headers=headers,
+        json={
+            "filename": os.path.basename(file_path),
+            "size": file_size,
+        },
+        timeout=30,
+    )
+    prepare_response.raise_for_status()
+    prepare_data = prepare_response.json()
+    
+    upload_id = prepare_data["uploadId"]
+    key = prepare_data["key"]
+    part_size = prepare_data["partSize"]
+    presigned_urls = prepare_data["presignedUrls"]
+    
+    print(f"Upload prepared: {len(presigned_urls)} part(s), {part_size} bytes per part")
+    
+    # Step 2: Upload each part to cloud storage
+    parts = []
+    
+    with open(file_path, "rb") as f:
+        for i, presigned in enumerate(presigned_urls):
+            chunk = f.read(part_size)
+            part_number = i + 1
+    
+            upload_response = requests.put(
+                presigned["url"],
+                data=chunk,
+                timeout=300,
+            )
+            upload_response.raise_for_status()
+    
+            etag = upload_response.headers["ETag"].strip('"')
+            parts.append({"partNumber": part_number, "etag": etag})
+            print(f"  Part {part_number}/{len(presigned_urls)} uploaded")
+    
+    # Step 3: Finish the upload
+    finish_url = f"{BASE_URL}/upload/multipart/{username}/{namespace}/{dataset_name}/finish"
+    
+    finish_response = requests.post(
+        finish_url,
+        headers=headers,
+        json={
+            "uploadId": upload_id,
+            "key": key,
+            "parts": parts,
+        },
+        timeout=60,
+    )
+    finish_response.raise_for_status()
+    result = finish_response.json()
+    
+    print(f"\nUpload complete. Ingestion ID: {result['id']}")
+    ```
+  </Step>
+  <Step title="Run the script">
+    Update the `file_path` variable to point to your CSV file, then run:
+
+    ```text
+    python multipart_upload.py
+    ```
+
+    You should see output like:
+
+    ```text
+    Upload prepared: 4 part(s), 8388608 bytes per part
+      Part 1/4 uploaded
+      Part 2/4 uploaded
+      Part 3/4 uploaded
+      Part 4/4 uploaded
+    
+    Upload complete. Ingestion ID: 710cf7fe-5d20-4b0e-9d3e-9e46f7f4db06
+    ```
+  </Step>
+</Steps>
+
+### How this works
+
+This script:
+
+- Calls `POST /upload/multipart/{username}/{namespace}/{datasetName}/prepare` to initiate the upload and receive presigned URLs
+- Reads the file in chunks matching the `partSize` returned by DataLinks (8 MB per part)
+- Uploads each chunk directly to cloud storage using the presigned URL with a `PUT` request
+- Captures the `ETag` header from each upload response
+- Calls `POST /upload/multipart/{username}/{namespace}/{datasetName}/finish` with the upload ID, object key, and all part ETags to assemble and ingest the file
+
+<Warning>
+  Presigned URLs expire after 15 minutes. If your upload takes longer than this, you will need to abort and start a new upload. For very large files over slow connections, consider splitting the file into smaller CSVs first.
+</Warning>
+
+## Adding inference and link discovery
+
+The finish endpoint accepts optional `infer` and `link` fields, so you can apply AI-powered transformations and link discovery as part of the upload. These work exactly the same as in standard [data ingestion](/api-reference/ingest/ingest-data).
+
+To apply inference steps and auto-discover links, include them in the finish request:
+
+```python
+finish_response = requests.post(
+    finish_url,
+    headers=headers,
+    json={
+        "uploadId": upload_id,
+        "key": key,
+        "parts": parts,
+        "link": {"ExactMatch": None},
+        "infer": {
+            "steps": [
+                {
+                    "type": "normalize",
+                    "mode": "all-in-one",
+                    "targetCols": {
+                        "full_name": "The person's full name",
+                        "email": "Email address",
+                        "department": "Work department",
+                    },
+                }
+            ]
+        },
+    },
+    timeout=60,
+)
+```
+
+<Info>
+  Inference and link discovery run after the file is assembled. The ingestion ID returned by the finish endpoint lets you track the progress of background processing.
+</Info>
+
+## Aborting an upload
+
+If something goes wrong during upload, you can abort to clean up any partial data in cloud storage. Call the abort endpoint with the `uploadId` and `key` from the prepare response:
+
+```python
+abort_url = f"{BASE_URL}/upload/multipart/{username}/{namespace}/{dataset_name}/abort"
+
+abort_response = requests.post(
+    abort_url,
+    headers=headers,
+    json={
+        "uploadId": upload_id,
+        "key": key,
+    },
+    timeout=30,
+)
+abort_response.raise_for_status()
+print("Upload aborted and partial data cleaned up.")
+```
+
+<Tip>
+  If your script crashes mid-upload, you should abort the upload to avoid leaving orphaned data in cloud storage. Save the `uploadId` and `key` values so you can abort even after a restart.
+</Tip>
+
+## Common issues
+
+**Authentication errors (401)**
+
+If the request fails with a 401 error, confirm that:
+
+- The token environment variable is set correctly
+- The `Authorization` header uses the `Bearer` format
+- The token has not expired
+
+**Part upload failures**
+
+If an individual part upload fails, you can retry just that part using the same presigned URL without restarting the entire upload. The presigned URL remains valid for 15 minutes from the time of the prepare request.
+
+**Mismatched ETags (400 on finish)**
+
+If the finish request fails, confirm that:
+
+- Every part's ETag was captured correctly from the upload response headers
+- The `partNumber` values are 1-based and sequential
+- The `uploadId` and `key` match the values from the prepare response
+
+**File too small for multipart**
+
+Multipart upload works with files of any size, but for small files (under 8 MB), only one presigned URL is returned and the process is equivalent to a single upload. For very small datasets, you may prefer using the standard [data ingestion endpoint](/api-reference/ingest/ingest-data) directly.
+
+## API reference
+
+For full endpoint specifications, see:
+
+- [**POST Prepare Multipart Upload**](/api-reference/multipart-upload/prepare-multipart-upload) Initiate a multipart upload and receive presigned URLs for uploading file parts.
+- [**POST Finish Multipart Upload**](/api-reference/multipart-upload/finish-multipart-upload) Complete a multipart upload by providing the assembled parts and their ETags.
+- [**POST Abort Multipart Upload**](/api-reference/multipart-upload/abort-multipart-upload) Cancel an in-progress multipart upload and clean up partial data.
+
+## Next steps
+
+Once your data is uploaded, you can explore how it connects to other datasets using the [Connections Overview](/how-to/manage-connections), or query it directly using [AutoRAG](/how-to/use-autorag).

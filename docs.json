@@ -35,6 +35,7 @@
               "how-to/use-autorag",
               "how-to/query-data",
               "how-to/connect-app-builder",
+              "how-to/use-multipart-upload",
               {
                 "group": "MCP Guides",
                 "pages": [
