@@ -405,3 +405,72 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+# GitHub Tickets Ingestion with Auto-Modelled Ontology (Vercel)
+
+Demonstrates how to use the `IngestProxyAPI` to ingest raw GitHub tickets and pull requests and let DataLinks automatically model an ontology from them. A natural-language prompt describes the desired schema — tables for tickets, contributors, triage insights, and applied technologies — and the pipeline surfaces that structure without any manual mapping. Events from the streaming pipeline run are logged as they arrive.
+
+**Components covered:** `IngestProxyConfig`, `IngestProxyAPI`, `run_pipeline`
+
+```python
+import json
+import logging
+
+from datalinks.api import IngestProxyAPI, IngestProxyConfig
+
+
+USER_PROMPT = """
+## What we are doing
+  We are building an assistant to help with the coordinations tasks of a development team. It is effectively a combination of multiple agents that collaborate on a shared memory pool to perform their tasks, these agents include:
+  - An agent that helps assign tickets and pull requests to the correct developer for implementation or investigation
+  - An agent that helps to estimate effort of specific tasks
+  - An agent that does duplicate detection
+  - An agent that helps generating prompts for Claude Code to implement whenever the ticket is estimated to be of acceptable complexity and size
+  - A workflow that ingests new tickets and and updates existing tickets
+
+  ## What are we working with
+  We're feeding all the data to DataLinks automodeler (note: that's you, and thank you for the help!), and we're expecting an ontology to surface automatically. We're submitting raw GitHub tickets and pull requests.
+  
+  ## What we want
+  We want to design and populate an ontology for agents to write and read from, it should have at least the following tables:
+
+1. **Tickets**: Core ticket or PR identity — ticket_id, title, body, labels, state, lock status, reporter, ticket_url.
+2. **Contributors**: People/orgs involved (reporter, assignees, closers). Track roles and contributor ids and usernames.
+3. **Triage**: Triage insights — inferred priority (Low/Med/High), effort size (Low/Med/High), technology stack, risk level, labels, and any other useful signals.
+4. **Applied Technologies** - What are the dependencies and technologies a specific ticket has. A single ticket may have multiple technologies or frameworks, we want them to be represented here.
+5. **Additional tables** as needed, we expect the ontology to evolve as new data comes in.
+
+  Rules:
+- Use identifiers always as string, never as numbers.
+- Always include the available timestamps
+"""
+
+def main():
+    logging.basicConfig(level=logging.INFO)
+
+    config = IngestProxyConfig.from_env()
+    config.namespace = "vercel"
+
+    proxy = IngestProxyAPI(config)
+
+    with open("data/vercel100.json") as f:
+        data = json.load(f)
+
+    logging.info(f"Starting pipeline run for {len(data)} records")
+
+    with proxy.run_pipeline(
+        data=data,
+        user_prompt=USER_PROMPT,
+    ) as run:
+        logging.info(f"Run ID: {run.run_id}")
+        for event in run:
+            logging.info(f"Event: {event}")
+
+    logging.info("Pipeline run complete")
+
+
+if __name__ == "__main__":
+    main()
+```
