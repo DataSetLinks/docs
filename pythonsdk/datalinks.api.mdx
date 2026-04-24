@@ -1,0 +1,1673 @@
+# datalinks.api package
+
+### *class* datalinks.api.DataLinksAPI(config=None)
+
+Bases: `object`
+
+Class for interfacing with the DataLinks API.
+
+Provides methods for ingesting data, managing namespaces, and querying data
+from DataLinks. Designed to interact with a configurable
+backend, providing flexibility for deployment environments.
+
+* **Variables:**
+  **config** – Configuration object containing API key, host, index, namespace,
+  and object name.
+
+#### ingest(data, inference_steps=None, entity_resolution=None, batch_size=0, max_attempts=3)
+
+Ingests data into the namespace by batching the given data and performing multiple retries
+in case of failures. This function sends data in chunks (batches), to be processed through configured
+inference steps, and to resolve entities based on the provided configuration. If a batch fails, it
+is retried up to a maximum number of attempts.
+
+* **Parameters:**
+  * **data** (`List`[`Dict`[`str`, `Any`]]) – List of dictionaries, where each dictionary represents a data block to be ingested.
+  * **inference_steps** ([`Pipeline`](datalinks#datalinks.pipeline.Pipeline) | `None`) – Pipeline of inference steps to be applied for processing the data. If None the data will be ingested as is.
+  * **entity_resolution** ([`MatchTypeConfig`](datalinks#datalinks.links.MatchTypeConfig) | `None`) – Configuration specifying how entity resolution is to be performed.
+  * **batch_size** – Number of data blocks to be included in each batch. Defaults to the size of the
+    entire dataset if not provided.
+  * **max_attempts** – Maximum number of retry attempts for failed batches. Defaults to the
+    provided constant MAX_INGEST_ATTEMPTS.
+* **Return type:**
+  [`IngestionResult`](#datalinks.api.datalinks.IngestionResult)
+* **Returns:**
+  An IngestionResult object containing lists of successfully ingested data blocks and
+  data blocks that failed to be ingested.
+
+#### create_space(is_private=True, data_description='', field_definitions='')
+
+Creates a new space with the specified privacy settings. This function sends a
+POST request to create a namespace with the given privacy status. Information
+about the namespace creation will be logged, including the HTTP status code
+and response reason. If the namespace already exists, a warning will be logged.
+
+* **Parameters:**
+  **is_private** (*bool*) – Determines whether the created namespace will be private
+  or public.
+* **Return type:**
+  `None`
+* **Returns:**
+  None
+* **Raises:**
+  **HTTPError** – If the HTTP request fails due to connectivity issues or
+  server-side problems.
+
+#### update_infer_definition(data_description, field_definition)
+
+Update the saved inference definition for the configured dataset.
+
+The inference definition is used automatically on future ingest calls to guide
+field extraction and normalization.
+
+* **Parameters:**
+  * **data_description** (*str*) – Free-text description of the dataset (max 10,000 chars).
+  * **field_definition** (*str*) – Field-level definitions, one per line as `field=description`
+    (max 10,000 chars).
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### infer_dataset_description(sample, model=None, provider=None, current_description=None, current_schema=None)
+
+Ask an agent to infer a data description and field schema from sampled data.
+
+* **Parameters:**
+  * **sample** (*Dataset*) – A sample of data rows to analyse.
+  * **model** (*Optional* *[**str* *]*) – LLM model name.
+  * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
+  * **current_description** (*Optional* *[**str* *]*) – Existing description to refine.
+  * **current_schema** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Existing field schema to refine (field → description mapping).
+* **Returns:**
+  Inferred `dataDescription` and `fieldDefinition`.
+* **Return type:**
+  Dict
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### update_sort_order(order)
+
+Update the display order of columns for the configured dataset.
+
+* **Parameters:**
+  **order** (*List* *[**str* *]*) – Ordered list of all column names in the desired sequence.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### prepare_multipart_upload(filename, size)
+
+Initiate a multipart upload and receive presigned URLs for each part.
+
+Use this for large files. Upload each part directly to its presigned URL,
+then call [`finish_multipart_upload()`](#datalinks.api.DataLinksAPI.finish_multipart_upload) with the returned ETags.
+
+* **Parameters:**
+  * **filename** (*str*) – Name of the file being uploaded.
+  * **size** (*int*) – File size in bytes.
+* **Returns:**
+  Response containing `uploadId`, `key`, and presigned part URLs.
+* **Return type:**
+  Dict
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### finish_multipart_upload(upload_id, key, parts, name=None)
+
+Complete a multipart upload after all parts have been uploaded.
+
+* **Parameters:**
+  * **upload_id** (*str*) – Upload ID from [`prepare_multipart_upload()`](#datalinks.api.DataLinksAPI.prepare_multipart_upload).
+  * **key** (*str*) – S3 object key from [`prepare_multipart_upload()`](#datalinks.api.DataLinksAPI.prepare_multipart_upload).
+  * **parts** (*List* *[**Dict* *[**str* *,* *Any* *]* *]*) – List of completed parts, each with `partNumber` (int) and
+    `etag` (str) returned by S3.
+  * **name** (*Optional* *[**str* *]*) – Optional label for the ingestion (e.g. original filename).
+* **Returns:**
+  Ingestion result from the server.
+* **Return type:**
+  Dict
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### abort_multipart_upload(upload_id, key)
+
+Abort a multipart upload and clean up partial data.
+
+* **Parameters:**
+  * **upload_id** (*str*) – Upload ID from [`prepare_multipart_upload()`](#datalinks.api.DataLinksAPI.prepare_multipart_upload).
+  * **key** (*str*) – S3 object key from [`prepare_multipart_upload()`](#datalinks.api.DataLinksAPI.prepare_multipart_upload).
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### list_ingestions(page_size=25)
+
+List ingestion attempts for the configured dataset, most recent first.
+
+Each record contains `id`, `status`, `statusMessage`,
+`processedBytes`, `expectedTotalBytes`, `processedRows`,
+and `attributes`.
+
+* **Parameters:**
+  **page_size** (*int*) – Number of records to return (1-100, default 25).
+* **Returns:**
+  List of ingestion attempt dicts, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+
+#### wait_for_ingestion(ingestion_id, poll_interval=5, timeout=1200)
+
+Poll until the given ingestion reaches a terminal status.
+
+Polls [`list_ingestions()`](#datalinks.api.DataLinksAPI.list_ingestions) every *poll_interval* seconds until the
+ingestion with *ingestion_id* is no longer in a pending/processing
+state, or until *timeout* seconds have elapsed.
+
+* **Parameters:**
+  * **ingestion_id** (*str*) – Ingestion ID returned by [`finish_multipart_upload()`](#datalinks.api.DataLinksAPI.finish_multipart_upload).
+  * **poll_interval** (*int*) – Seconds between polls (default 5).
+  * **timeout** (*int*) – Maximum seconds to wait before raising (default 600).
+* **Returns:**
+  The final ingestion record dict.
+* **Return type:**
+  Dict
+* **Raises:**
+  * **TimeoutError** – If *timeout* is exceeded before a terminal status.
+  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If polling requests fail.
+
+#### get_dataset_info()
+
+Retrieve metadata for the configured dataset.
+
+Returns a dict with `dataset`, `metadata`, and `inferDefinition` keys,
+or `None` if the request fails.
+
+* **Returns:**
+  Dataset metadata dict, or None on failure.
+* **Return type:**
+  Optional[Dict]
+
+#### delete_dataset()
+
+Permanently delete the configured dataset, including all data, links, and metadata.
+
+This action is irreversible (balefire).
+
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### rename_dataset(new_name)
+
+Rename the configured dataset.
+
+* **Parameters:**
+  **new_name** (*str*) – The new dataset name.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### clear_dataset()
+
+Remove all data and links from the configured dataset.
+
+The dataset itself (metadata, schema) is preserved. This action is irreversible.
+
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### add_link(from_namespace, from_dataset, from_column, to_namespace, to_dataset, to_column, match_type, options=None)
+
+Create a manual link between two dataset columns.
+
+* **Parameters:**
+  * **from_namespace** (`str`) – Source namespace.
+  * **from_dataset** (`str`) – Source dataset name.
+  * **from_column** (`str`) – Source column name.
+  * **to_namespace** (`str`) – Target namespace.
+  * **to_dataset** (`str`) – Target dataset name.
+  * **to_column** (`str`) – Target column name.
+  * **match_type** (`str`) – Match type — `"ExactMatch"` or `"GeoMatch"`.
+  * **options** (`Optional`[`Dict`[`str`, `Any`]]) – Optional match configuration (e.g. `minDistinct`, `distance`).
+* **Returns:**
+  The created link object, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### preview_links(data, entity_resolution=None)
+
+Preview what recalculating links would produce without saving changes.
+
+* **Parameters:**
+  * **data** (*Dataset*) – Array of ontology data objects (e.g. from [`query_data()`](#datalinks.api.DataLinksAPI.query_data)).
+  * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](datalinks#datalinks.links.MatchTypeConfig) *]*) – Optional link matching configuration.
+* **Returns:**
+  Preview of link objects, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### rebuild_links(data, entity_resolution=None)
+
+Recalculate links for the configured dataset based on current data.
+
+* **Parameters:**
+  * **data** (*Dataset*) – Array of ontology data objects (e.g. from [`query_data()`](#datalinks.api.DataLinksAPI.query_data)).
+  * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](datalinks#datalinks.links.MatchTypeConfig) *]*) – Optional link matching configuration.
+* **Returns:**
+  Updated list of link objects, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### load_links()
+
+Retrieve active and suggested links for the configured dataset.
+
+* **Returns:**
+  A list of link objects, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+
+#### list_datasets(namespace=None)
+
+Retrieves the list of datasets for the user, optionally filtered by a specific namespace.
+
+* **Parameters:**
+  **namespace** (*Optional* *[**AnyStr* *]*) – Optional namespace to filter the datasets by.
+  If provided, only datasets associated with the given
+  namespace will be returned. If not provided, all datasets are
+  retrieved.
+* **Returns:**
+  A list of datasets represented as dictionaries if the
+  query is successful and returns a status code of 200, or
+  None if the query fails or encounters an error.
+* **Return type:**
+  List[Dict] | None
+
+#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False)
+
+Queries data from a specified data source and processes the response.
+
+The method allows querying with a specific query string or with a wildcard
+(“*”) for all data. The response from the query can be filtered to exclude
+metadata fields if include_metadata is set to False. Metadata fields are
+identified by key names starting with an underscore.
+
+* **Parameters:**
+  * **query** (*str*) – The query string to use for fetching data. Defaults to “*”,
+    which retrieves all data.
+  * **model** (*str*) – The model name to use for inference.
+  * **provider** (*str*) – The provider of the LLM model (ollama, openai, etc)
+  * **include_metadata** (*bool*) – Specifies whether to include metadata fields in
+    the returned data. Defaults to False.
+* **Returns:**
+  A list of records represented as dictionaries, or None if the query
+  fails or an exception occurs during the request.
+* **Return type:**
+  List[Dict] | None
+* **Raises:**
+  **requests.exceptions.RequestException** – If a request-related error
+  occurs during querying.
+
+#### ask(query, model=None, provider=None, helper_prompt=None)
+
+Talk to your data with natural language using the DataLinks AutoRAG agent.
+
+Streams the agent’s reasoning and final answer as Server-Sent Events. Events are
+yielded in order: one `plan` event, one or more `step` events, then either an
+`answer` event or an `error` event.
+
+* **Parameters:**
+  * **query** (*str*) – The natural language question to answer.
+  * **model** (*str*) – The model name to use for inference.
+  * **provider** (*str*) – The LLM provider (e.g. `openai`, `ollama`).
+  * **helper_prompt** (*str*) – Optional custom system prompt.
+* **Returns:**
+  An iterator of [`AskEvent`](#datalinks.api.AskEvent) objects.
+* **Return type:**
+  Iterator[[AskEvent](#datalinks.api.AskEvent)]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### preview_ingest(data, inference_steps=None)
+
+Process data through the ingestion pipeline without saving it to a dataset.
+
+* **Parameters:**
+  * **data** (*Dataset*) – List of data records to preview.
+  * **inference_steps** (*Optional* *[*[*Pipeline*](datalinks#datalinks.pipeline.Pipeline) *]*) – Optional pipeline of inference steps to apply.
+* **Returns:**
+  List of processed preview records, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### infer_schema(sample, model=None, provider=None, current_schema=None)
+
+Ask an agent to infer a field type schema from sampled data.
+
+* **Parameters:**
+  * **sample** (*Dataset*) – A sample of data rows to analyse.
+  * **model** (*Optional* *[**str* *]*) – LLM model name.
+  * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
+  * **current_schema** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Existing field schema to refine (field → description mapping).
+* **Returns:**
+  Dict with `schema` key mapping field names to their inferred types.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### retry_ingestion(ingestion_id)
+
+Retry a failed ingestion by creating a new ingestion record from the original.
+
+* **Parameters:**
+  **ingestion_id** (*str*) – The ID of the ingestion to retry.
+* **Returns:**
+  Dict with the new ingestion `id`, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### mark_ingestion_seen(ingestion_id)
+
+Mark an ingestion as seen, updating its `seenAt` timestamp.
+
+* **Parameters:**
+  **ingestion_id** (*str*) – The ID of the ingestion to mark as seen.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### autorag(query, model=None, provider=None, helper_prompt=None)
+
+Answer a natural language question using the AutoRAG agent (non-streaming).
+
+Returns the final answer and all intermediate steps once the agent completes.
+For incremental streaming results, use [`ask()`](#datalinks.api.DataLinksAPI.ask) instead.
+
+* **Parameters:**
+  * **query** (*str*) – The natural language question to answer.
+  * **model** (*Optional* *[**str* *]*) – LLM model name.
+  * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
+  * **helper_prompt** (*Optional* *[**str* *]*) – Optional custom system prompt.
+* **Returns:**
+  Dict with `response` (str) and `steps` (list) keys, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### request_cleaning(prompts, output_namespace, output_dataset_name)
+
+Request a cleaning job for the configured dataset.
+
+* **Parameters:**
+  * **prompts** (*List* *[**str* *]*) – 1–10 prompts describing each cleaning step in order.
+  * **output_namespace** (*str*) – Target namespace for the cleaned dataset.
+  * **output_dataset_name** (*str*) – Name for the cleaned dataset (must be unused in target namespace).
+* **Returns:**
+  The `cleaningTaskId` UUID string, or None on failure.
+* **Return type:**
+  Optional[str]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_cleaning_code(cleaning_task_id)
+
+Retrieve code files generated by the cleaning agent for a task.
+
+* **Parameters:**
+  **cleaning_task_id** (*str*) – UUID of the cleaning task.
+* **Returns:**
+  List of dicts with `name` and `content` keys, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_ontology()
+
+Load the ontology (active links) for the configured dataset.
+
+* **Returns:**
+  List of link dicts, or None if no ontology exists or the request fails.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### save_ontology(add=None, remove=None)
+
+Save (update) the ontology for the configured dataset.
+
+* **Parameters:**
+  * **add** (*Optional* *[**List* *[**Dict* *]* *]*) – Links to add to the ontology.
+  * **remove** (*Optional* *[**List* *[**Dict* *]* *]*) – Links to remove from the ontology.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### curate_links(namespace=None, dataset=None, model=None, provider=None, activate=False)
+
+Run the OntologyCurator agent to analyse computed links and optionally activate them.
+
+When `activate=False` (default), the curated links are returned without being saved.
+When `activate=True`, the curated links are added to the ontology.
+
+* **Parameters:**
+  * **namespace** (*Optional* *[**str* *]*) – Namespace to curate. Defaults to the configured namespace.
+  * **dataset** (*Optional* *[**str* *]*) – Dataset to curate. If omitted, all datasets in the namespace are curated.
+  * **model** (*Optional* *[**str* *]*) – LLM model name.
+  * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"anthropic"`).
+  * **activate** (*bool*) – If `True`, add curated links to the ontology.
+* **Returns:**
+  Dict with `datasetsProcessed`, `totalSelected`, and optionally `curatedLinks`.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### rename_namespace(new_name)
+
+Rename the configured namespace.
+
+* **Parameters:**
+  **new_name** (*str*) – The new namespace name.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### list_namespaces(user='self')
+
+Retrieve namespaces for a user.
+
+* **Parameters:**
+  **user** (*str*) – Username or `"self"` for the current user.
+* **Returns:**
+  List of namespace dicts, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### list_all_datasets_schema()
+
+Retrieve all datasets visible to the authenticated user (schema endpoint).
+
+* **Returns:**
+  List of dataset dicts, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### list_datasets_in_namespace_schema(namespace=None, user='self')
+
+Retrieve datasets within a specific namespace (schema endpoint).
+
+* **Parameters:**
+  * **namespace** (*Optional* *[**str* *]*) – Namespace to list. Defaults to the configured namespace.
+  * **user** (*str*) – Username or `"self"` for the current user.
+* **Returns:**
+  List of dataset dicts, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### list_tokens()
+
+List all API tokens for the authenticated user.
+
+* **Returns:**
+  List of token dicts, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### add_token(name, expires_at=None, access_restricted_to=None)
+
+Create a new API token for the authenticated user.
+
+* **Parameters:**
+  * **name** (*str*) – Display name for the token.
+  * **expires_at** (*Optional* *[**str* *]*) – Optional expiry timestamp (ISO 8601 string).
+  * **access_restricted_to** (*Optional* *[**List* *[**Dict* *]* *]*) – Optional list of permission entries restricting access
+    (each dict with `username`, `namespace`, and optionally `dataset`).
+* **Returns:**
+  Created token dict (includes the `token` secret), or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### delete_token(token_id)
+
+Delete an API token.
+
+* **Parameters:**
+  **token_id** (*str*) – ID of the token to delete.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### list_token_permissions(token_id)
+
+List permissions assigned to a token.
+
+* **Parameters:**
+  **token_id** (*str*) – ID of the token.
+* **Returns:**
+  Dict with `restricted` (bool) and `permissions` (list) keys, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_usage_history(on_or_after=None, before=None, page_size=25, page_cursor=None)
+
+Retrieve historical usage data for the authenticated user.
+
+* **Parameters:**
+  * **on_or_after** (*Optional* *[**str* *]*) – Return records on or after this ISO 8601 timestamp.
+  * **before** (*Optional* *[**str* *]*) – Return records before this ISO 8601 timestamp.
+  * **page_size** (*int*) – Number of records per page (default 25).
+  * **page_cursor** (*Optional* *[**Dict* *]*) – Pagination cursor dict from a previous response.
+* **Returns:**
+  Dict with `data` and `meta` keys, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_usage_by_day(on_or_after=None, before=None, timezone='UTC')
+
+Retrieve usage data aggregated by day for the authenticated user.
+
+* **Parameters:**
+  * **on_or_after** (*Optional* *[**str* *]*) – Return records on or after this ISO 8601 timestamp.
+  * **before** (*Optional* *[**str* *]*) – Return records before this ISO 8601 timestamp.
+  * **timezone** (*str*) – Timezone for date aggregation (e.g. `"America/New_York"`). Defaults to UTC.
+* **Returns:**
+  Dict with `data` and `meta` keys, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+### *exception* datalinks.api.DataLinksRequestError(endpoint, e)
+
+Bases: `Exception`
+
+### *class* datalinks.api.DLConfig(host, apikey, index, namespace, objectname)
+
+Bases: `object`
+
+DLConfig class is a configuration container for managing the required settings
+to interact with DataLinks. It loads configuration values from environment
+variables to provide flexibility across different environments.
+
+This class is designed to simplify the initialization and storage of connection
+and namespace details required to communicate with DataLinks.
+
+* **Variables:**
+  * **host** – The host URL for the data layer connection.
+  * **apikey** – The API key for authentication with the data layer.
+  * **index** – The index name to be used in the data layer operations.
+  * **namespace** – The namespace for organizing data in the data layer.
+  * **objectname** – The name of the object associated with the configuration.
+    Defaults to an empty string.
+
+#### host *: str*
+
+#### apikey *: str*
+
+#### index *: str*
+
+#### namespace *: str*
+
+#### objectname *: str*
+
+#### *classmethod* from_env(load_dotenv=True)
+
+### *class* datalinks.api.AskEvent(type, data)
+
+Bases: `object`
+
+Represents a single SSE event from the /query/ask streaming endpoint.
+
+* **Variables:**
+  * **type** – Event type — one of `plan`, `step`, `answer`, or `error`.
+  * **data** – Parsed JSON payload for the event.
+
+#### type *: str*
+
+#### data *: Dict[str, Any]*
+
+### *class* datalinks.api.IngestionResult(successful, failed)
+
+Bases: `object`
+
+Represents the result of a data ingestion process into DataLinks.
+
+This class is a data structure used to store the results of a data ingestion
+operation. It separates the successfully ingested items from the failed ones,
+enabling users to track and handle both cases effectively.
+
+* **Variables:**
+  * **successful** – A list of records successfully ingested. Each record is
+    represented as a dictionary.
+  * **failed** – A list of records that failed ingestion. Each record is
+    represented as a dictionary.
+
+#### successful *: List[Dict[str, Any]]*
+
+#### failed *: List[Dict[str, Any]]*
+
+### *class* datalinks.api.IngestProxyAPI(config=None)
+
+Bases: `object`
+
+Client for the DataLinks ingestion proxy (auto-modelling) service.
+
+Wraps the `POST /api/pipeline`, `GET /api/pipeline/{runId}/stream`,
+`GET /api/pipeline/{runId}/trace`, and `POST /api/pipeline/{runId}/hook`
+endpoints.
+
+* **Variables:**
+  **config** – Proxy configuration.
+
+#### run_pipeline(, data=None, data_url=None, data_blob_url=None, namespace=None, user_prompt=None, model=True, ingest=True, ontology=True, max_eval_retries=3, max_rows_for_modeling=20, max_sample_rows=10, enable_human_in_the_loop=False, predefined_schema=None, explosion_helper_prompt=None, coalescence_helper_prompt=None, llm=None, datalinks_inference_settings=None)
+
+Start a full pipeline run (auto-modelling + ingest).
+
+Exactly one of *data*, *data_url*, or *data_blob_url* must be provided.
+
+Returns a [`PipelineRun`](#datalinks.api.PipelineRun) whose `run_id` attribute is the workflow
+run identifier and which can be iterated to receive NDJSON progress events.
+
+* **Parameters:**
+  * **data** (`Optional`[`List`[`Dict`[`str`, `Any`]]]) – Inline JSON array of row objects.
+  * **data_url** (`Optional`[`str`]) – Remote URL returning a JSON array (fetched by the pipeline).
+  * **data_blob_url** (`Optional`[`str`]) – Pre-uploaded Vercel Blob URL.
+  * **namespace** (`Optional`[`str`]) – Target namespace; defaults to `config.namespace`.
+  * **user_prompt** (`Optional`[`str`]) – Domain goals; inferred from data when omitted.
+  * **model** (`bool`) – Run the model phase (default True).
+  * **ingest** (`bool`) – Run the ingest phase (default True).
+  * **ontology** (`bool`) – Run namespace curation after ingest (default True).
+  * **max_eval_retries** (`int`) – Max modelling iterations (default 3).
+  * **max_rows_for_modeling** (`int`) – Rows sent to the LLM for schema modelling (default 20).
+  * **max_sample_rows** (`int`) – Sample rows generated for preview (default 10).
+  * **enable_human_in_the_loop** (`bool`) – Surface clarification + schema review hooks (default False).
+  * **predefined_schema** (`Optional`[`Dict`[`str`, `Any`]]) – Skip model phase when provided.
+  * **explosion_helper_prompt** (`Optional`[`str`]) – Extra context injected into the explode step.
+  * **coalescence_helper_prompt** (`Optional`[`str`]) – Extra context injected into the coalesce step.
+  * **llm** (`Optional`[`Dict`[`str`, `Any`]]) – LLM configuration dict with optional keys: `provider`, `model`,
+    `explosionTemperature`, `coalescenceTemperature`, `evaluationTemperature`,
+    `ontologyTemperature`.
+  * **datalinks_inference_settings** (`Optional`[`Dict`[`str`, `Any`]]) – DataLinks inference settings dict with optional keys:
+    `provider`, `model`, `ontologyCurationProvider`, `ontologyCurationModel`.
+* **Return type:**
+  [`PipelineRun`](#datalinks.api.ingest_proxy.PipelineRun)
+* **Returns:**
+  A [`PipelineRun`](#datalinks.api.PipelineRun) instance.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### stream_pipeline(run_id)
+
+Stream progress events for an existing pipeline run.
+
+* **Parameters:**
+  **run_id** (`str`) – Workflow run identifier returned by [`run_pipeline()`](#datalinks.api.IngestProxyAPI.run_pipeline).
+* **Return type:**
+  `Iterator`[`Dict`[`str`, `Any`]]
+* **Returns:**
+  An iterator of NDJSON event dicts.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_pipeline_trace(run_id)
+
+Download the full trace for a completed pipeline run.
+
+* **Parameters:**
+  **run_id** (`str`) – Workflow run identifier.
+* **Return type:**
+  `Optional`[`Dict`[`str`, `Any`]]
+* **Returns:**
+  Dict with LLM calls, token usage, and step durations, or None on failure.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### resume_pipeline_hook(run_id, payload)
+
+Resume a human-in-the-loop hook (clarification, schema review, or token refresh).
+
+* **Parameters:**
+  * **run_id** (`str`) – Workflow run identifier.
+  * **payload** (`Dict`[`str`, `Any`]) – Hook response payload.
+* **Return type:**
+  `Optional`[`Dict`[`str`, `Any`]]
+* **Returns:**
+  Response dict, or None on failure.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+### *class* datalinks.api.IngestProxyConfig(host, datalinks_token, datalinks_username, namespace)
+
+Bases: `object`
+
+Configuration for the DataLinks ingestion proxy (auto-modelling) service.
+
+* **Variables:**
+  * **host** – Base URL of the ingestion proxy (e.g. `http://localhost:3003`).
+  * **datalinks_token** – DataLinks JWT token sent as `Authorization: Bearer` (`DL_API_KEY`).
+  * **datalinks_username** – DataLinks username included in the request body (`DL_USERNAME`).
+  * **namespace** – Default target namespace (`DL_NAMESPACE`).
+
+#### host *: str*
+
+#### datalinks_token *: str*
+
+#### datalinks_username *: str*
+
+#### namespace *: str*
+
+#### *classmethod* from_env(load_dotenv=True)
+
+* **Return type:**
+  [`IngestProxyConfig`](#datalinks.api.ingest_proxy.IngestProxyConfig)
+
+### *class* datalinks.api.PipelineRun(run_id, response)
+
+Bases: `object`
+
+Wraps a streaming pipeline response.
+
+Provides the workflow `run_id` (from the `x-workflow-run-id` response
+header) and an iterable interface over the NDJSON progress events.
+
+Usage:
+
+```default
+run = proxy.run_pipeline(data=[...])
+print(run.run_id)
+for event in run:
+    print(event)
+```
+
+Can also be used as a context manager to ensure the connection is closed:
+
+```default
+with proxy.run_pipeline(data=[...]) as run:
+    for event in run:
+        process(event)
+```
+
+#### close()
+
+* **Return type:**
+  `None`
+
+## Submodules
+
+## datalinks.api.datalinks module
+
+### *class* datalinks.api.datalinks.DLConfig(host, apikey, index, namespace, objectname)
+
+Bases: `object`
+
+DLConfig class is a configuration container for managing the required settings
+to interact with DataLinks. It loads configuration values from environment
+variables to provide flexibility across different environments.
+
+This class is designed to simplify the initialization and storage of connection
+and namespace details required to communicate with DataLinks.
+
+* **Variables:**
+  * **host** – The host URL for the data layer connection.
+  * **apikey** – The API key for authentication with the data layer.
+  * **index** – The index name to be used in the data layer operations.
+  * **namespace** – The namespace for organizing data in the data layer.
+  * **objectname** – The name of the object associated with the configuration.
+    Defaults to an empty string.
+
+#### host *: str*
+
+#### apikey *: str*
+
+#### index *: str*
+
+#### namespace *: str*
+
+#### objectname *: str*
+
+#### *classmethod* from_env(load_dotenv=True)
+
+### *class* datalinks.api.datalinks.AskEvent(type, data)
+
+Bases: `object`
+
+Represents a single SSE event from the /query/ask streaming endpoint.
+
+* **Variables:**
+  * **type** – Event type — one of `plan`, `step`, `answer`, or `error`.
+  * **data** – Parsed JSON payload for the event.
+
+#### type *: str*
+
+#### data *: Dict[str, Any]*
+
+### *class* datalinks.api.datalinks.IngestionResult(successful, failed)
+
+Bases: `object`
+
+Represents the result of a data ingestion process into DataLinks.
+
+This class is a data structure used to store the results of a data ingestion
+operation. It separates the successfully ingested items from the failed ones,
+enabling users to track and handle both cases effectively.
+
+* **Variables:**
+  * **successful** – A list of records successfully ingested. Each record is
+    represented as a dictionary.
+  * **failed** – A list of records that failed ingestion. Each record is
+    represented as a dictionary.
+
+#### successful *: List[Dict[str, Any]]*
+
+#### failed *: List[Dict[str, Any]]*
+
+### *exception* datalinks.api.datalinks.DataLinksRequestError(endpoint, e)
+
+Bases: `Exception`
+
+### *class* datalinks.api.datalinks.DataLinksAPI(config=None)
+
+Bases: `object`
+
+Class for interfacing with the DataLinks API.
+
+Provides methods for ingesting data, managing namespaces, and querying data
+from DataLinks. Designed to interact with a configurable
+backend, providing flexibility for deployment environments.
+
+* **Variables:**
+  **config** – Configuration object containing API key, host, index, namespace,
+  and object name.
+
+#### config *: [DLConfig](#datalinks.api.datalinks.DLConfig)*
+
+#### ingest(data, inference_steps=None, entity_resolution=None, batch_size=0, max_attempts=3)
+
+Ingests data into the namespace by batching the given data and performing multiple retries
+in case of failures. This function sends data in chunks (batches), to be processed through configured
+inference steps, and to resolve entities based on the provided configuration. If a batch fails, it
+is retried up to a maximum number of attempts.
+
+* **Parameters:**
+  * **data** (`List`[`Dict`[`str`, `Any`]]) – List of dictionaries, where each dictionary represents a data block to be ingested.
+  * **inference_steps** ([`Pipeline`](datalinks#datalinks.pipeline.Pipeline) | `None`) – Pipeline of inference steps to be applied for processing the data. If None the data will be ingested as is.
+  * **entity_resolution** ([`MatchTypeConfig`](datalinks#datalinks.links.MatchTypeConfig) | `None`) – Configuration specifying how entity resolution is to be performed.
+  * **batch_size** – Number of data blocks to be included in each batch. Defaults to the size of the
+    entire dataset if not provided.
+  * **max_attempts** – Maximum number of retry attempts for failed batches. Defaults to the
+    provided constant MAX_INGEST_ATTEMPTS.
+* **Return type:**
+  [`IngestionResult`](#datalinks.api.datalinks.IngestionResult)
+* **Returns:**
+  An IngestionResult object containing lists of successfully ingested data blocks and
+  data blocks that failed to be ingested.
+
+#### create_space(is_private=True, data_description='', field_definitions='')
+
+Creates a new space with the specified privacy settings. This function sends a
+POST request to create a namespace with the given privacy status. Information
+about the namespace creation will be logged, including the HTTP status code
+and response reason. If the namespace already exists, a warning will be logged.
+
+* **Parameters:**
+  **is_private** (*bool*) – Determines whether the created namespace will be private
+  or public.
+* **Return type:**
+  `None`
+* **Returns:**
+  None
+* **Raises:**
+  **HTTPError** – If the HTTP request fails due to connectivity issues or
+  server-side problems.
+
+#### update_infer_definition(data_description, field_definition)
+
+Update the saved inference definition for the configured dataset.
+
+The inference definition is used automatically on future ingest calls to guide
+field extraction and normalization.
+
+* **Parameters:**
+  * **data_description** (*str*) – Free-text description of the dataset (max 10,000 chars).
+  * **field_definition** (*str*) – Field-level definitions, one per line as `field=description`
+    (max 10,000 chars).
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### infer_dataset_description(sample, model=None, provider=None, current_description=None, current_schema=None)
+
+Ask an agent to infer a data description and field schema from sampled data.
+
+* **Parameters:**
+  * **sample** (*Dataset*) – A sample of data rows to analyse.
+  * **model** (*Optional* *[**str* *]*) – LLM model name.
+  * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
+  * **current_description** (*Optional* *[**str* *]*) – Existing description to refine.
+  * **current_schema** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Existing field schema to refine (field → description mapping).
+* **Returns:**
+  Inferred `dataDescription` and `fieldDefinition`.
+* **Return type:**
+  Dict
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### update_sort_order(order)
+
+Update the display order of columns for the configured dataset.
+
+* **Parameters:**
+  **order** (*List* *[**str* *]*) – Ordered list of all column names in the desired sequence.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### prepare_multipart_upload(filename, size)
+
+Initiate a multipart upload and receive presigned URLs for each part.
+
+Use this for large files. Upload each part directly to its presigned URL,
+then call [`finish_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.finish_multipart_upload) with the returned ETags.
+
+* **Parameters:**
+  * **filename** (*str*) – Name of the file being uploaded.
+  * **size** (*int*) – File size in bytes.
+* **Returns:**
+  Response containing `uploadId`, `key`, and presigned part URLs.
+* **Return type:**
+  Dict
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### finish_multipart_upload(upload_id, key, parts, name=None)
+
+Complete a multipart upload after all parts have been uploaded.
+
+* **Parameters:**
+  * **upload_id** (*str*) – Upload ID from [`prepare_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.prepare_multipart_upload).
+  * **key** (*str*) – S3 object key from [`prepare_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.prepare_multipart_upload).
+  * **parts** (*List* *[**Dict* *[**str* *,* *Any* *]* *]*) – List of completed parts, each with `partNumber` (int) and
+    `etag` (str) returned by S3.
+  * **name** (*Optional* *[**str* *]*) – Optional label for the ingestion (e.g. original filename).
+* **Returns:**
+  Ingestion result from the server.
+* **Return type:**
+  Dict
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### abort_multipart_upload(upload_id, key)
+
+Abort a multipart upload and clean up partial data.
+
+* **Parameters:**
+  * **upload_id** (*str*) – Upload ID from [`prepare_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.prepare_multipart_upload).
+  * **key** (*str*) – S3 object key from [`prepare_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.prepare_multipart_upload).
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### list_ingestions(page_size=25)
+
+List ingestion attempts for the configured dataset, most recent first.
+
+Each record contains `id`, `status`, `statusMessage`,
+`processedBytes`, `expectedTotalBytes`, `processedRows`,
+and `attributes`.
+
+* **Parameters:**
+  **page_size** (*int*) – Number of records to return (1-100, default 25).
+* **Returns:**
+  List of ingestion attempt dicts, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+
+#### wait_for_ingestion(ingestion_id, poll_interval=5, timeout=1200)
+
+Poll until the given ingestion reaches a terminal status.
+
+Polls [`list_ingestions()`](#datalinks.api.datalinks.DataLinksAPI.list_ingestions) every *poll_interval* seconds until the
+ingestion with *ingestion_id* is no longer in a pending/processing
+state, or until *timeout* seconds have elapsed.
+
+* **Parameters:**
+  * **ingestion_id** (*str*) – Ingestion ID returned by [`finish_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.finish_multipart_upload).
+  * **poll_interval** (*int*) – Seconds between polls (default 5).
+  * **timeout** (*int*) – Maximum seconds to wait before raising (default 600).
+* **Returns:**
+  The final ingestion record dict.
+* **Return type:**
+  Dict
+* **Raises:**
+  * **TimeoutError** – If *timeout* is exceeded before a terminal status.
+  * [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If polling requests fail.
+
+#### get_dataset_info()
+
+Retrieve metadata for the configured dataset.
+
+Returns a dict with `dataset`, `metadata`, and `inferDefinition` keys,
+or `None` if the request fails.
+
+* **Returns:**
+  Dataset metadata dict, or None on failure.
+* **Return type:**
+  Optional[Dict]
+
+#### delete_dataset()
+
+Permanently delete the configured dataset, including all data, links, and metadata.
+
+This action is irreversible (balefire).
+
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### rename_dataset(new_name)
+
+Rename the configured dataset.
+
+* **Parameters:**
+  **new_name** (*str*) – The new dataset name.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### clear_dataset()
+
+Remove all data and links from the configured dataset.
+
+The dataset itself (metadata, schema) is preserved. This action is irreversible.
+
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### add_link(from_namespace, from_dataset, from_column, to_namespace, to_dataset, to_column, match_type, options=None)
+
+Create a manual link between two dataset columns.
+
+* **Parameters:**
+  * **from_namespace** (`str`) – Source namespace.
+  * **from_dataset** (`str`) – Source dataset name.
+  * **from_column** (`str`) – Source column name.
+  * **to_namespace** (`str`) – Target namespace.
+  * **to_dataset** (`str`) – Target dataset name.
+  * **to_column** (`str`) – Target column name.
+  * **match_type** (`str`) – Match type — `"ExactMatch"` or `"GeoMatch"`.
+  * **options** (`Optional`[`Dict`[`str`, `Any`]]) – Optional match configuration (e.g. `minDistinct`, `distance`).
+* **Returns:**
+  The created link object, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### preview_links(data, entity_resolution=None)
+
+Preview what recalculating links would produce without saving changes.
+
+* **Parameters:**
+  * **data** (*Dataset*) – Array of ontology data objects (e.g. from [`query_data()`](#datalinks.api.datalinks.DataLinksAPI.query_data)).
+  * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](datalinks#datalinks.links.MatchTypeConfig) *]*) – Optional link matching configuration.
+* **Returns:**
+  Preview of link objects, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### rebuild_links(data, entity_resolution=None)
+
+Recalculate links for the configured dataset based on current data.
+
+* **Parameters:**
+  * **data** (*Dataset*) – Array of ontology data objects (e.g. from [`query_data()`](#datalinks.api.datalinks.DataLinksAPI.query_data)).
+  * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](datalinks#datalinks.links.MatchTypeConfig) *]*) – Optional link matching configuration.
+* **Returns:**
+  Updated list of link objects, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### load_links()
+
+Retrieve active and suggested links for the configured dataset.
+
+* **Returns:**
+  A list of link objects, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+
+#### list_datasets(namespace=None)
+
+Retrieves the list of datasets for the user, optionally filtered by a specific namespace.
+
+* **Parameters:**
+  **namespace** (*Optional* *[**AnyStr* *]*) – Optional namespace to filter the datasets by.
+  If provided, only datasets associated with the given
+  namespace will be returned. If not provided, all datasets are
+  retrieved.
+* **Returns:**
+  A list of datasets represented as dictionaries if the
+  query is successful and returns a status code of 200, or
+  None if the query fails or encounters an error.
+* **Return type:**
+  List[Dict] | None
+
+#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False)
+
+Queries data from a specified data source and processes the response.
+
+The method allows querying with a specific query string or with a wildcard
+(“*”) for all data. The response from the query can be filtered to exclude
+metadata fields if include_metadata is set to False. Metadata fields are
+identified by key names starting with an underscore.
+
+* **Parameters:**
+  * **query** (*str*) – The query string to use for fetching data. Defaults to “*”,
+    which retrieves all data.
+  * **model** (*str*) – The model name to use for inference.
+  * **provider** (*str*) – The provider of the LLM model (ollama, openai, etc)
+  * **include_metadata** (*bool*) – Specifies whether to include metadata fields in
+    the returned data. Defaults to False.
+* **Returns:**
+  A list of records represented as dictionaries, or None if the query
+  fails or an exception occurs during the request.
+* **Return type:**
+  List[Dict] | None
+* **Raises:**
+  **requests.exceptions.RequestException** – If a request-related error
+  occurs during querying.
+
+#### ask(query, model=None, provider=None, helper_prompt=None)
+
+Talk to your data with natural language using the DataLinks AutoRAG agent.
+
+Streams the agent’s reasoning and final answer as Server-Sent Events. Events are
+yielded in order: one `plan` event, one or more `step` events, then either an
+`answer` event or an `error` event.
+
+* **Parameters:**
+  * **query** (*str*) – The natural language question to answer.
+  * **model** (*str*) – The model name to use for inference.
+  * **provider** (*str*) – The LLM provider (e.g. `openai`, `ollama`).
+  * **helper_prompt** (*str*) – Optional custom system prompt.
+* **Returns:**
+  An iterator of [`AskEvent`](#datalinks.api.datalinks.AskEvent) objects.
+* **Return type:**
+  Iterator[[AskEvent](#datalinks.api.datalinks.AskEvent)]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### preview_ingest(data, inference_steps=None)
+
+Process data through the ingestion pipeline without saving it to a dataset.
+
+* **Parameters:**
+  * **data** (*Dataset*) – List of data records to preview.
+  * **inference_steps** (*Optional* *[*[*Pipeline*](datalinks#datalinks.pipeline.Pipeline) *]*) – Optional pipeline of inference steps to apply.
+* **Returns:**
+  List of processed preview records, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### infer_schema(sample, model=None, provider=None, current_schema=None)
+
+Ask an agent to infer a field type schema from sampled data.
+
+* **Parameters:**
+  * **sample** (*Dataset*) – A sample of data rows to analyse.
+  * **model** (*Optional* *[**str* *]*) – LLM model name.
+  * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
+  * **current_schema** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Existing field schema to refine (field → description mapping).
+* **Returns:**
+  Dict with `schema` key mapping field names to their inferred types.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### retry_ingestion(ingestion_id)
+
+Retry a failed ingestion by creating a new ingestion record from the original.
+
+* **Parameters:**
+  **ingestion_id** (*str*) – The ID of the ingestion to retry.
+* **Returns:**
+  Dict with the new ingestion `id`, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### mark_ingestion_seen(ingestion_id)
+
+Mark an ingestion as seen, updating its `seenAt` timestamp.
+
+* **Parameters:**
+  **ingestion_id** (*str*) – The ID of the ingestion to mark as seen.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### autorag(query, model=None, provider=None, helper_prompt=None)
+
+Answer a natural language question using the AutoRAG agent (non-streaming).
+
+Returns the final answer and all intermediate steps once the agent completes.
+For incremental streaming results, use [`ask()`](#datalinks.api.datalinks.DataLinksAPI.ask) instead.
+
+* **Parameters:**
+  * **query** (*str*) – The natural language question to answer.
+  * **model** (*Optional* *[**str* *]*) – LLM model name.
+  * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
+  * **helper_prompt** (*Optional* *[**str* *]*) – Optional custom system prompt.
+* **Returns:**
+  Dict with `response` (str) and `steps` (list) keys, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### request_cleaning(prompts, output_namespace, output_dataset_name)
+
+Request a cleaning job for the configured dataset.
+
+* **Parameters:**
+  * **prompts** (*List* *[**str* *]*) – 1–10 prompts describing each cleaning step in order.
+  * **output_namespace** (*str*) – Target namespace for the cleaned dataset.
+  * **output_dataset_name** (*str*) – Name for the cleaned dataset (must be unused in target namespace).
+* **Returns:**
+  The `cleaningTaskId` UUID string, or None on failure.
+* **Return type:**
+  Optional[str]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_cleaning_code(cleaning_task_id)
+
+Retrieve code files generated by the cleaning agent for a task.
+
+* **Parameters:**
+  **cleaning_task_id** (*str*) – UUID of the cleaning task.
+* **Returns:**
+  List of dicts with `name` and `content` keys, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_ontology()
+
+Load the ontology (active links) for the configured dataset.
+
+* **Returns:**
+  List of link dicts, or None if no ontology exists or the request fails.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### save_ontology(add=None, remove=None)
+
+Save (update) the ontology for the configured dataset.
+
+* **Parameters:**
+  * **add** (*Optional* *[**List* *[**Dict* *]* *]*) – Links to add to the ontology.
+  * **remove** (*Optional* *[**List* *[**Dict* *]* *]*) – Links to remove from the ontology.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### curate_links(namespace=None, dataset=None, model=None, provider=None, activate=False)
+
+Run the OntologyCurator agent to analyse computed links and optionally activate them.
+
+When `activate=False` (default), the curated links are returned without being saved.
+When `activate=True`, the curated links are added to the ontology.
+
+* **Parameters:**
+  * **namespace** (*Optional* *[**str* *]*) – Namespace to curate. Defaults to the configured namespace.
+  * **dataset** (*Optional* *[**str* *]*) – Dataset to curate. If omitted, all datasets in the namespace are curated.
+  * **model** (*Optional* *[**str* *]*) – LLM model name.
+  * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"anthropic"`).
+  * **activate** (*bool*) – If `True`, add curated links to the ontology.
+* **Returns:**
+  Dict with `datasetsProcessed`, `totalSelected`, and optionally `curatedLinks`.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### rename_namespace(new_name)
+
+Rename the configured namespace.
+
+* **Parameters:**
+  **new_name** (*str*) – The new namespace name.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### list_namespaces(user='self')
+
+Retrieve namespaces for a user.
+
+* **Parameters:**
+  **user** (*str*) – Username or `"self"` for the current user.
+* **Returns:**
+  List of namespace dicts, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### list_all_datasets_schema()
+
+Retrieve all datasets visible to the authenticated user (schema endpoint).
+
+* **Returns:**
+  List of dataset dicts, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### list_datasets_in_namespace_schema(namespace=None, user='self')
+
+Retrieve datasets within a specific namespace (schema endpoint).
+
+* **Parameters:**
+  * **namespace** (*Optional* *[**str* *]*) – Namespace to list. Defaults to the configured namespace.
+  * **user** (*str*) – Username or `"self"` for the current user.
+* **Returns:**
+  List of dataset dicts, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### list_tokens()
+
+List all API tokens for the authenticated user.
+
+* **Returns:**
+  List of token dicts, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### add_token(name, expires_at=None, access_restricted_to=None)
+
+Create a new API token for the authenticated user.
+
+* **Parameters:**
+  * **name** (*str*) – Display name for the token.
+  * **expires_at** (*Optional* *[**str* *]*) – Optional expiry timestamp (ISO 8601 string).
+  * **access_restricted_to** (*Optional* *[**List* *[**Dict* *]* *]*) – Optional list of permission entries restricting access
+    (each dict with `username`, `namespace`, and optionally `dataset`).
+* **Returns:**
+  Created token dict (includes the `token` secret), or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### delete_token(token_id)
+
+Delete an API token.
+
+* **Parameters:**
+  **token_id** (*str*) – ID of the token to delete.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### list_token_permissions(token_id)
+
+List permissions assigned to a token.
+
+* **Parameters:**
+  **token_id** (*str*) – ID of the token.
+* **Returns:**
+  Dict with `restricted` (bool) and `permissions` (list) keys, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_usage_history(on_or_after=None, before=None, page_size=25, page_cursor=None)
+
+Retrieve historical usage data for the authenticated user.
+
+* **Parameters:**
+  * **on_or_after** (*Optional* *[**str* *]*) – Return records on or after this ISO 8601 timestamp.
+  * **before** (*Optional* *[**str* *]*) – Return records before this ISO 8601 timestamp.
+  * **page_size** (*int*) – Number of records per page (default 25).
+  * **page_cursor** (*Optional* *[**Dict* *]*) – Pagination cursor dict from a previous response.
+* **Returns:**
+  Dict with `data` and `meta` keys, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_usage_by_day(on_or_after=None, before=None, timezone='UTC')
+
+Retrieve usage data aggregated by day for the authenticated user.
+
+* **Parameters:**
+  * **on_or_after** (*Optional* *[**str* *]*) – Return records on or after this ISO 8601 timestamp.
+  * **before** (*Optional* *[**str* *]*) – Return records before this ISO 8601 timestamp.
+  * **timezone** (*str*) – Timezone for date aggregation (e.g. `"America/New_York"`). Defaults to UTC.
+* **Returns:**
+  Dict with `data` and `meta` keys, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+## datalinks.api.ingest_proxy module
+
+### *class* datalinks.api.ingest_proxy.IngestProxyConfig(host, datalinks_token, datalinks_username, namespace)
+
+Bases: `object`
+
+Configuration for the DataLinks ingestion proxy (auto-modelling) service.
+
+* **Variables:**
+  * **host** – Base URL of the ingestion proxy (e.g. `http://localhost:3003`).
+  * **datalinks_token** – DataLinks JWT token sent as `Authorization: Bearer` (`DL_API_KEY`).
+  * **datalinks_username** – DataLinks username included in the request body (`DL_USERNAME`).
+  * **namespace** – Default target namespace (`DL_NAMESPACE`).
+
+#### host *: str*
+
+#### datalinks_token *: str*
+
+#### datalinks_username *: str*
+
+#### namespace *: str*
+
+#### *classmethod* from_env(load_dotenv=True)
+
+* **Return type:**
+  [`IngestProxyConfig`](#datalinks.api.ingest_proxy.IngestProxyConfig)
+
+### *class* datalinks.api.ingest_proxy.PipelineRun(run_id, response)
+
+Bases: `object`
+
+Wraps a streaming pipeline response.
+
+Provides the workflow `run_id` (from the `x-workflow-run-id` response
+header) and an iterable interface over the NDJSON progress events.
+
+Usage:
+
+```default
+run = proxy.run_pipeline(data=[...])
+print(run.run_id)
+for event in run:
+    print(event)
+```
+
+Can also be used as a context manager to ensure the connection is closed:
+
+```default
+with proxy.run_pipeline(data=[...]) as run:
+    for event in run:
+        process(event)
+```
+
+#### close()
+
+* **Return type:**
+  `None`
+
+### *class* datalinks.api.ingest_proxy.IngestProxyAPI(config=None)
+
+Bases: `object`
+
+Client for the DataLinks ingestion proxy (auto-modelling) service.
+
+Wraps the `POST /api/pipeline`, `GET /api/pipeline/{runId}/stream`,
+`GET /api/pipeline/{runId}/trace`, and `POST /api/pipeline/{runId}/hook`
+endpoints.
+
+* **Variables:**
+  **config** – Proxy configuration.
+
+#### config *: [IngestProxyConfig](#datalinks.api.ingest_proxy.IngestProxyConfig)*
+
+#### run_pipeline(, data=None, data_url=None, data_blob_url=None, namespace=None, user_prompt=None, model=True, ingest=True, ontology=True, max_eval_retries=3, max_rows_for_modeling=20, max_sample_rows=10, enable_human_in_the_loop=False, predefined_schema=None, explosion_helper_prompt=None, coalescence_helper_prompt=None, llm=None, datalinks_inference_settings=None)
+
+Start a full pipeline run (auto-modelling + ingest).
+
+Exactly one of *data*, *data_url*, or *data_blob_url* must be provided.
+
+Returns a [`PipelineRun`](#datalinks.api.ingest_proxy.PipelineRun) whose `run_id` attribute is the workflow
+run identifier and which can be iterated to receive NDJSON progress events.
+
+* **Parameters:**
+  * **data** (`Optional`[`List`[`Dict`[`str`, `Any`]]]) – Inline JSON array of row objects.
+  * **data_url** (`Optional`[`str`]) – Remote URL returning a JSON array (fetched by the pipeline).
+  * **data_blob_url** (`Optional`[`str`]) – Pre-uploaded Vercel Blob URL.
+  * **namespace** (`Optional`[`str`]) – Target namespace; defaults to `config.namespace`.
+  * **user_prompt** (`Optional`[`str`]) – Domain goals; inferred from data when omitted.
+  * **model** (`bool`) – Run the model phase (default True).
+  * **ingest** (`bool`) – Run the ingest phase (default True).
+  * **ontology** (`bool`) – Run namespace curation after ingest (default True).
+  * **max_eval_retries** (`int`) – Max modelling iterations (default 3).
+  * **max_rows_for_modeling** (`int`) – Rows sent to the LLM for schema modelling (default 20).
+  * **max_sample_rows** (`int`) – Sample rows generated for preview (default 10).
+  * **enable_human_in_the_loop** (`bool`) – Surface clarification + schema review hooks (default False).
+  * **predefined_schema** (`Optional`[`Dict`[`str`, `Any`]]) – Skip model phase when provided.
+  * **explosion_helper_prompt** (`Optional`[`str`]) – Extra context injected into the explode step.
+  * **coalescence_helper_prompt** (`Optional`[`str`]) – Extra context injected into the coalesce step.
+  * **llm** (`Optional`[`Dict`[`str`, `Any`]]) – LLM configuration dict with optional keys: `provider`, `model`,
+    `explosionTemperature`, `coalescenceTemperature`, `evaluationTemperature`,
+    `ontologyTemperature`.
+  * **datalinks_inference_settings** (`Optional`[`Dict`[`str`, `Any`]]) – DataLinks inference settings dict with optional keys:
+    `provider`, `model`, `ontologyCurationProvider`, `ontologyCurationModel`.
+* **Return type:**
+  [`PipelineRun`](#datalinks.api.ingest_proxy.PipelineRun)
+* **Returns:**
+  A [`PipelineRun`](#datalinks.api.ingest_proxy.PipelineRun) instance.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### stream_pipeline(run_id)
+
+Stream progress events for an existing pipeline run.
+
+* **Parameters:**
+  **run_id** (`str`) – Workflow run identifier returned by [`run_pipeline()`](#datalinks.api.ingest_proxy.IngestProxyAPI.run_pipeline).
+* **Return type:**
+  `Iterator`[`Dict`[`str`, `Any`]]
+* **Returns:**
+  An iterator of NDJSON event dicts.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_pipeline_trace(run_id)
+
+Download the full trace for a completed pipeline run.
+
+* **Parameters:**
+  **run_id** (`str`) – Workflow run identifier.
+* **Return type:**
+  `Optional`[`Dict`[`str`, `Any`]]
+* **Returns:**
+  Dict with LLM calls, token usage, and step durations, or None on failure.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### resume_pipeline_hook(run_id, payload)
+
+Resume a human-in-the-loop hook (clarification, schema review, or token refresh).
+
+* **Parameters:**
+  * **run_id** (`str`) – Workflow run identifier.
+  * **payload** (`Dict`[`str`, `Any`]) – Hook response payload.
+* **Return type:**
+  `Optional`[`Dict`[`str`, `Any`]]
+* **Returns:**
+  Response dict, or None on failure.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
