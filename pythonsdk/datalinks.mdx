@@ -5,421 +5,154 @@ sidebarTitle: "Reference"
 
 # datalinks package
 
+## Subpackages
+
+* [datalinks.api package](datalinks.api)
+  * [`DataLinksAPI`](datalinks.api#datalinks.api.DataLinksAPI)
+    * [`DataLinksAPI.ingest()`](datalinks.api#datalinks.api.DataLinksAPI.ingest)
+    * [`DataLinksAPI.create_space()`](datalinks.api#datalinks.api.DataLinksAPI.create_space)
+    * [`DataLinksAPI.update_infer_definition()`](datalinks.api#datalinks.api.DataLinksAPI.update_infer_definition)
+    * [`DataLinksAPI.infer_dataset_description()`](datalinks.api#datalinks.api.DataLinksAPI.infer_dataset_description)
+    * [`DataLinksAPI.update_sort_order()`](datalinks.api#datalinks.api.DataLinksAPI.update_sort_order)
+    * [`DataLinksAPI.prepare_multipart_upload()`](datalinks.api#datalinks.api.DataLinksAPI.prepare_multipart_upload)
+    * [`DataLinksAPI.finish_multipart_upload()`](datalinks.api#datalinks.api.DataLinksAPI.finish_multipart_upload)
+    * [`DataLinksAPI.abort_multipart_upload()`](datalinks.api#datalinks.api.DataLinksAPI.abort_multipart_upload)
+    * [`DataLinksAPI.list_ingestions()`](datalinks.api#datalinks.api.DataLinksAPI.list_ingestions)
+    * [`DataLinksAPI.wait_for_ingestion()`](datalinks.api#datalinks.api.DataLinksAPI.wait_for_ingestion)
+    * [`DataLinksAPI.get_dataset_info()`](datalinks.api#datalinks.api.DataLinksAPI.get_dataset_info)
+    * [`DataLinksAPI.delete_dataset()`](datalinks.api#datalinks.api.DataLinksAPI.delete_dataset)
+    * [`DataLinksAPI.rename_dataset()`](datalinks.api#datalinks.api.DataLinksAPI.rename_dataset)
+    * [`DataLinksAPI.clear_dataset()`](datalinks.api#datalinks.api.DataLinksAPI.clear_dataset)
+    * [`DataLinksAPI.add_link()`](datalinks.api#datalinks.api.DataLinksAPI.add_link)
+    * [`DataLinksAPI.preview_links()`](datalinks.api#datalinks.api.DataLinksAPI.preview_links)
+    * [`DataLinksAPI.rebuild_links()`](datalinks.api#datalinks.api.DataLinksAPI.rebuild_links)
+    * [`DataLinksAPI.load_links()`](datalinks.api#datalinks.api.DataLinksAPI.load_links)
+    * [`DataLinksAPI.list_datasets()`](datalinks.api#datalinks.api.DataLinksAPI.list_datasets)
+    * [`DataLinksAPI.query_data()`](datalinks.api#datalinks.api.DataLinksAPI.query_data)
+    * [`DataLinksAPI.ask()`](datalinks.api#datalinks.api.DataLinksAPI.ask)
+    * [`DataLinksAPI.preview_ingest()`](datalinks.api#datalinks.api.DataLinksAPI.preview_ingest)
+    * [`DataLinksAPI.infer_schema()`](datalinks.api#datalinks.api.DataLinksAPI.infer_schema)
+    * [`DataLinksAPI.retry_ingestion()`](datalinks.api#datalinks.api.DataLinksAPI.retry_ingestion)
+    * [`DataLinksAPI.mark_ingestion_seen()`](datalinks.api#datalinks.api.DataLinksAPI.mark_ingestion_seen)
+    * [`DataLinksAPI.autorag()`](datalinks.api#datalinks.api.DataLinksAPI.autorag)
+    * [`DataLinksAPI.request_cleaning()`](datalinks.api#datalinks.api.DataLinksAPI.request_cleaning)
+    * [`DataLinksAPI.get_cleaning_code()`](datalinks.api#datalinks.api.DataLinksAPI.get_cleaning_code)
+    * [`DataLinksAPI.get_ontology()`](datalinks.api#datalinks.api.DataLinksAPI.get_ontology)
+    * [`DataLinksAPI.save_ontology()`](datalinks.api#datalinks.api.DataLinksAPI.save_ontology)
+    * [`DataLinksAPI.curate_links()`](datalinks.api#datalinks.api.DataLinksAPI.curate_links)
+    * [`DataLinksAPI.rename_namespace()`](datalinks.api#datalinks.api.DataLinksAPI.rename_namespace)
+    * [`DataLinksAPI.list_namespaces()`](datalinks.api#datalinks.api.DataLinksAPI.list_namespaces)
+    * [`DataLinksAPI.list_all_datasets_schema()`](datalinks.api#datalinks.api.DataLinksAPI.list_all_datasets_schema)
+    * [`DataLinksAPI.list_datasets_in_namespace_schema()`](datalinks.api#datalinks.api.DataLinksAPI.list_datasets_in_namespace_schema)
+    * [`DataLinksAPI.list_tokens()`](datalinks.api#datalinks.api.DataLinksAPI.list_tokens)
+    * [`DataLinksAPI.add_token()`](datalinks.api#datalinks.api.DataLinksAPI.add_token)
+    * [`DataLinksAPI.delete_token()`](datalinks.api#datalinks.api.DataLinksAPI.delete_token)
+    * [`DataLinksAPI.list_token_permissions()`](datalinks.api#datalinks.api.DataLinksAPI.list_token_permissions)
+    * [`DataLinksAPI.get_usage_history()`](datalinks.api#datalinks.api.DataLinksAPI.get_usage_history)
+    * [`DataLinksAPI.get_usage_by_day()`](datalinks.api#datalinks.api.DataLinksAPI.get_usage_by_day)
+  * [`DataLinksRequestError`](datalinks.api#datalinks.api.DataLinksRequestError)
+  * [`DLConfig`](datalinks.api#datalinks.api.DLConfig)
+    * [`DLConfig.host`](datalinks.api#datalinks.api.DLConfig.host)
+    * [`DLConfig.apikey`](datalinks.api#datalinks.api.DLConfig.apikey)
+    * [`DLConfig.index`](datalinks.api#datalinks.api.DLConfig.index)
+    * [`DLConfig.namespace`](datalinks.api#datalinks.api.DLConfig.namespace)
+    * [`DLConfig.objectname`](datalinks.api#datalinks.api.DLConfig.objectname)
+    * [`DLConfig.from_env()`](datalinks.api#datalinks.api.DLConfig.from_env)
+  * [`AskEvent`](datalinks.api#datalinks.api.AskEvent)
+    * [`AskEvent.type`](datalinks.api#datalinks.api.AskEvent.type)
+    * [`AskEvent.data`](datalinks.api#datalinks.api.AskEvent.data)
+  * [`IngestionResult`](datalinks.api#datalinks.api.IngestionResult)
+    * [`IngestionResult.successful`](datalinks.api#datalinks.api.IngestionResult.successful)
+    * [`IngestionResult.failed`](datalinks.api#datalinks.api.IngestionResult.failed)
+  * [`IngestProxyAPI`](datalinks.api#datalinks.api.IngestProxyAPI)
+    * [`IngestProxyAPI.run_pipeline()`](datalinks.api#datalinks.api.IngestProxyAPI.run_pipeline)
+    * [`IngestProxyAPI.stream_pipeline()`](datalinks.api#datalinks.api.IngestProxyAPI.stream_pipeline)
+    * [`IngestProxyAPI.get_pipeline_trace()`](datalinks.api#datalinks.api.IngestProxyAPI.get_pipeline_trace)
+    * [`IngestProxyAPI.resume_pipeline_hook()`](datalinks.api#datalinks.api.IngestProxyAPI.resume_pipeline_hook)
+  * [`IngestProxyConfig`](datalinks.api#datalinks.api.IngestProxyConfig)
+    * [`IngestProxyConfig.host`](datalinks.api#datalinks.api.IngestProxyConfig.host)
+    * [`IngestProxyConfig.datalinks_token`](datalinks.api#datalinks.api.IngestProxyConfig.datalinks_token)
+    * [`IngestProxyConfig.datalinks_username`](datalinks.api#datalinks.api.IngestProxyConfig.datalinks_username)
+    * [`IngestProxyConfig.namespace`](datalinks.api#datalinks.api.IngestProxyConfig.namespace)
+    * [`IngestProxyConfig.from_env()`](datalinks.api#datalinks.api.IngestProxyConfig.from_env)
+  * [`PipelineRun`](datalinks.api#datalinks.api.PipelineRun)
+    * [`PipelineRun.close()`](datalinks.api#datalinks.api.PipelineRun.close)
+  * [Submodules](datalinks.api#submodules)
+  * [datalinks.api.datalinks module](datalinks.api#module-datalinks.api.datalinks)
+    * [`DLConfig`](datalinks.api#datalinks.api.datalinks.DLConfig)
+      * [`DLConfig.host`](datalinks.api#datalinks.api.datalinks.DLConfig.host)
+      * [`DLConfig.apikey`](datalinks.api#datalinks.api.datalinks.DLConfig.apikey)
+      * [`DLConfig.index`](datalinks.api#datalinks.api.datalinks.DLConfig.index)
+      * [`DLConfig.namespace`](datalinks.api#datalinks.api.datalinks.DLConfig.namespace)
+      * [`DLConfig.objectname`](datalinks.api#datalinks.api.datalinks.DLConfig.objectname)
+      * [`DLConfig.from_env()`](datalinks.api#datalinks.api.datalinks.DLConfig.from_env)
+    * [`AskEvent`](datalinks.api#datalinks.api.datalinks.AskEvent)
+      * [`AskEvent.type`](datalinks.api#datalinks.api.datalinks.AskEvent.type)
+      * [`AskEvent.data`](datalinks.api#datalinks.api.datalinks.AskEvent.data)
+    * [`IngestionResult`](datalinks.api#datalinks.api.datalinks.IngestionResult)
+      * [`IngestionResult.successful`](datalinks.api#datalinks.api.datalinks.IngestionResult.successful)
+      * [`IngestionResult.failed`](datalinks.api#datalinks.api.datalinks.IngestionResult.failed)
+    * [`DataLinksRequestError`](datalinks.api#datalinks.api.datalinks.DataLinksRequestError)
+    * [`DataLinksAPI`](datalinks.api#datalinks.api.datalinks.DataLinksAPI)
+      * [`DataLinksAPI.config`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.config)
+      * [`DataLinksAPI.ingest()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.ingest)
+      * [`DataLinksAPI.create_space()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.create_space)
+      * [`DataLinksAPI.update_infer_definition()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.update_infer_definition)
+      * [`DataLinksAPI.infer_dataset_description()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.infer_dataset_description)
+      * [`DataLinksAPI.update_sort_order()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.update_sort_order)
+      * [`DataLinksAPI.prepare_multipart_upload()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.prepare_multipart_upload)
+      * [`DataLinksAPI.finish_multipart_upload()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.finish_multipart_upload)
+      * [`DataLinksAPI.abort_multipart_upload()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.abort_multipart_upload)
+      * [`DataLinksAPI.list_ingestions()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.list_ingestions)
+      * [`DataLinksAPI.wait_for_ingestion()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.wait_for_ingestion)
+      * [`DataLinksAPI.get_dataset_info()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.get_dataset_info)
+      * [`DataLinksAPI.delete_dataset()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.delete_dataset)
+      * [`DataLinksAPI.rename_dataset()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.rename_dataset)
+      * [`DataLinksAPI.clear_dataset()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.clear_dataset)
+      * [`DataLinksAPI.add_link()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.add_link)
+      * [`DataLinksAPI.preview_links()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.preview_links)
+      * [`DataLinksAPI.rebuild_links()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.rebuild_links)
+      * [`DataLinksAPI.load_links()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.load_links)
+      * [`DataLinksAPI.list_datasets()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.list_datasets)
+      * [`DataLinksAPI.query_data()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.query_data)
+      * [`DataLinksAPI.ask()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.ask)
+      * [`DataLinksAPI.preview_ingest()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.preview_ingest)
+      * [`DataLinksAPI.infer_schema()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.infer_schema)
+      * [`DataLinksAPI.retry_ingestion()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.retry_ingestion)
+      * [`DataLinksAPI.mark_ingestion_seen()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.mark_ingestion_seen)
+      * [`DataLinksAPI.autorag()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.autorag)
+      * [`DataLinksAPI.request_cleaning()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.request_cleaning)
+      * [`DataLinksAPI.get_cleaning_code()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.get_cleaning_code)
+      * [`DataLinksAPI.get_ontology()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.get_ontology)
+      * [`DataLinksAPI.save_ontology()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.save_ontology)
+      * [`DataLinksAPI.curate_links()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.curate_links)
+      * [`DataLinksAPI.rename_namespace()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.rename_namespace)
+      * [`DataLinksAPI.list_namespaces()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.list_namespaces)
+      * [`DataLinksAPI.list_all_datasets_schema()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.list_all_datasets_schema)
+      * [`DataLinksAPI.list_datasets_in_namespace_schema()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.list_datasets_in_namespace_schema)
+      * [`DataLinksAPI.list_tokens()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.list_tokens)
+      * [`DataLinksAPI.add_token()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.add_token)
+      * [`DataLinksAPI.delete_token()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.delete_token)
+      * [`DataLinksAPI.list_token_permissions()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.list_token_permissions)
+      * [`DataLinksAPI.get_usage_history()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.get_usage_history)
+      * [`DataLinksAPI.get_usage_by_day()`](datalinks.api#datalinks.api.datalinks.DataLinksAPI.get_usage_by_day)
+  * [datalinks.api.ingest_proxy module](datalinks.api#module-datalinks.api.ingest_proxy)
+    * [`IngestProxyConfig`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyConfig)
+      * [`IngestProxyConfig.host`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyConfig.host)
+      * [`IngestProxyConfig.datalinks_token`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyConfig.datalinks_token)
+      * [`IngestProxyConfig.datalinks_username`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyConfig.datalinks_username)
+      * [`IngestProxyConfig.namespace`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyConfig.namespace)
+      * [`IngestProxyConfig.from_env()`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyConfig.from_env)
+    * [`PipelineRun`](datalinks.api#datalinks.api.ingest_proxy.PipelineRun)
+      * [`PipelineRun.close()`](datalinks.api#datalinks.api.ingest_proxy.PipelineRun.close)
+    * [`IngestProxyAPI`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyAPI)
+      * [`IngestProxyAPI.config`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyAPI.config)
+      * [`IngestProxyAPI.run_pipeline()`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyAPI.run_pipeline)
+      * [`IngestProxyAPI.stream_pipeline()`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyAPI.stream_pipeline)
+      * [`IngestProxyAPI.get_pipeline_trace()`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyAPI.get_pipeline_trace)
+      * [`IngestProxyAPI.resume_pipeline_hook()`](datalinks.api#datalinks.api.ingest_proxy.IngestProxyAPI.resume_pipeline_hook)
+
 ## Submodules
-
-## datalinks.api module
-
-### *class* datalinks.api.DLConfig(host, apikey, index, namespace, objectname)
-
-Bases: `object`
-
-DLConfig class is a configuration container for managing the required settings
-to interact with DataLinks. It loads configuration values from environment
-variables to provide flexibility across different environments.
-
-This class is designed to simplify the initialization and storage of connection
-and namespace details required to communicate with DataLinks.
-
-* **Variables:**
-  * **host** – The host URL for the data layer connection.
-  * **apikey** – The API key for authentication with the data layer.
-  * **index** – The index name to be used in the data layer operations.
-  * **namespace** – The namespace for organizing data in the data layer.
-  * **objectname** – The name of the object associated with the configuration.
-    Defaults to an empty string.
-
-#### host *: str*
-
-#### apikey *: str*
-
-#### index *: str*
-
-#### namespace *: str*
-
-#### objectname *: str*
-
-#### *classmethod* from_env(load_dotenv=True)
-
-### *class* datalinks.api.AskEvent(type, data)
-
-Bases: `object`
-
-Represents a single SSE event from the /query/ask streaming endpoint.
-
-* **Variables:**
-  * **type** – Event type — one of `plan`, `step`, `answer`, or `error`.
-  * **data** – Parsed JSON payload for the event.
-
-#### type *: str*
-
-#### data *: Dict[str, Any]*
-
-### *class* datalinks.api.IngestionResult(successful, failed)
-
-Bases: `object`
-
-Represents the result of a data ingestion process into DataLinks.
-
-This class is a data structure used to store the results of a data ingestion
-operation. It separates the successfully ingested items from the failed ones,
-enabling users to track and handle both cases effectively.
-
-* **Variables:**
-  * **successful** – A list of records successfully ingested. Each record is
-    represented as a dictionary.
-  * **failed** – A list of records that failed ingestion. Each record is
-    represented as a dictionary.
-
-#### successful *: List[Dict[str, Any]]*
-
-#### failed *: List[Dict[str, Any]]*
-
-### *exception* datalinks.api.DataLinksRequestError(endpoint, e)
-
-Bases: `Exception`
-
-### *class* datalinks.api.DataLinksAPI(config=None)
-
-Bases: `object`
-
-Class for interfacing with the DataLinks API.
-
-Provides methods for ingesting data, managing namespaces, and querying data
-from DataLinks. Designed to interact with a configurable
-backend, providing flexibility for deployment environments.
-
-* **Variables:**
-  **config** – Configuration object containing API key, host, index, namespace,
-  and object name.
-
-#### config *: [DLConfig](#datalinks.api.DLConfig)*
-
-#### ingest(data, inference_steps=None, entity_resolution=None, batch_size=0, max_attempts=3)
-
-Ingests data into the namespace by batching the given data and performing multiple retries
-in case of failures. This function sends data in chunks (batches), to be processed through configured
-inference steps, and to resolve entities based on the provided configuration. If a batch fails, it
-is retried up to a maximum number of attempts.
-
-* **Parameters:**
-  * **data** (`List`[`Dict`[`str`, `Any`]]) – List of dictionaries, where each dictionary represents a data block to be ingested.
-  * **inference_steps** ([`Pipeline`](#datalinks.pipeline.Pipeline) | `None`) – Pipeline of inference steps to be applied for processing the data. If None the data will be ingested as is.
-  * **entity_resolution** ([`MatchTypeConfig`](#datalinks.links.MatchTypeConfig) | `None`) – Configuration specifying how entity resolution is to be performed.
-  * **batch_size** – Number of data blocks to be included in each batch. Defaults to the size of the
-    entire dataset if not provided.
-  * **max_attempts** – Maximum number of retry attempts for failed batches. Defaults to the
-    provided constant MAX_INGEST_ATTEMPTS.
-* **Return type:**
-  [`IngestionResult`](#datalinks.api.IngestionResult)
-* **Returns:**
-  An IngestionResult object containing lists of successfully ingested data blocks and
-  data blocks that failed to be ingested.
-
-#### create_space(is_private=True, data_description='', field_definitions='')
-
-Creates a new space with the specified privacy settings. This function sends a
-POST request to create a namespace with the given privacy status. Information
-about the namespace creation will be logged, including the HTTP status code
-and response reason. If the namespace already exists, a warning will be logged.
-
-* **Parameters:**
-  **is_private** (*bool*) – Determines whether the created namespace will be private
-  or public.
-* **Return type:**
-  `None`
-* **Returns:**
-  None
-* **Raises:**
-  **HTTPError** – If the HTTP request fails due to connectivity issues or
-  server-side problems.
-
-#### update_infer_definition(data_description, field_definition)
-
-Update the saved inference definition for the configured dataset.
-
-The inference definition is used automatically on future ingest calls to guide
-field extraction and normalization.
-
-* **Parameters:**
-  * **data_description** (*str*) – Free-text description of the dataset (max 10,000 chars).
-  * **field_definition** (*str*) – Field-level definitions, one per line as `field=description`
-    (max 10,000 chars).
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-* **Return type:**
-  `None`
-
-#### infer_dataset_description(sample, model=None, provider=None, current_description=None, current_schema=None)
-
-Ask an agent to infer a data description and field schema from sampled data.
-
-* **Parameters:**
-  * **sample** (*Dataset*) – A sample of data rows to analyse.
-  * **model** (*Optional* *[**str* *]*) – LLM model name.
-  * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
-  * **current_description** (*Optional* *[**str* *]*) – Existing description to refine.
-  * **current_schema** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Existing field schema to refine (field → description mapping).
-* **Returns:**
-  Inferred `dataDescription` and `fieldDefinition`.
-* **Return type:**
-  Dict
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-
-#### update_sort_order(order)
-
-Update the display order of columns for the configured dataset.
-
-* **Parameters:**
-  **order** (*List* *[**str* *]*) – Ordered list of all column names in the desired sequence.
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-* **Return type:**
-  `None`
-
-#### prepare_multipart_upload(filename, size)
-
-Initiate a multipart upload and receive presigned URLs for each part.
-
-Use this for large files. Upload each part directly to its presigned URL,
-then call [`finish_multipart_upload()`](#datalinks.api.DataLinksAPI.finish_multipart_upload) with the returned ETags.
-
-* **Parameters:**
-  * **filename** (*str*) – Name of the file being uploaded.
-  * **size** (*int*) – File size in bytes.
-* **Returns:**
-  Response containing `uploadId`, `key`, and presigned part URLs.
-* **Return type:**
-  Dict
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-
-#### finish_multipart_upload(upload_id, key, parts, name=None)
-
-Complete a multipart upload after all parts have been uploaded.
-
-* **Parameters:**
-  * **upload_id** (*str*) – Upload ID from [`prepare_multipart_upload()`](#datalinks.api.DataLinksAPI.prepare_multipart_upload).
-  * **key** (*str*) – S3 object key from [`prepare_multipart_upload()`](#datalinks.api.DataLinksAPI.prepare_multipart_upload).
-  * **parts** (*List* *[**Dict* *[**str* *,* *Any* *]* *]*) – List of completed parts, each with `partNumber` (int) and
-    `etag` (str) returned by S3.
-  * **name** (*Optional* *[**str* *]*) – Optional label for the ingestion (e.g. original filename).
-* **Returns:**
-  Ingestion result from the server.
-* **Return type:**
-  Dict
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-
-#### abort_multipart_upload(upload_id, key)
-
-Abort a multipart upload and clean up partial data.
-
-* **Parameters:**
-  * **upload_id** (*str*) – Upload ID from [`prepare_multipart_upload()`](#datalinks.api.DataLinksAPI.prepare_multipart_upload).
-  * **key** (*str*) – S3 object key from [`prepare_multipart_upload()`](#datalinks.api.DataLinksAPI.prepare_multipart_upload).
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-* **Return type:**
-  `None`
-
-#### list_ingestions(page_size=25)
-
-List ingestion attempts for the configured dataset, most recent first.
-
-Each record contains `id`, `status`, `statusMessage`,
-`processedBytes`, `expectedTotalBytes`, `processedRows`,
-and `attributes`.
-
-* **Parameters:**
-  **page_size** (*int*) – Number of records to return (1-100, default 25).
-* **Returns:**
-  List of ingestion attempt dicts, or None on failure.
-* **Return type:**
-  Optional[List[Dict]]
-
-#### wait_for_ingestion(ingestion_id, poll_interval=5, timeout=1200)
-
-Poll until the given ingestion reaches a terminal status.
-
-Polls [`list_ingestions()`](#datalinks.api.DataLinksAPI.list_ingestions) every *poll_interval* seconds until the
-ingestion with *ingestion_id* is no longer in a pending/processing
-state, or until *timeout* seconds have elapsed.
-
-* **Parameters:**
-  * **ingestion_id** (*str*) – Ingestion ID returned by [`finish_multipart_upload()`](#datalinks.api.DataLinksAPI.finish_multipart_upload).
-  * **poll_interval** (*int*) – Seconds between polls (default 5).
-  * **timeout** (*int*) – Maximum seconds to wait before raising (default 600).
-* **Returns:**
-  The final ingestion record dict.
-* **Return type:**
-  Dict
-* **Raises:**
-  * **TimeoutError** – If *timeout* is exceeded before a terminal status.
-  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If polling requests fail.
-
-#### get_dataset_info()
-
-Retrieve metadata for the configured dataset.
-
-Returns a dict with `dataset`, `metadata`, and `inferDefinition` keys,
-or `None` if the request fails.
-
-* **Returns:**
-  Dataset metadata dict, or None on failure.
-* **Return type:**
-  Optional[Dict]
-
-#### delete_dataset()
-
-Permanently delete the configured dataset, including all data, links, and metadata.
-
-This action is irreversible (balefire).
-
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-* **Return type:**
-  `None`
-
-#### rename_dataset(new_name)
-
-Rename the configured dataset.
-
-* **Parameters:**
-  **new_name** (*str*) – The new dataset name.
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-* **Return type:**
-  `None`
-
-#### clear_dataset()
-
-Remove all data and links from the configured dataset.
-
-The dataset itself (metadata, schema) is preserved. This action is irreversible.
-
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-* **Return type:**
-  `None`
-
-#### add_link(from_namespace, from_dataset, from_column, to_namespace, to_dataset, to_column, match_type, options=None)
-
-Create a manual link between two dataset columns.
-
-* **Parameters:**
-  * **from_namespace** (`str`) – Source namespace.
-  * **from_dataset** (`str`) – Source dataset name.
-  * **from_column** (`str`) – Source column name.
-  * **to_namespace** (`str`) – Target namespace.
-  * **to_dataset** (`str`) – Target dataset name.
-  * **to_column** (`str`) – Target column name.
-  * **match_type** (`str`) – Match type — `"ExactMatch"` or `"GeoMatch"`.
-  * **options** (`Optional`[`Dict`[`str`, `Any`]]) – Optional match configuration (e.g. `minDistinct`, `distance`).
-* **Returns:**
-  The created link object, or None on failure.
-* **Return type:**
-  Optional[Dict]
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-
-#### preview_links(data, entity_resolution=None)
-
-Preview what recalculating links would produce without saving changes.
-
-* **Parameters:**
-  * **data** (*Dataset*) – Array of ontology data objects (e.g. from [`query_data()`](#datalinks.api.DataLinksAPI.query_data)).
-  * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](#datalinks.links.MatchTypeConfig) *]*) – Optional link matching configuration.
-* **Returns:**
-  Preview of link objects, or None on failure.
-* **Return type:**
-  Optional[List[Dict]]
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-
-#### rebuild_links(data, entity_resolution=None)
-
-Recalculate links for the configured dataset based on current data.
-
-* **Parameters:**
-  * **data** (*Dataset*) – Array of ontology data objects (e.g. from [`query_data()`](#datalinks.api.DataLinksAPI.query_data)).
-  * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](#datalinks.links.MatchTypeConfig) *]*) – Optional link matching configuration.
-* **Returns:**
-  Updated list of link objects, or None on failure.
-* **Return type:**
-  Optional[List[Dict]]
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
-
-#### load_links()
-
-Retrieve active and suggested links for the configured dataset.
-
-* **Returns:**
-  A list of link objects, or None on failure.
-* **Return type:**
-  Optional[List[Dict]]
-
-#### list_datasets(namespace=None)
-
-Retrieves the list of datasets for the user, optionally filtered by a specific namespace.
-
-* **Parameters:**
-  **namespace** (*Optional* *[**AnyStr* *]*) – Optional namespace to filter the datasets by.
-  If provided, only datasets associated with the given
-  namespace will be returned. If not provided, all datasets are
-  retrieved.
-* **Returns:**
-  A list of datasets represented as dictionaries if the
-  query is successful and returns a status code of 200, or
-  None if the query fails or encounters an error.
-* **Return type:**
-  List[Dict] | None
-
-#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False)
-
-Queries data from a specified data source and processes the response.
-
-The method allows querying with a specific query string or with a wildcard
-(“*”) for all data. The response from the query can be filtered to exclude
-metadata fields if include_metadata is set to False. Metadata fields are
-identified by key names starting with an underscore.
-
-* **Parameters:**
-  * **query** (*str*) – The query string to use for fetching data. Defaults to “*”,
-    which retrieves all data.
-  * **model** (*str*) – The model name to use for inference.
-  * **provider** (*str*) – The provider of the LLM model (ollama, openai, etc)
-  * **include_metadata** (*bool*) – Specifies whether to include metadata fields in
-    the returned data. Defaults to False.
-* **Returns:**
-  A list of records represented as dictionaries, or None if the query
-  fails or an exception occurs during the request.
-* **Return type:**
-  List[Dict] | None
-* **Raises:**
-  **requests.exceptions.RequestException** – If a request-related error
-  occurs during querying.
-
-#### ask(query, model=None, provider=None, helper_prompt=None)
-
-Talk to your data with natural language using the DataLinks AutoRAG agent.
-
-Streams the agent’s reasoning and final answer as Server-Sent Events. Events are
-yielded in order: one `plan` event, one or more `step` events, then either an
-`answer` event or an `error` event.
-
-* **Parameters:**
-  * **query** (*str*) – The natural language question to answer.
-  * **model** (*str*) – The model name to use for inference.
-  * **provider** (*str*) – The LLM provider (e.g. `openai`, `ollama`).
-  * **helper_prompt** (*str*) – Optional custom system prompt.
-* **Returns:**
-  An iterator of [`AskEvent`](#datalinks.api.AskEvent) objects.
-* **Return type:**
-  Iterator[[AskEvent](#datalinks.api.AskEvent)]
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 ## datalinks.cli module
 

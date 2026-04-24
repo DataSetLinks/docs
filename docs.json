@@ -107,7 +107,9 @@
             "pages": [
               "pythonsdk/index",
               "pythonsdk/sdk-install",
-              "pythonsdk/sdk-quickstart"
+              "pythonsdk/sdk-quickstart",
+              "pythonsdk/components",
+              "pythonsdk/examples"
             ]
           },
           {
