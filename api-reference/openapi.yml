@@ -1845,8 +1845,14 @@ components:
           type: string
           description: Presigned URL for uploading this part.
           example: 'https://my-data-bucket.s3.amazonaws.com/uploads/data/20240301-143022-uuid.json?partNumber=1&uploadId=...'
+        size:
+          type: integer
+          format: int64
+          description: Exact number of bytes to upload to this URL. Use this value to slice the file — the last part will be smaller than partSize when the file size is not a multiple of partSize.
+          example: 8388608
       required:
         - url
+        - size
     FinishedMultipartRequest:
       type: object
       properties:
