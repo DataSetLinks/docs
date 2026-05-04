@@ -14,7 +14,7 @@ backend, providing flexibility for deployment environments.
   **config** – Configuration object containing API key, host, index, namespace,
   and object name.
 
-#### ingest(data, inference_steps=None, entity_resolution=None, batch_size=0, max_attempts=3)
+#### ingest(data, inference_steps=None, entity_resolution=None, batch_size=0, max_attempts=3, curate=None, data_description=None, schema_definition=None, additional_instructions=None)
 
 Ingests data into the namespace by batching the given data and performing multiple retries
 in case of failures. This function sends data in chunks (batches), to be processed through configured
@@ -29,13 +29,17 @@ is retried up to a maximum number of attempts.
     entire dataset if not provided.
   * **max_attempts** – Maximum number of retry attempts for failed batches. Defaults to the
     provided constant MAX_INGEST_ATTEMPTS.
+  * **curate** (*Optional* *[**bool* *]*) – If `True`, automatically curate ontology links after ingestion.
+  * **data_description** (*Optional* *[**str* *]*) – Free-text description of the dataset to guide the AI during ingestion.
+  * **schema_definition** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Field-name-to-description mapping to guide the AI in structuring extracted data.
+  * **additional_instructions** (*Optional* *[**str* *]*) – Additional free-text instructions to guide the AI during ingestion.
 * **Return type:**
   [`IngestionResult`](#datalinks.api.datalinks.IngestionResult)
 * **Returns:**
   An IngestionResult object containing lists of successfully ingested data blocks and
   data blocks that failed to be ingested.
 
-#### create_space(is_private=True, data_description='', field_definitions='')
+#### create_space(is_private=True, data_description=None, schema_definition=None)
 
 Creates a new space with the specified privacy settings. This function sends a
 POST request to create a namespace with the given privacy status. Information
@@ -43,8 +47,10 @@ about the namespace creation will be logged, including the HTTP status code
 and response reason. If the namespace already exists, a warning will be logged.
 
 * **Parameters:**
-  **is_private** (*bool*) – Determines whether the created namespace will be private
-  or public.
+  * **is_private** (*bool*) – Determines whether the created namespace will be private
+    or public.
+  * **data_description** (*Optional* *[**str* *]*) – Free-text description of the dataset (max 10,000 chars).
+  * **schema_definition** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Field-name-to-description mapping to guide the AI in structuring data.
 * **Return type:**
   `None`
 * **Returns:**
@@ -296,7 +302,7 @@ Retrieves the list of datasets for the user, optionally filtered by a specific n
 * **Return type:**
   List[Dict] | None
 
-#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False)
+#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False)
 
 Queries data from a specified data source and processes the response.
 
@@ -308,10 +314,12 @@ identified by key names starting with an underscore.
 * **Parameters:**
   * **query** (*str*) – The query string to use for fetching data. Defaults to “*”,
     which retrieves all data.
+  * **is_natural_language** (*bool*) – If True, the query is treated as a natural language query.
   * **model** (*str*) – The model name to use for inference.
   * **provider** (*str*) – The provider of the LLM model (ollama, openai, etc)
   * **include_metadata** (*bool*) – Specifies whether to include metadata fields in
     the returned data. Defaults to False.
+  * **explain** (*bool*) – If True, request an explanation of how the query was resolved.
 * **Returns:**
   A list of records represented as dictionaries, or None if the query
   fails or an exception occurs during the request.
@@ -735,12 +743,14 @@ run identifier and which can be iterated to receive NDJSON progress events.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
-#### stream_pipeline(run_id)
+#### stream_pipeline(run_id, start_index=0)
 
 Stream progress events for an existing pipeline run.
 
 * **Parameters:**
-  **run_id** (`str`) – Workflow run identifier returned by [`run_pipeline()`](#datalinks.api.IngestProxyAPI.run_pipeline).
+  * **run_id** (`str`) – Workflow run identifier returned by [`run_pipeline()`](#datalinks.api.IngestProxyAPI.run_pipeline).
+  * **start_index** (`int`) – Resume from this event index (default 0).  Pass the
+    number of events already received to skip replaying them on reconnect.
 * **Return type:**
   `Iterator`[`Dict`[`str`, `Any`]]
 * **Returns:**
@@ -800,14 +810,18 @@ Configuration for the DataLinks ingestion proxy (auto-modelling) service.
 * **Return type:**
   [`IngestProxyConfig`](#datalinks.api.ingest_proxy.IngestProxyConfig)
 
-### *class* datalinks.api.PipelineRun(run_id, response)
+### *class* datalinks.api.PipelineRun(run_id, stream_fn)
 
 Bases: `object`
 
-Wraps a streaming pipeline response.
+Wraps a pipeline run with automatic stream reconnection.
 
 Provides the workflow `run_id` (from the `x-workflow-run-id` response
 header) and an iterable interface over the NDJSON progress events.
+
+The iterator reconnects transparently on connection drops, resuming from
+the last received event via the `startIndex` query parameter.  Iteration
+ends only when an explicit `complete` or `error` event is received.
 
 Usage:
 
@@ -818,7 +832,7 @@ for event in run:
     print(event)
 ```
 
-Can also be used as a context manager to ensure the connection is closed:
+Can also be used as a context manager:
 
 ```default
 with proxy.run_pipeline(data=[...]) as run:
@@ -920,7 +934,7 @@ backend, providing flexibility for deployment environments.
 
 #### config *: [DLConfig](#datalinks.api.datalinks.DLConfig)*
 
-#### ingest(data, inference_steps=None, entity_resolution=None, batch_size=0, max_attempts=3)
+#### ingest(data, inference_steps=None, entity_resolution=None, batch_size=0, max_attempts=3, curate=None, data_description=None, schema_definition=None, additional_instructions=None)
 
 Ingests data into the namespace by batching the given data and performing multiple retries
 in case of failures. This function sends data in chunks (batches), to be processed through configured
@@ -935,13 +949,17 @@ is retried up to a maximum number of attempts.
     entire dataset if not provided.
   * **max_attempts** – Maximum number of retry attempts for failed batches. Defaults to the
     provided constant MAX_INGEST_ATTEMPTS.
+  * **curate** (*Optional* *[**bool* *]*) – If `True`, automatically curate ontology links after ingestion.
+  * **data_description** (*Optional* *[**str* *]*) – Free-text description of the dataset to guide the AI during ingestion.
+  * **schema_definition** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Field-name-to-description mapping to guide the AI in structuring extracted data.
+  * **additional_instructions** (*Optional* *[**str* *]*) – Additional free-text instructions to guide the AI during ingestion.
 * **Return type:**
   [`IngestionResult`](#datalinks.api.datalinks.IngestionResult)
 * **Returns:**
   An IngestionResult object containing lists of successfully ingested data blocks and
   data blocks that failed to be ingested.
 
-#### create_space(is_private=True, data_description='', field_definitions='')
+#### create_space(is_private=True, data_description=None, schema_definition=None)
 
 Creates a new space with the specified privacy settings. This function sends a
 POST request to create a namespace with the given privacy status. Information
@@ -949,8 +967,10 @@ about the namespace creation will be logged, including the HTTP status code
 and response reason. If the namespace already exists, a warning will be logged.
 
 * **Parameters:**
-  **is_private** (*bool*) – Determines whether the created namespace will be private
-  or public.
+  * **is_private** (*bool*) – Determines whether the created namespace will be private
+    or public.
+  * **data_description** (*Optional* *[**str* *]*) – Free-text description of the dataset (max 10,000 chars).
+  * **schema_definition** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Field-name-to-description mapping to guide the AI in structuring data.
 * **Return type:**
   `None`
 * **Returns:**
@@ -1202,7 +1222,7 @@ Retrieves the list of datasets for the user, optionally filtered by a specific n
 * **Return type:**
   List[Dict] | None
 
-#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False)
+#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False)
 
 Queries data from a specified data source and processes the response.
 
@@ -1214,10 +1234,12 @@ identified by key names starting with an underscore.
 * **Parameters:**
   * **query** (*str*) – The query string to use for fetching data. Defaults to “*”,
     which retrieves all data.
+  * **is_natural_language** (*bool*) – If True, the query is treated as a natural language query.
   * **model** (*str*) – The model name to use for inference.
   * **provider** (*str*) – The provider of the LLM model (ollama, openai, etc)
   * **include_metadata** (*bool*) – Specifies whether to include metadata fields in
     the returned data. Defaults to False.
+  * **explain** (*bool*) – If True, request an explanation of how the query was resolved.
 * **Returns:**
   A list of records represented as dictionaries, or None if the query
   fails or an exception occurs during the request.
@@ -1549,14 +1571,18 @@ Configuration for the DataLinks ingestion proxy (auto-modelling) service.
 * **Return type:**
   [`IngestProxyConfig`](#datalinks.api.ingest_proxy.IngestProxyConfig)
 
-### *class* datalinks.api.ingest_proxy.PipelineRun(run_id, response)
+### *class* datalinks.api.ingest_proxy.PipelineRun(run_id, stream_fn)
 
 Bases: `object`
 
-Wraps a streaming pipeline response.
+Wraps a pipeline run with automatic stream reconnection.
 
 Provides the workflow `run_id` (from the `x-workflow-run-id` response
 header) and an iterable interface over the NDJSON progress events.
+
+The iterator reconnects transparently on connection drops, resuming from
+the last received event via the `startIndex` query parameter.  Iteration
+ends only when an explicit `complete` or `error` event is received.
 
 Usage:
 
@@ -1567,7 +1593,7 @@ for event in run:
     print(event)
 ```
 
-Can also be used as a context manager to ensure the connection is closed:
+Can also be used as a context manager:
 
 ```default
 with proxy.run_pipeline(data=[...]) as run:
@@ -1632,12 +1658,14 @@ run identifier and which can be iterated to receive NDJSON progress events.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
-#### stream_pipeline(run_id)
+#### stream_pipeline(run_id, start_index=0)
 
 Stream progress events for an existing pipeline run.
 
 * **Parameters:**
-  **run_id** (`str`) – Workflow run identifier returned by [`run_pipeline()`](#datalinks.api.ingest_proxy.IngestProxyAPI.run_pipeline).
+  * **run_id** (`str`) – Workflow run identifier returned by [`run_pipeline()`](#datalinks.api.ingest_proxy.IngestProxyAPI.run_pipeline).
+  * **start_index** (`int`) – Resume from this event index (default 0).  Pass the
+    number of events already received to skip replaying them on reconnect.
 * **Return type:**
   `Iterator`[`Dict`[`str`, `Any`]]
 * **Returns:**
