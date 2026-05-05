@@ -410,9 +410,11 @@ if __name__ == "__main__":
 
 # GitHub Tickets Ingestion with Auto-Modelled Ontology (Vercel)
 
-Demonstrates how to use the `IngestProxyAPI` to ingest raw GitHub tickets and pull requests and let DataLinks automatically model an ontology from them. A natural-language prompt describes the desired schema — tables for tickets, contributors, triage insights, and applied technologies — and the pipeline surfaces that structure without any manual mapping. Events from the streaming pipeline run are logged as they arrive.
+Demonstrates how to use the `IngestProxyAPI` to ingest raw GitHub tickets and pull requests and let DataLinks automatically model an ontology from them. A natural-language prompt describes the desired schema — tables for tickets, contributors, triage insights, and applied technologies — and the pipeline surfaces that structure without any manual mapping. Events from the streaming pipeline run are logged as they arrive. The client reconnects automatically if the stream drops, resuming from the last received event.
 
 **Components covered:** `IngestProxyConfig`, `IngestProxyAPI`, `run_pipeline`
+
+**Required env vars:** `DL_INGEST_PROXY`, `DL_API_KEY`, `DL_USERNAME`, `DL_NAMESPACE`
 
 ```python
 import json
