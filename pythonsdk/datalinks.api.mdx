@@ -243,9 +243,9 @@ Create a manual link between two dataset columns.
   * **match_type** (`str`) – Match type — `"ExactMatch"` or `"GeoMatch"`.
   * **options** (`Optional`[`Dict`[`str`, `Any`]]) – Optional match configuration (e.g. `minDistinct`, `distance`).
 * **Returns:**
-  The created link object, or None on failure.
+  True if the link was successfully created, False if already exists. None if failure.
 * **Return type:**
-  Optional[Dict]
+  bool
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -1163,9 +1163,9 @@ Create a manual link between two dataset columns.
   * **match_type** (`str`) – Match type — `"ExactMatch"` or `"GeoMatch"`.
   * **options** (`Optional`[`Dict`[`str`, `Any`]]) – Optional match configuration (e.g. `minDistinct`, `distance`).
 * **Returns:**
-  The created link object, or None on failure.
+  True if the link was successfully created, False if already exists. None if failure.
 * **Return type:**
-  Optional[Dict]
+  bool
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
 
