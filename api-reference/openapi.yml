@@ -997,6 +997,85 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+  /file-upload/prepare:
+    post:
+      summary: Prepare session for file upload
+      description: Initiate a file upload session and get the upload URLs.
+      operationId: prepareFileUpload
+      tags:
+        - fileUpload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileUploadPrepareSessionRequest'
+      responses:
+        '200':
+          description: Returns the file upload session details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadPrepareSessionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /file-upload/{sessionId}/files/{fileId}/finish:
+    put:
+      summary: Finish file upload
+      description: Finish a single file upload
+      operationId: finishFileUpload
+      tags:
+        - fileUpload
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+        - $ref: '#/components/parameters/FileId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinishFileUploadRequest'
+      responses:
+        '200':
+          description: Returns the session status and finished file status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinishFileUploadResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+  /file-upload/{sessionId}/abort:
+    post:
+      summary: Abort file upload
+      description: Abort a single file upload
+      operationId: abortFileUpload
+      tags:
+        - fileUpload
+      parameters:
+        - $ref: '#/components/parameters/SessionId'
+      responses:
+        '200':
+          description: Returns aborted session status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AbortFileUploadResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableContent'
 components:
   parameters:
     DatasetName:
@@ -1090,6 +1169,20 @@ components:
         type: string
         format: date-time
         example: "2021-12-31T23:59:59.999Z"
+    SessionId:
+      name: sessionId
+      in: path
+      required: true
+      description: The unique identifier of the file upload session.
+      schema:
+        $ref: '#/components/schemas/UploadSessionId'
+    FileId:
+      name: fileId
+      in: path
+      required: true
+      description: The unique identifier of the file.
+      schema:
+        $ref: '#/components/schemas/UploadFileId'
   schemas:
     DataArray:
       type: array
@@ -2385,6 +2478,162 @@ components:
         age: employee age in years
         department: work department
         salary: annual salary in USD
+    FileUploadPrepareSessionRequest:
+      type: object
+      description: A request contaning list of pairs of file names and their sizes.
+      properties:
+        filesToUpload:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileUploadPrepareSessionRequestFileToUpload'
+      required:
+        - filesToUpload
+    FileUploadPrepareSessionRequestFileToUpload:
+      type: object
+      description: Information about each file to be uploaded.
+      properties:
+        filename:
+          type: string
+          description: Name of the file to be uploaded.
+        size:
+          type: integer
+          format: int64
+          description: Size of the file in bytes.
+      required:
+        - filename
+        - size
+    FileUploadPrepareSessionResponse:
+      type: object
+      description: A response containing the upload ID and key for the multipart upload.
+      properties:
+        sessionId:
+          $ref: '#/components/schemas/UploadSessionId'
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileUploadPrepareSessionResponseFileInfo'
+      required:
+        - sessionId
+        - files
+    FileUploadPrepareSessionResponseFileInfo:
+      type: object
+      description: Information about each file to be uploaded.
+      properties:
+        fileId:
+          $ref: '#/components/schemas/UploadFileId'
+        uploadId:
+          type: string
+          description: Upload identifier
+        key:
+          type: string
+          description: Name of the file to be uploaded.
+        filename:
+          type: string
+          description: File name
+        partSize:
+          type: integer
+          format: int64
+          description: Size of the part to be uploaded
+        presignedUrls:
+          type: array
+          description: List of presiggned ULR where file has to be uploaded
+          items:
+            $ref: '#/components/schemas/FileUploadPrepareSessionResponsePresignedInfo'
+      required:
+        - fileId
+        - uploadId
+        - key
+        - filename
+        - partSize
+        - presignedUrls
+    FileUploadPrepareSessionResponsePresignedInfo:
+      type: object
+      description: Information about each file to be uploaded.
+      properties:
+        url:
+          type: string
+          description: URL for the presigned upload.
+        partSize:
+          type: integer
+          format: int64
+          description: Size of the part to be uploaded
+      required:
+        - url
+        - partSize
+    FinishFileUploadRequest:
+      type: object
+      description: A request contaning list of pairs of file names and their sizes.
+      properties:
+        uploadId:
+          type: string
+        key:
+          type: string
+        parts:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinishFileUploadRequestParts'
+      required:
+        - uploadId
+        - key
+        - parts
+    FinishFileUploadRequestParts:
+      type: object
+      description: A request contaning list of pairs of file names and their sizes.
+      properties:
+        partNumber:
+          type: integer
+        etag:
+          type: string
+      required:
+        - partNumber
+        - etag
+    FinishFileUploadResponse:
+      type: object
+      description: A response contaning session and file status information
+      properties:
+        sessionId:
+          $ref: '#/components/schemas/UploadSessionId'
+        sessionStatus:
+          type: string
+          description: Status of the upload session.
+          enum: [preparing, completed, aborted]
+          example: preparing
+        fileId:
+          $ref: '#/components/schemas/UploadFileId'
+        fileStatus:
+          type: string
+          description: Status of the file upload.
+          enum: [preparing, completed, aborted]
+          example: completed
+      required:
+        - sessionId
+        - sessionStatus
+        - fileId
+        - fileStatus
+    AbortFileUploadResponse:
+      type: object
+      description: A response contaning list of pairs of file names and their sizes.
+      properties:
+        sessionId:
+          $ref: '#/components/schemas/UploadSessionId'
+        sessionStatus:
+          type: string
+          description: Status of the upload session.
+          enum: [preparing, completed, aborted]
+          example: preparing
+      required:
+        - sessionId
+        - sessionStatus
+    UploadFileId:
+      type: string
+      format: uuid
+      description: Unique identifier for a file
+      example: 311fe2cb-1c85-46a4-a8d9-f63a88da44fd
+    UploadSessionId:
+      type: string
+      format: uuid
+      description: Unique identifier for the upload session.
+      example: 24b49ba0-6b5c-4950-94c1-1622939cc481
   responses:
     QueryResponse:
       description: Returns query results.
