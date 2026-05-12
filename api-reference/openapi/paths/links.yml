@@ -1,0 +1,228 @@
+getAndRebuildLinks:
+  get:
+    summary: Load links
+    description: Load the links for the specified dataset.
+    operationId: getLinks
+    tags:
+      - links
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+      - $ref: '../components.yml#/components/parameters/Username'
+    responses:
+      '200':
+        description: Returns the links for the specified dataset.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestLinksResponse'
+      '204':
+        description: There are no links associated with the specified dataset.
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+  post:
+    summary: "Rebuild links"
+    description: "Recalculate links for a specified dataset."
+    operationId: rebuildLinks
+    tags:
+      - links
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+      - $ref: '../components.yml#/components/parameters/Username'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IngestLinksRequest'
+    responses:
+      '200':
+        description: Returns the recalculated links.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestLinksResponse'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '403':
+        description: Forbidden. The user does not have access to the dataset.
+
+previewLinks:
+  post:
+    summary: "Preview links"
+    description: "Shows what recalculating links would look like without saving changes."
+    operationId: previewLinks
+    tags:
+      - links
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+      - $ref: '../components.yml#/components/parameters/Username'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IngestLinksRequest'
+    responses:
+      '200':
+        description: Returns the preview link results.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestLinksResponse'
+
+addLink:
+  post:
+    summary: Add a new link
+    description: Create a new link between two dataset columns.
+    operationId: addLink
+    tags:
+      - links
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AddLinkRequest'
+          examples:
+            exactMatch:
+              summary: Exact match between movie datasets
+              value:
+                from:
+                  username: "johndoe"
+                  namespace: "cinematography"
+                  dataset: "movies"
+                  columnName: "director"
+                to:
+                  username: "janedoe"
+                  namespace: "entertainment"
+                  dataset: "films"
+                  columnName: "director_name"
+                matchType: "ExactMatch"
+            geoMatch:
+              summary: Geographic match between location datasets
+              value:
+                from:
+                  username: "alice"
+                  namespace: "geography"
+                  dataset: "cities"
+                  columnName: "coordinates"
+                to:
+                  username: "bob"
+                  namespace: "mapping"
+                  dataset: "locations"
+                  columnName: "gps_coords"
+                matchType: "GeoMatch"
+    responses:
+      '200':
+        description: Link existed, no creation required.
+      '201':
+        description: Creates a new link.
+      '400':
+        $ref: '../components.yml#/components/responses/BadRequest'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '403':
+        $ref: '../components.yml#/components/responses/Forbidden'
+      '404':
+        description: The source or target dataset was not found.
+        content:
+          application/json:
+            schema:
+              $ref: '../components.yml#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    IngestLinksResponse:
+      type: array
+      items:
+        $ref: '../components.yml#/components/schemas/ApiLink'
+
+    IngestLinksRequest:
+      type: object
+      properties:
+        data:
+          $ref: '../components.yml#/components/schemas/DataArray'
+        link:
+          $ref: '../components.yml#/components/schemas/LinkConfig'
+      required:
+        - data
+      example:
+        data:
+          - name: "Braveheart"
+            year: "1995"
+            budget: "72000000"
+            director: "Mel Gibson"
+          - name: "Argo"
+            year: "2012"
+            budget: "44500000"
+            director: "Ben Affleck"
+        link:
+          ExactMatch: null
+          GeoMatch: null
+
+    AddLinkRequest:
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/ApiStringColumnIdentifier'
+          example:
+            username: "johndoe"
+            namespace: "cinematography"
+            dataset: "movies"
+            columnName: "director"
+        to:
+          $ref: '#/components/schemas/ApiStringColumnIdentifier'
+          example:
+            username: "janedoe"
+            namespace: "entertainment"
+            dataset: "films"
+            columnName: "director_name"
+        options:
+          description: Flexible options map for match configuration.
+          oneOf:
+            - $ref: '../components.yml#/components/schemas/ExactMatchConfig'
+            - $ref: '../components.yml#/components/schemas/GeoMatchConfig'
+        matchType:
+          type: string
+          description: Type of match to create between the columns.
+          enum:
+            - ExactMatch
+            - GeoMatch
+          example: "ExactMatch"
+      required:
+        - from
+        - to
+        - matchType
+
+    ApiStringColumnIdentifier:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Username of the dataset owner.
+          example: "johndoe"
+        namespace:
+          type: string
+          description: Namespace of the dataset.
+          example: "cinematography"
+        dataset:
+          type: string
+          description: Name of the dataset.
+          example: "movies"
+        columnName:
+          type: string
+          description: Column name in the dataset.
+          example: "director"
+      required:
+        - username
+        - namespace
+        - dataset
+        - columnName
+      example:
+        - username: "username"
+        - namespace: "namespace"
+        - dataset: "dataset"
+        - columnName: "columnName"
