@@ -81,7 +81,7 @@ components:
         infer:
           $ref: '#/components/schemas/IngestRequestInfer'
         link:
-          $ref: '#/components/schemas/LinkConfig'
+          $ref: '#/components/schemas/IngestLink'
         curate:
           type: boolean
           nullable: true
@@ -236,24 +236,24 @@ components:
       required:
         - type
 
-    LinkConfig:
+    IngestLink:
       type: object
       properties:
         ExactMatch:
-          $ref: '#/components/schemas/ExactMatchConfig'
+          anyOf:
+            - $ref: '#/components/schemas/ExactMatchConfig'
+            - $ref: '#/components/schemas/ResolutionParameters'
           nullable: true
         GeoMatch:
-          $ref: '#/components/schemas/GeoMatchConfig'
+
+          anyOf:
+            - $ref: '#/components/schemas/GeoMatchConfig'
+            - $ref: '#/components/schemas/ResolutionParameters'
           nullable: true
 
-    ExactMatchConfig:
+    ResolutionParameters:
       type: object
-      nullable: true
       properties:
-        minDistinct:
-          type: number
-        minVariation:
-          type: number
         bidirectional:
           type: boolean
         targetColumns:
@@ -262,6 +262,14 @@ components:
             type: string
         ignorePrivateColumns:
           type: boolean
+    ExactMatchConfig:
+      type: object
+      nullable: true
+      properties:
+        minDistinct:
+          type: number
+        minVariation:
+          type: number
 
     GeoMatchConfig:
       type: object
@@ -271,14 +279,6 @@ components:
           type: number
         distanceUnit:
           type: string
-        bidirectional:
-          type: boolean
-        targetColumns:
-          type: array
-          items:
-            type: string
-        ignorePrivateColumns:
-          type: boolean
 
     DataDescription:
       type: string

@@ -93,6 +93,8 @@ paths:
     $ref: './paths/fileUpload.yml#/finishFileUpload'
   /file-upload/{sessionId}/abort:
     $ref: './paths/fileUpload.yml#/abortFileUpload'
+  /file-upload/{sessionId}/files:
+    $ref: './paths/fileUpload.yml#/listSessionFiles'
 components:
   parameters:
     DatasetName:
@@ -130,8 +132,6 @@ components:
       $ref: './components.yml#/components/schemas/ReverseGeoStep'
     NamedEntitiesStep:
       $ref: './components.yml#/components/schemas/NamedEntitiesStep'
-    LinkConfig:
-      $ref: './components.yml#/components/schemas/LinkConfig'
     ExactMatchConfig:
       $ref: './components.yml#/components/schemas/ExactMatchConfig'
     GeoMatchConfig:
