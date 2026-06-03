@@ -188,7 +188,7 @@ components:
           nullable: true
           description: Optional inference pipeline steps to run on each batch of data after reading from S3.
         link:
-          $ref: '../components.yml#/components/schemas/LinkConfig'
+          $ref: '../components.yml#/components/schemas/IngestLink'
           nullable: true
           description: Optional entity resolution configuration.
         inferBatchSize:

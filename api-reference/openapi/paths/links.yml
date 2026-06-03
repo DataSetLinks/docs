@@ -146,7 +146,7 @@ components:
         data:
           $ref: '../components.yml#/components/schemas/DataArray'
         link:
-          $ref: '../components.yml#/components/schemas/LinkConfig'
+          $ref: '../components.yml#/components/schemas/IngestLink'
       required:
         - data
       example:

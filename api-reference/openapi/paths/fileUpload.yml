@@ -24,7 +24,7 @@ prepareFileUpload:
         $ref: '../components.yml#/components/responses/Forbidden'
 
 finishFileUpload:
-  put:
+  post:
     summary: Finish file upload
     description: Finish a single file upload
     operationId: finishFileUpload
@@ -79,6 +79,29 @@ abortFileUpload:
         $ref: '../components.yml#/components/responses/NotFound'
       '422':
         $ref: '../components.yml#/components/responses/UnprocessableContent'
+
+listSessionFiles:
+  get:
+    summary: List completed files in an upload session
+    description: Returns S3 bucket and key for every completed file in the session. Caller must own the session.
+    operationId: listSessionFiles
+    tags:
+      - fileUpload
+    parameters:
+      - $ref: '#/components/parameters/SessionId'
+    responses:
+      '200':
+        description: Returns the session status and the list of completed files with their S3 locations.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListSessionFilesResponse'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '403':
+        $ref: '../components.yml#/components/responses/Forbidden'
+      '404':
+        $ref: '../components.yml#/components/responses/NotFound'
 
 components:
   parameters:
@@ -264,3 +287,49 @@ components:
       required:
         - sessionId
         - sessionStatus
+
+    ListSessionFilesResponse:
+      type: object
+      description: List of completed files for an upload session.
+      properties:
+        sessionId:
+          $ref: '#/components/schemas/UploadSessionId'
+        sessionStatus:
+          type: string
+          description: Status of the upload session.
+          enum: [preparing,completed,aborted]
+          example: completed
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListSessionFilesResponseFileInfo'
+      required:
+        - sessionId
+        - sessionStatus
+        - files
+
+    ListSessionFilesResponseFileInfo:
+      type: object
+      description: S3 location of a completed file in the upload session.
+      properties:
+        fileId:
+          $ref: '#/components/schemas/UploadFileId'
+        filename:
+          type: string
+          description: Original filename provided during prepare.
+        s3Bucket:
+          type: string
+          description: S3 bucket containing the uploaded object.
+        s3Key:
+          type: string
+          description: S3 key of the uploaded object.
+        fileSize:
+          type: integer
+          format: int64
+          description: Size of the uploaded file in bytes.
+      required:
+        - fileId
+        - filename
+        - s3Bucket
+        - s3Key
+        - fileSize

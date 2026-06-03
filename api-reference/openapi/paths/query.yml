@@ -226,50 +226,14 @@ components:
                 description: The reasoning produced by the LLM when generating the query for this step.
               data:
                 $ref: '../components.yml#/components/schemas/DataArray'
-              attempts:
-                type: array
-                description: Failed query attempts that preceded the successful query for this step.
-                items:
-                  $ref: '#/components/schemas/AutoRagQueryAttempt'
-              validation:
-                $ref: '#/components/schemas/AutoRagStepValidation'
             required:
               - instruction
               - query
               - reasoning
               - data
-              - attempts
       required:
         - response
         - steps
-
-    AutoRagQueryAttempt:
-      type: object
-      description: A failed query attempt that preceded the successful query for a step.
-      properties:
-        query:
-          type: string
-          description: The query that was attempted.
-        reasoning:
-          type: string
-          description: The reasoning produced by the LLM for this attempt.
-      required:
-        - query
-        - reasoning
-
-    AutoRagStepValidation:
-      type: object
-      description: Validator outcome for a step. Absent when the validator was not called (empty result or query error).
-      properties:
-        valid:
-          type: boolean
-          description: True if the validator approved the step result, false if it rejected it.
-        reason:
-          type: string
-          description: Validator-provided rationale for the outcome.
-      required:
-        - valid
-        - reason
 
     AutoRagPlanEvent:
       type: object
@@ -287,23 +251,9 @@ components:
         - steps
         - reasoning
 
-    AutoRagStepStartedEvent:
+    AutoRagStepEvent:
       type: object
-      description: SSE event emitted when a step is about to begin executing. Event name is "step_started".
-      properties:
-        index:
-          type: integer
-          description: Zero-based index of the step about to start.
-        instruction:
-          type: string
-          description: The plan instruction for this step.
-      required:
-        - index
-        - instruction
-
-    AutoRagStepCompletedEvent:
-      type: object
-      description: SSE event containing the result of a single completed execution step. Event name is "step_completed".
+      description: SSE event containing the result of a single execution step. Event name is "step".
       properties:
         index:
           type: integer
@@ -319,20 +269,12 @@ components:
           description: The reasoning produced by the LLM when generating the query for this step.
         data:
           $ref: '../components.yml#/components/schemas/DataArray'
-        attempts:
-          type: array
-          description: Failed query attempts that preceded the successful query for this step.
-          items:
-            $ref: '#/components/schemas/AutoRagQueryAttempt'
-        validation:
-          $ref: '#/components/schemas/AutoRagStepValidation'
       required:
         - index
         - instruction
         - query
         - reasoning
         - data
-        - attempts
 
     AutoRagAnswerEvent:
       type: object
@@ -354,30 +296,12 @@ components:
       required:
         - message
 
-    AutoRagReplanEvent:
-      type: object
-      description: SSE event emitted when the execution plan is revised mid-run. Event name is "replan".
-      properties:
-        completedSteps:
-          type: integer
-          description: Number of steps already completed before this revision.
-        remainingSteps:
-          type: array
-          description: Revised steps that will be executed from this point.
-          items:
-            type: string
-      required:
-        - completedSteps
-        - remainingSteps
-
     AutoRagStreamEvent:
       oneOf:
         - $ref: '#/components/schemas/AutoRagPlanEvent'
-        - $ref: '#/components/schemas/AutoRagStepStartedEvent'
-        - $ref: '#/components/schemas/AutoRagStepCompletedEvent'
+        - $ref: '#/components/schemas/AutoRagStepEvent'
         - $ref: '#/components/schemas/AutoRagAnswerEvent'
         - $ref: '#/components/schemas/AutoRagErrorEvent'
-        - $ref: '#/components/schemas/AutoRagReplanEvent'
 
   responses:
     QueryResponse:
