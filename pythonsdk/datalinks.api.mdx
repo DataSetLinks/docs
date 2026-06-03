@@ -120,7 +120,7 @@ then call [`finish_multipart_upload()`](#datalinks.api.DataLinksAPI.finish_multi
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
-#### finish_multipart_upload(upload_id, key, parts, name=None)
+#### finish_multipart_upload(upload_id, key, parts, name=None, inference_steps=None, entity_resolution=None)
 
 Complete a multipart upload after all parts have been uploaded.
 
@@ -130,6 +130,10 @@ Complete a multipart upload after all parts have been uploaded.
   * **parts** (*List* *[**Dict* *[**str* *,* *Any* *]* *]*) – List of completed parts, each with `partNumber` (int) and
     `etag` (str) returned by S3.
   * **name** (*Optional* *[**str* *]*) – Optional label for the ingestion (e.g. original filename).
+  * **inference_steps** (*Optional* *[*[*Pipeline*](datalinks#datalinks.pipeline.Pipeline) *]*) – Pipeline of inference steps to apply to the uploaded
+    file during ingestion. If `None` the file is ingested as is.
+  * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](datalinks#datalinks.links.MatchTypeConfig) *]*) – Configuration specifying how entity resolution is to
+    be performed on the uploaded file.
 * **Returns:**
   Ingestion result from the server.
 * **Return type:**
@@ -326,8 +330,7 @@ identified by key names starting with an underscore.
 * **Return type:**
   List[Dict] | None
 * **Raises:**
-  **requests.exceptions.RequestException** – If a request-related error
-  occurs during querying.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If a transport-level error occurs.
 
 #### ask(query, model=None, provider=None, helper_prompt=None)
 
@@ -624,11 +627,254 @@ Retrieve usage data aggregated by day for the authenticated user.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
+### *class* datalinks.api.AsyncDataLinksAPI(config=None)
+
+Bases: `object`
+
+Async counterpart of [`DataLinksAPI`](#datalinks.api.DataLinksAPI).
+
+Method signatures mirror the sync facade — same parameter names, defaults,
+and return types. Every networked method is `async def`. The streaming
+`ask` method returns an `AsyncIterator` instead of an iterator.
+
+Use `async with` for guaranteed cleanup of the underlying
+`httpx.AsyncClient`, or call [`aclose()`](#datalinks.api.AsyncDataLinksAPI.aclose) manually:
+
+```default
+async with AsyncDataLinksAPI() as api:
+    datasets = await api.list_datasets()
+```
+
+#### *async* aclose()
+
+Close the underlying `httpx.AsyncClient`.
+
+* **Return type:**
+  `None`
+
+#### *async* ingest(data, inference_steps=None, entity_resolution=None, batch_size=0, max_attempts=3, curate=None, data_description=None, schema_definition=None, additional_instructions=None)
+
+Async variant of [`DataLinksAPI.ingest()`](#datalinks.api.DataLinksAPI.ingest).
+
+Same batching + retry semantics as the sync facade.
+
+* **Return type:**
+  [`IngestionResult`](#datalinks.api.datalinks.IngestionResult)
+
+#### *async* create_space(is_private=True, data_description=None, schema_definition=None)
+
+* **Return type:**
+  `None`
+
+#### *async* update_infer_definition(data_description, field_definition)
+
+* **Return type:**
+  `None`
+
+#### *async* infer_dataset_description(sample, model=None, provider=None, current_description=None, current_schema=None)
+
+* **Return type:**
+  `Dict`
+
+#### *async* update_sort_order(order)
+
+* **Return type:**
+  `None`
+
+#### *async* prepare_multipart_upload(filename, size)
+
+* **Return type:**
+  `Dict`
+
+#### *async* finish_multipart_upload(upload_id, key, parts, name=None, inference_steps=None, entity_resolution=None)
+
+* **Return type:**
+  `Dict`
+
+#### *async* abort_multipart_upload(upload_id, key)
+
+* **Return type:**
+  `None`
+
+#### *async* list_ingestions(page_size=25)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* wait_for_ingestion(ingestion_id, poll_interval=5, timeout=1200)
+
+Async variant of [`DataLinksAPI.wait_for_ingestion()`](#datalinks.api.DataLinksAPI.wait_for_ingestion).
+
+Polls via [`list_ingestions()`](#datalinks.api.AsyncDataLinksAPI.list_ingestions), awaiting `asyncio.sleep` between
+ticks instead of blocking the event loop with `time.sleep`.
+
+* **Return type:**
+  `Dict`
+
+#### *async* get_dataset_info()
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* delete_dataset()
+
+* **Return type:**
+  `None`
+
+#### *async* rename_dataset(new_name)
+
+* **Return type:**
+  `None`
+
+#### *async* rename_namespace(new_name)
+
+* **Return type:**
+  `None`
+
+#### *async* clear_dataset()
+
+* **Return type:**
+  `None`
+
+#### *async* add_link(from_namespace, from_dataset, from_column, to_namespace, to_dataset, to_column, match_type, options=None)
+
+* **Return type:**
+  `Optional`[`bool`]
+
+#### *async* preview_links(data, entity_resolution=None)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* rebuild_links(data, entity_resolution=None)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* load_links()
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* list_datasets(namespace=None)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* list_namespaces(user='self')
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* list_all_datasets_schema()
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* list_datasets_in_namespace_schema(namespace=None, user='self')
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`[`str`, `Any`]]]
+
+#### *async* autorag(query, model=None, provider=None, helper_prompt=None)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* ask(query, model=None, provider=None, helper_prompt=None)
+
+Async SSE stream of [`DataLinksAPI.ask()`](#datalinks.api.DataLinksAPI.ask) events.
+
+Yields [`AskEvent`](#datalinks.api.AskEvent) objects until the server closes the stream.
+
+* **Return type:**
+  `AsyncIterator`[[`AskEvent`](#datalinks.api.datalinks.AskEvent)]
+
+#### *async* preview_ingest(data, inference_steps=None)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* infer_schema(sample, model=None, provider=None, current_schema=None)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* retry_ingestion(ingestion_id)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* mark_ingestion_seen(ingestion_id)
+
+* **Return type:**
+  `None`
+
+#### *async* request_cleaning(prompts, output_namespace, output_dataset_name)
+
+* **Return type:**
+  `Optional`[`str`]
+
+#### *async* get_cleaning_code(cleaning_task_id)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* get_ontology()
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* save_ontology(add=None, remove=None)
+
+* **Return type:**
+  `None`
+
+#### *async* curate_links(namespace=None, dataset=None, model=None, provider=None, activate=False)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* list_tokens()
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* add_token(name, expires_at=None, access_restricted_to=None)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* delete_token(token_id)
+
+* **Return type:**
+  `None`
+
+#### *async* list_token_permissions(token_id)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* get_usage_history(on_or_after=None, before=None, page_size=25, page_cursor=None)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* get_usage_by_day(on_or_after=None, before=None, timezone='UTC')
+
+* **Return type:**
+  `Optional`[`Dict`]
+
 ### *exception* datalinks.api.DataLinksRequestError(endpoint, e)
 
 Bases: `Exception`
 
-### *class* datalinks.api.DLConfig(host, apikey, index, namespace, objectname)
+### *class* datalinks.api.DLConfig(host, apikey, namespace, objectname)
 
 Bases: `object`
 
@@ -642,7 +888,6 @@ and namespace details required to communicate with DataLinks.
 * **Variables:**
   * **host** – The host URL for the data layer connection.
   * **apikey** – The API key for authentication with the data layer.
-  * **index** – The index name to be used in the data layer operations.
   * **namespace** – The namespace for organizing data in the data layer.
   * **objectname** – The name of the object associated with the configuration.
     Defaults to an empty string.
@@ -650,8 +895,6 @@ and namespace details required to communicate with DataLinks.
 #### host *: str*
 
 #### apikey *: str*
-
-#### index *: str*
 
 #### namespace *: str*
 
@@ -847,9 +1090,265 @@ with proxy.run_pipeline(data=[...]) as run:
 
 ## Submodules
 
+## datalinks.api.async_datalinks module
+
+Async sibling of [`datalinks.api.DataLinksAPI`](#datalinks.api.DataLinksAPI).
+
+`AsyncDataLinksAPI` exposes the same surface as `DataLinksAPI` but every
+remote-call method is an `async def` that dispatches through the underlying
+`httpx.AsyncClient`. The two facades share the same generated client (which
+holds both sync and async httpx clients internally) and the same body-building
+typed models, so spec drift is caught uniformly.
+
+Use this when you need concurrency — e.g. fanning out queries, embedding the
+SDK in an async web service. For one-shot scripts, prefer `DataLinksAPI`.
+
+### *class* datalinks.api.async_datalinks.AsyncDataLinksAPI(config=None)
+
+Bases: `object`
+
+Async counterpart of `DataLinksAPI`.
+
+Method signatures mirror the sync facade — same parameter names, defaults,
+and return types. Every networked method is `async def`. The streaming
+`ask` method returns an `AsyncIterator` instead of an iterator.
+
+Use `async with` for guaranteed cleanup of the underlying
+`httpx.AsyncClient`, or call [`aclose()`](#datalinks.api.async_datalinks.AsyncDataLinksAPI.aclose) manually:
+
+```default
+async with AsyncDataLinksAPI() as api:
+    datasets = await api.list_datasets()
+```
+
+#### *async* aclose()
+
+Close the underlying `httpx.AsyncClient`.
+
+* **Return type:**
+  `None`
+
+#### *async* ingest(data, inference_steps=None, entity_resolution=None, batch_size=0, max_attempts=3, curate=None, data_description=None, schema_definition=None, additional_instructions=None)
+
+Async variant of `DataLinksAPI.ingest()`.
+
+Same batching + retry semantics as the sync facade.
+
+* **Return type:**
+  [`IngestionResult`](#datalinks.api.datalinks.IngestionResult)
+
+#### *async* create_space(is_private=True, data_description=None, schema_definition=None)
+
+* **Return type:**
+  `None`
+
+#### *async* update_infer_definition(data_description, field_definition)
+
+* **Return type:**
+  `None`
+
+#### *async* infer_dataset_description(sample, model=None, provider=None, current_description=None, current_schema=None)
+
+* **Return type:**
+  `Dict`
+
+#### *async* update_sort_order(order)
+
+* **Return type:**
+  `None`
+
+#### *async* prepare_multipart_upload(filename, size)
+
+* **Return type:**
+  `Dict`
+
+#### *async* finish_multipart_upload(upload_id, key, parts, name=None, inference_steps=None, entity_resolution=None)
+
+* **Return type:**
+  `Dict`
+
+#### *async* abort_multipart_upload(upload_id, key)
+
+* **Return type:**
+  `None`
+
+#### *async* list_ingestions(page_size=25)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* wait_for_ingestion(ingestion_id, poll_interval=5, timeout=1200)
+
+Async variant of `DataLinksAPI.wait_for_ingestion()`.
+
+Polls via [`list_ingestions()`](#datalinks.api.async_datalinks.AsyncDataLinksAPI.list_ingestions), awaiting `asyncio.sleep` between
+ticks instead of blocking the event loop with `time.sleep`.
+
+* **Return type:**
+  `Dict`
+
+#### *async* get_dataset_info()
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* delete_dataset()
+
+* **Return type:**
+  `None`
+
+#### *async* rename_dataset(new_name)
+
+* **Return type:**
+  `None`
+
+#### *async* rename_namespace(new_name)
+
+* **Return type:**
+  `None`
+
+#### *async* clear_dataset()
+
+* **Return type:**
+  `None`
+
+#### *async* add_link(from_namespace, from_dataset, from_column, to_namespace, to_dataset, to_column, match_type, options=None)
+
+* **Return type:**
+  `Optional`[`bool`]
+
+#### *async* preview_links(data, entity_resolution=None)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* rebuild_links(data, entity_resolution=None)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* load_links()
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* list_datasets(namespace=None)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* list_namespaces(user='self')
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* list_all_datasets_schema()
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* list_datasets_in_namespace_schema(namespace=None, user='self')
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`[`str`, `Any`]]]
+
+#### *async* autorag(query, model=None, provider=None, helper_prompt=None)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* ask(query, model=None, provider=None, helper_prompt=None)
+
+Async SSE stream of `DataLinksAPI.ask()` events.
+
+Yields `AskEvent` objects until the server closes the stream.
+
+* **Return type:**
+  `AsyncIterator`[[`AskEvent`](#datalinks.api.datalinks.AskEvent)]
+
+#### *async* preview_ingest(data, inference_steps=None)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* infer_schema(sample, model=None, provider=None, current_schema=None)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* retry_ingestion(ingestion_id)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* mark_ingestion_seen(ingestion_id)
+
+* **Return type:**
+  `None`
+
+#### *async* request_cleaning(prompts, output_namespace, output_dataset_name)
+
+* **Return type:**
+  `Optional`[`str`]
+
+#### *async* get_cleaning_code(cleaning_task_id)
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* get_ontology()
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* save_ontology(add=None, remove=None)
+
+* **Return type:**
+  `None`
+
+#### *async* curate_links(namespace=None, dataset=None, model=None, provider=None, activate=False)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* list_tokens()
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* add_token(name, expires_at=None, access_restricted_to=None)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* delete_token(token_id)
+
+* **Return type:**
+  `None`
+
+#### *async* list_token_permissions(token_id)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* get_usage_history(on_or_after=None, before=None, page_size=25, page_cursor=None)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* get_usage_by_day(on_or_after=None, before=None, timezone='UTC')
+
+* **Return type:**
+  `Optional`[`Dict`]
+
 ## datalinks.api.datalinks module
 
-### *class* datalinks.api.datalinks.DLConfig(host, apikey, index, namespace, objectname)
+### *class* datalinks.api.datalinks.DLConfig(host, apikey, namespace, objectname)
 
 Bases: `object`
 
@@ -863,7 +1362,6 @@ and namespace details required to communicate with DataLinks.
 * **Variables:**
   * **host** – The host URL for the data layer connection.
   * **apikey** – The API key for authentication with the data layer.
-  * **index** – The index name to be used in the data layer operations.
   * **namespace** – The namespace for organizing data in the data layer.
   * **objectname** – The name of the object associated with the configuration.
     Defaults to an empty string.
@@ -871,8 +1369,6 @@ and namespace details required to communicate with DataLinks.
 #### host *: str*
 
 #### apikey *: str*
-
-#### index *: str*
 
 #### namespace *: str*
 
@@ -1040,7 +1536,7 @@ then call [`finish_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.fi
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
 
-#### finish_multipart_upload(upload_id, key, parts, name=None)
+#### finish_multipart_upload(upload_id, key, parts, name=None, inference_steps=None, entity_resolution=None)
 
 Complete a multipart upload after all parts have been uploaded.
 
@@ -1050,6 +1546,10 @@ Complete a multipart upload after all parts have been uploaded.
   * **parts** (*List* *[**Dict* *[**str* *,* *Any* *]* *]*) – List of completed parts, each with `partNumber` (int) and
     `etag` (str) returned by S3.
   * **name** (*Optional* *[**str* *]*) – Optional label for the ingestion (e.g. original filename).
+  * **inference_steps** (*Optional* *[*[*Pipeline*](datalinks#datalinks.pipeline.Pipeline) *]*) – Pipeline of inference steps to apply to the uploaded
+    file during ingestion. If `None` the file is ingested as is.
+  * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](datalinks#datalinks.links.MatchTypeConfig) *]*) – Configuration specifying how entity resolution is to
+    be performed on the uploaded file.
 * **Returns:**
   Ingestion result from the server.
 * **Return type:**
@@ -1246,8 +1746,7 @@ identified by key names starting with an underscore.
 * **Return type:**
   List[Dict] | None
 * **Raises:**
-  **requests.exceptions.RequestException** – If a request-related error
-  occurs during querying.
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If a transport-level error occurs.
 
 #### ask(query, model=None, provider=None, helper_prompt=None)
 

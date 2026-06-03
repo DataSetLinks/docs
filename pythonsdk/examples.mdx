@@ -253,6 +253,7 @@ import requests
 
 import datalinks
 from datalinks.api import DLConfig
+from datalinks.links import ExactMatch, MatchTypeConfig
 
 
 def upload_multipart(filepath: str):
@@ -299,7 +300,13 @@ def upload_multipart(filepath: str):
         raise
 
     logging.info("All parts uploaded, finishing ingestion")
-    result = dlapi.finish_multipart_upload(upload_id, key, parts, name=filename)
+    entity_resolution = MatchTypeConfig(ExactMatch())
+
+    result = dlapi.finish_multipart_upload(
+        upload_id, key, parts,
+        name=filename,
+        entity_resolution=entity_resolution,
+    )
     ingestion_id = result["id"]
     logging.info(f"Ingestion queued: id={ingestion_id}")
 
