@@ -9,6 +9,10 @@ security:
 servers:
   - url: /api/v1
 paths:
+  /agents/cleaning/{cleaningTaskId}/code:
+    $ref: './paths/agents.yml#/getCleaningTaskCode'
+  /agents/{username}/{namespace}/{datasetName}/requestCleaning:
+    $ref: './paths/agents.yml#/requestCleaning'
   /data:
     $ref: './paths/data.yml#/getDatasets'
   /data/{namespace}:
@@ -27,20 +31,30 @@ paths:
     $ref: './paths/data.yml#/clearDataset'
   /data/{username}/{namespace}/{datasetName}/balefire:
     $ref: './paths/data.yml#/balefireDataset'
-  /ingest/new/{namespace}/{datasetName}:
-    $ref: './paths/ingest.yml#/createDataset'
-  /ingest/{namespace}/{datasetName}:
-    $ref: './paths/ingest.yml#/ingestData'
   /infer/preview:
     $ref: './paths/infer.yml#/previewInfer'
   /infer/description:
     $ref: './paths/infer.yml#/inferDescription'
   /infer/schema:
     $ref: './paths/infer.yml#/inferSchema'
-  /agents/cleaning/{cleaningTaskId}/code:
-    $ref: './paths/agents.yml#/getCleaningTaskCode'
-  /agents/{username}/{namespace}/{datasetName}/requestCleaning:
-    $ref: './paths/agents.yml#/requestCleaning'
+  /ingest/new/{namespace}/{datasetName}:
+    $ref: './paths/ingest.yml#/createDataset'
+  /ingest/{namespace}/{datasetName}:
+    $ref: './paths/ingest.yml#/ingestData'
+  /ingestionTracking/{ingestionId}/retry:
+    $ref: './paths/ingestionTracking.yml#/retryIngestion'
+  /ingestionTracking/{ingestionId}/seen:
+    $ref: './paths/ingestionTracking.yml#/markIngestionSeen'
+  /links/{username}/{namespace}/{datasetName}:
+    $ref: './paths/links.yml#/getAndRebuildLinks'
+  /links/preview/{username}/{namespace}/{datasetName}:
+    $ref: './paths/links.yml#/previewLinks'
+  /links/add:
+    $ref: './paths/links.yml#/addLink'
+  /ontology/{username}/{namespace}/{datasetName}:
+    $ref: './paths/ontology.yml#/getAndSaveOntology'
+  /ontology/curate-links:
+    $ref: './paths/ontology.yml#/curateLinks'
   /schema/datasets/all:
     $ref: './paths/schema.yml#/listAllDatasets'
   /schema/{user}/namespaces:
@@ -55,16 +69,10 @@ paths:
     $ref: './paths/query.yml#/autorag'
   /query/ask:
     $ref: './paths/query.yml#/autoragStream'
-  /links/{username}/{namespace}/{datasetName}:
-    $ref: './paths/links.yml#/getAndRebuildLinks'
-  /links/preview/{username}/{namespace}/{datasetName}:
-    $ref: './paths/links.yml#/previewLinks'
-  /links/add:
-    $ref: './paths/links.yml#/addLink'
-  /ontology/{username}/{namespace}/{datasetName}:
-    $ref: './paths/ontology.yml#/getAndSaveOntology'
-  /ontology/curate-links:
-    $ref: './paths/ontology.yml#/curateLinks'
+  /query/runs/{runId}:
+    $ref: './paths/agentRuns.yml#/agentRun'
+  /query/runs/{runId}/resume:
+    $ref: './paths/agentRuns.yml#/resumeAgentRun'
   /user/tokens:
     $ref: './paths/user.yml#/listTokens'
   /user/token:
@@ -83,10 +91,6 @@ paths:
     $ref: './paths/upload.yml#/finishMultipartUpload'
   /upload/multipart/{username}/{namespace}/{datasetName}/abort:
     $ref: './paths/upload.yml#/abortMultipartUpload'
-  /ingestionTracking/{ingestionId}/retry:
-    $ref: './paths/ingestionTracking.yml#/retryIngestion'
-  /ingestionTracking/{ingestionId}/seen:
-    $ref: './paths/ingestionTracking.yml#/markIngestionSeen'
   /file-upload/prepare:
     $ref: './paths/fileUpload.yml#/prepareFileUpload'
   /file-upload/{sessionId}/files/{fileId}/finish:
