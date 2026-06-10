@@ -106,6 +106,9 @@ components:
           type: string
         provider:
           type: string
+        conversationId:
+          type: string
+          description: "Existing conversation to continue. Omit to start a new conversation; the id is returned on the run-started SSE event."
       required:
         - username
         - namespace

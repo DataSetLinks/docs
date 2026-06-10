@@ -73,6 +73,10 @@ paths:
     $ref: './paths/agentRuns.yml#/agentRun'
   /query/runs/{runId}/resume:
     $ref: './paths/agentRuns.yml#/resumeAgentRun'
+  /query/conversations:
+    $ref: './paths/conversations.yml#/listConversations'
+  /query/conversations/{conversationId}:
+    $ref: './paths/conversations.yml#/getConversation'
   /user/tokens:
     $ref: './paths/user.yml#/listTokens'
   /user/token:
