@@ -3,6 +3,7 @@ getDatasets:
     summary: Fetch datasets
     description: Retrieve all available datasets.
     operationId: getDatasets
+    deprecated: true
     tags:
       - datasets
     responses:
@@ -16,6 +17,7 @@ getDatasetsInNamespace:
     summary: Fetch datasets in namespace
     description: Retrieve all datasets for the specified namespace.
     operationId: getDatasetsInNamespace
+    deprecated: true
     tags:
       - datasets
     parameters:
