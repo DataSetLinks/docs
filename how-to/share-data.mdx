@@ -1,0 +1,158 @@
+---
+title: "How To Share a Dataset or Namespace"
+description: "Grant another DataLinks user read or write access to your data."
+sidebarTitle: "Share Data"
+---
+
+By default every dataset you create is private and visible only to you. When you want a teammate to [query your data](/how-to/query-data), or help maintain it, you can share access with them directly. Sharing is separate from a dataset's public or private visibility, so you can grant access without changing who else can see the data.
+
+You can share at two levels:
+
+- **Share a dataset** to grant access to a single dataset.
+- **Share a namespace** to grant access to every dataset inside it. The grant cascades, so any new datasets you add to that namespace later are covered too.
+
+If you're new to how data is organized, read [Datasets and Namespaces](/concepts/datasets-namespaces) first to see how the two fit together.
+
+## Access roles
+
+Every share grants one of two roles to one user:
+
+| Role | What it allows |
+| --- | --- |
+| `viewer` | Read-only. The user can list, read, and [query](/how-to/query-data) the data. |
+| `editor` | Read and write. The user can do everything a viewer can, plus ingest, update, and modify the data. |
+
+<Note>
+  Only the **owner** of a dataset or namespace can share it, list who it's shared with, or revoke access. A viewer or editor can't re-share your data with anyone else.
+</Note>
+
+## Sharing and visibility are independent
+
+Visibility (public or private) and sharing (viewer or editor grants) are two separate controls, and they continue to work exactly as before:
+
+- **Visibility controls who can read.** A private dataset is readable only by its owner and the users it's shared with. A public dataset is readable by everyone on the platform.
+- **Sharing grants named users extra access on top of that.** A `viewer` grant adds read access (most useful on a private dataset), and an `editor` grant adds write access.
+
+Because they're independent, an `editor` grant lets a specific user **append to a dataset even when it's public**. Public still means everyone can read it, but only the owner and the users you've granted `editor` can write to it. Everyone else gets a `403` if they try to append.
+
+## Before you begin
+
+- You have an [API token](/how-to/get-api-token) for the account that **owns** the data.
+- You've already [created the dataset](/how-to/create-dataset) or [namespace](/how-to/create-namespace) you want to share.
+- You know the owner's username, the namespace, and (for dataset sharing) the dataset name.
+- You know the **username** of the person you're sharing with. They must already have a DataLinks account, and the role must be either `viewer` or `editor`.
+
+All examples below use the API base URL `https://api.datalinks.com/api/v1` and send your token as a Bearer header.
+
+## Share a dataset
+
+Grant a user access to one dataset with the **Share a dataset** endpoint.
+
+```bash
+curl -X POST \
+  "https://api.datalinks.com/api/v1/permissions/datasets/{owner}/{namespace}/{datasetName}/shares" \
+  -H "Authorization: Bearer $DATALINKS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "alice", "role": "viewer"}'
+```
+
+A successful request returns `200 OK` with an empty body. The grantee can now read and query the dataset using the **owner's** username in the path, for example `GET /data/{owner}/{namespace}/{datasetName}`.
+
+See [Share a dataset](/api-reference/permissions/share-a-dataset) in the API reference.
+
+### List who a dataset is shared with
+
+```bash
+curl "https://api.datalinks.com/api/v1/permissions/datasets/{owner}/{namespace}/{datasetName}/shares" \
+  -H "Authorization: Bearer $DATALINKS_TOKEN"
+```
+
+The response is an array of the current grants:
+
+```json
+[
+  { "username": "alice", "role": "viewer" }
+]
+```
+
+See [List dataset shares](/api-reference/permissions/list-dataset-shares).
+
+### Revoke access to a dataset
+
+To remove someone's access, send a `DELETE` with the same body you used to grant it.
+
+```bash
+curl -X DELETE \
+  "https://api.datalinks.com/api/v1/permissions/datasets/{owner}/{namespace}/{datasetName}/shares" \
+  -H "Authorization: Bearer $DATALINKS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "alice", "role": "viewer"}'
+```
+
+See [Revoke dataset access](/api-reference/permissions/revoke-dataset-access).
+
+## Share a namespace
+
+Sharing a namespace works the same way, but the grant applies to **every dataset in the namespace** and to any datasets you add to it later. This is the easiest way to give a teammate access to a whole project.
+
+```bash
+curl -X POST \
+  "https://api.datalinks.com/api/v1/permissions/namespaces/{owner}/{namespace}/shares" \
+  -H "Authorization: Bearer $DATALINKS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "alice", "role": "editor"}'
+```
+
+See [Share a namespace](/api-reference/permissions/share-a-namespace).
+
+### List and revoke namespace access
+
+Listing and revoking mirror the dataset endpoints:
+
+```bash
+# List who the namespace is shared with
+curl "https://api.datalinks.com/api/v1/permissions/namespaces/{owner}/{namespace}/shares" \
+  -H "Authorization: Bearer $DATALINKS_TOKEN"
+
+# Revoke access to the whole namespace
+curl -X DELETE \
+  "https://api.datalinks.com/api/v1/permissions/namespaces/{owner}/{namespace}/shares" \
+  -H "Authorization: Bearer $DATALINKS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "alice", "role": "editor"}'
+```
+
+See [List namespace shares](/api-reference/permissions/list-namespace-shares) and [Revoke namespace access](/api-reference/permissions/revoke-namespace-access).
+
+## How a grantee uses shared data
+
+Once you've shared with someone, they access the data under **your** username, not theirs. A user that you've granted access reads and [queries](/how-to/query-data) your dataset at `GET /data/{owner}/{namespace}/{datasetName}`, and it shows up when they list the datasets in that namespace. If your datasets are connected, they can also traverse those [connections](/how-to/manage-connections) just as you can.
+
+<Note>
+  The plain ingest endpoint (`POST /ingest/{namespace}/{datasetName}`) writes to the **caller's** own namespaces, so an editor can't use it to write into your data. To write to data shared with them, an editor uses the endpoints that include the owner's username in the path, such as the multipart upload endpoints under `/upload/multipart/{owner}/{namespace}/{datasetName}/...`.
+</Note>
+
+## Things to know
+
+<Check>
+  Access changes are eventually consistent. After you grant or revoke, it can take a few seconds for the change to take effect. If a grantee still sees `404` right after you share, have them retry shortly.
+</Check>
+
+- **Owner only.** If someone who isn't the owner tries to share, list, or revoke, the API returns `403 Forbidden` with the message that access can be managed by the owner only.
+- **The grantee must exist.** Sharing with a username that has no DataLinks account is rejected. Double-check the spelling. Usernames are matched in lowercase.
+- **Roles are fixed values.** `role` must be exactly `viewer` or `editor`. Any other value returns `422`.
+- **Revoke matches on the user.** Removing a grant takes the user's access away regardless of which role you name in the body.
+- **Sharing and visibility are separate.** Making a dataset public exposes it to everyone for reading; sharing grants a specific user `viewer` or `editor` access. The two combine: for example, `editor` on a public dataset lets one named user append data while everyone else can still only read.
+
+## Best practices
+
+- Grant the **least access needed**. Use `viewer` for teammates who only need to read or query, and reserve `editor` for people who maintain the data.
+- Prefer **namespace sharing** for project-based collaboration so new datasets are covered automatically, and **dataset sharing** when you need to scope access tightly.
+- **Audit periodically.** List the grants on your important datasets and namespaces and revoke access that's no longer needed.
+
+## Next steps
+
+- [Query your data](/how-to/query-data) once you have access to a shared dataset.
+- [View and manage connections](/how-to/manage-connections) to see how shared datasets link to others.
+- Review the [Datasets and Namespaces](/concepts/datasets-namespaces) concept for how ownership and visibility fit together.
+- Browse the [permissions endpoints](/api-reference/permissions/share-a-dataset) in the API reference.
