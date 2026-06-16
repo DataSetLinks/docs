@@ -106,6 +106,9 @@ components:
           type: string
         provider:
           type: string
+        conversationId:
+          type: string
+          description: "Existing conversation to continue. Omit to start a new conversation; the id is returned on the run-started SSE event."
       required:
         - username
         - namespace
@@ -235,6 +238,44 @@ components:
         - response
         - steps
 
+    AutoRagPlanningStartedEvent:
+      type: object
+      description: >-
+        SSE lifecycle event signalling that the agent has started planning. Event name is
+        "planningStarted". The event name carries the meaning; the body is an empty object.
+
+    AutoRagStepStartedEvent:
+      type: object
+      description: SSE lifecycle event signalling that a plan step has started. Event name is "stepStarted".
+      properties:
+        index:
+          type: integer
+          description: Zero-based index of the step that just started.
+        instruction:
+          type: string
+          description: The plan instruction for this step.
+      required:
+        - index
+        - instruction
+
+    AutoRagQueryExecutingEvent:
+      type: object
+      description: >-
+        SSE lifecycle event signalling that the query for a step is now executing against the data.
+        Event name is "queryExecuting".
+      properties:
+        index:
+          type: integer
+          description: Zero-based index of the step whose query is executing.
+      required:
+        - index
+
+    AutoRagAnswerStartedEvent:
+      type: object
+      description: >-
+        SSE lifecycle event signalling that the agent has started generating the final answer. Event
+        name is "answerStarted". The event name carries the meaning; the body is an empty object.
+
     AutoRagPlanEvent:
       type: object
       description: SSE event containing the execution plan. Event name is "plan".
@@ -302,6 +343,10 @@ components:
         - $ref: '#/components/schemas/AutoRagStepEvent'
         - $ref: '#/components/schemas/AutoRagAnswerEvent'
         - $ref: '#/components/schemas/AutoRagErrorEvent'
+        - $ref: '#/components/schemas/AutoRagPlanningStartedEvent'
+        - $ref: '#/components/schemas/AutoRagStepStartedEvent'
+        - $ref: '#/components/schemas/AutoRagQueryExecutingEvent'
+        - $ref: '#/components/schemas/AutoRagAnswerStartedEvent'
 
   responses:
     QueryResponse:

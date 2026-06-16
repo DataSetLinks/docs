@@ -9,6 +9,12 @@ security:
 servers:
   - url: /api/v1
 paths:
+  /a2a:
+    $ref: './paths/a2a.yml#/listAgents'
+  /a2a/{agentName}/.well-known/agent-card.json:
+    $ref: './paths/a2a.yml#/agentCard'
+  /a2a/{agentName}:
+    $ref: './paths/a2a.yml#/jsonRpc'
   /agents/cleaning/{cleaningTaskId}/code:
     $ref: './paths/agents.yml#/getCleaningTaskCode'
   /agents/{username}/{namespace}/{datasetName}/requestCleaning:
@@ -63,6 +69,10 @@ paths:
     $ref: './paths/schema.yml#/listDatasetsWithinNamespace'
   /schema/{username}/{namespace}/{datasetName}/sort-order:
     $ref: './paths/schema.yml#/updateSortOrder'
+  /permissions/datasets/{username}/{namespace}/{datasetName}/shares:
+    $ref: './paths/permissions.yml#/datasetShares'
+  /permissions/namespaces/{username}/{namespace}/shares:
+    $ref: './paths/permissions.yml#/namespaceShares'
   /query:
     $ref: './paths/query.yml#/queryData'
   /query/autorag:
@@ -73,6 +83,10 @@ paths:
     $ref: './paths/agentRuns.yml#/agentRun'
   /query/runs/{runId}/resume:
     $ref: './paths/agentRuns.yml#/resumeAgentRun'
+  /query/conversations:
+    $ref: './paths/conversations.yml#/listConversations'
+  /query/conversations/{conversationId}:
+    $ref: './paths/conversations.yml#/getConversation'
   /user/tokens:
     $ref: './paths/user.yml#/listTokens'
   /user/token:
