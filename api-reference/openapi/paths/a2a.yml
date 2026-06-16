@@ -1,0 +1,87 @@
+listAgents:
+  get:
+    summary: List the agents exposed over A2A
+    description: Convenience listing of the available A2A agents and their AgentCard URLs. Public, no authentication.
+    operationId: listA2aAgents
+    tags:
+      - a2a
+    security: []
+    responses:
+      '200':
+        description: The available A2A agents.
+        content:
+          application/json:
+            schema:
+              type: array
+              # Each entry is an object: { name, url, agentCard }. Kept opaque (free-form) so no Scala model is generated.
+              items:
+                type: object
+                additionalProperties: true
+
+agentCard:
+  get:
+    summary: Fetch an agent's AgentCard
+    description: |
+      Returns the A2A AgentCard describing the agent's skills, capabilities, security schemes and JSON-RPC
+      endpoint. Public (unauthenticated) discovery document.
+    operationId: getA2aAgentCard
+    tags:
+      - a2a
+    security: []
+    parameters:
+      - name: agentName
+        in: path
+        required: true
+        schema:
+          type: string
+    responses:
+      '200':
+        description: The A2A AgentCard (see https://a2a-protocol.org for the schema).
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      '404':
+        $ref: '../components.yml#/components/responses/NotFound'
+
+jsonRpc:
+  post:
+    summary: A2A JSON-RPC endpoint for an agent
+    description: |
+      JSON-RPC 2.0 endpoint implementing the A2A methods `SendMessage`, `SendStreamingMessage`, `GetTask` and
+      `CancelTask`. `SendStreamingMessage` responds with `text/event-stream`; the others with a single JSON-RPC
+      response. Protocol errors are returned as JSON-RPC error objects with HTTP 200. The target namespace is
+      supplied in the message `metadata.namespace`; the acting user is taken from the bearer token.
+      Request and response bodies follow the A2A 1.0 spec (https://a2a-protocol.org).
+    operationId: a2aJsonRpc
+    tags:
+      - a2a
+    parameters:
+      - name: agentName
+        in: path
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: true
+    responses:
+      '200':
+        description: A JSON-RPC response, or (for SendStreamingMessage) an SSE stream of JSON-RPC responses.
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+          text/event-stream:
+            schema:
+              type: string
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '404':
+        $ref: '../components.yml#/components/responses/NotFound'
