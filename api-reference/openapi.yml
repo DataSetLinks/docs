@@ -992,153 +992,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
-  /permissions/datasets/{username}/{namespace}/{datasetName}/shares:
-    post:
-      summary: Share a dataset
-      description: Grant another user viewer or editor access to a dataset. Only the dataset owner may share.
-      operationId: shareDatasetAccess
-      tags:
-        - permissions
-      parameters:
-        - $ref: '#/components/parameters/Username'
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ShareAccessRequest'
-      responses:
-        '200':
-          description: Access was granted.
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/UnprocessableContent'
-    delete:
-      summary: Revoke dataset access
-      description: Remove a previously granted viewer or editor access from a user. Only the dataset owner may revoke.
-      operationId: revokeDatasetAccess
-      tags:
-        - permissions
-      parameters:
-        - $ref: '#/components/parameters/Username'
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ShareAccessRequest'
-      responses:
-        '200':
-          description: Access was revoked.
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/UnprocessableContent'
-    get:
-      summary: List dataset shares
-      description: List the per-user grants on a dataset. Only the dataset owner may list.
-      operationId: listDatasetShares
-      tags:
-        - permissions
-      parameters:
-        - $ref: '#/components/parameters/Username'
-        - $ref: '#/components/parameters/Namespace'
-        - $ref: '#/components/parameters/DatasetName'
-      responses:
-        '200':
-          $ref: '#/components/responses/ListOfAccessGrants'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-  /permissions/namespaces/{username}/{namespace}/shares:
-    post:
-      summary: Share a namespace
-      description: >
-        Grant another user viewer or editor access to a namespace. The grant cascades to all datasets
-        within the namespace. Only the namespace owner may share.
-      operationId: shareNamespaceAccess
-      tags:
-        - permissions
-      parameters:
-        - $ref: '#/components/parameters/Username'
-        - $ref: '#/components/parameters/Namespace'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ShareAccessRequest'
-      responses:
-        '200':
-          description: Access was granted.
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/UnprocessableContent'
-    delete:
-      summary: Revoke namespace access
-      description: Remove a previously granted viewer or editor access from a user. Only the namespace owner may revoke.
-      operationId: revokeNamespaceAccess
-      tags:
-        - permissions
-      parameters:
-        - $ref: '#/components/parameters/Username'
-        - $ref: '#/components/parameters/Namespace'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ShareAccessRequest'
-      responses:
-        '200':
-          description: Access was revoked.
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '422':
-          $ref: '#/components/responses/UnprocessableContent'
-    get:
-      summary: List namespace shares
-      description: List the per-user grants on a namespace. Only the namespace owner may list.
-      operationId: listNamespaceShares
-      tags:
-        - permissions
-      parameters:
-        - $ref: '#/components/parameters/Username'
-        - $ref: '#/components/parameters/Namespace'
-      responses:
-        '200':
-          $ref: '#/components/responses/ListOfAccessGrants'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
 components:
   parameters:
     DatasetName:
@@ -1233,40 +1086,6 @@ components:
         format: date-time
         example: "2021-12-31T23:59:59.999Z"
   schemas:
-    ShareAccessRequest:
-      type: object
-      properties:
-        username:
-          type: string
-          description: Username of the user to grant or revoke access for.
-          example: alice
-        role:
-          type: string
-          enum:
-            - viewer
-            - editor
-          description: Access level. 'viewer' is read-only; 'editor' is read and write.
-          example: viewer
-      required:
-        - username
-        - role
-    AccessGrant:
-      type: object
-      properties:
-        username:
-          type: string
-          description: Username of the user that has access.
-          example: alice
-        role:
-          type: string
-          enum:
-            - viewer
-            - editor
-          description: Access level granted to the user.
-          example: editor
-      required:
-        - username
-        - role
     DataArray:
       type: array
       description: Array of ontology data objects retrieved from queries.
@@ -2621,14 +2440,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
-    ListOfAccessGrants:
-      description: Returns the per-user grants on the resource.
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/AccessGrant'
   securitySchemes:
     bearerAuth:
       type: http
