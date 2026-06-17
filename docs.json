@@ -91,7 +91,7 @@
             "group": "Endpoints",
             "expanded": true,
             "openapi": {
-              "source": "api-reference/docs/openapi.yml",
+              "source": "api-reference/openapi.yml",
               "directory": "api-reference"
             }
           }
@@ -153,7 +153,7 @@
       "proxy": false
     },
     "openapi": {
-      "source": "api-reference/openapi/openapi.yml"
+      "source": "api-reference/openapi.yml"
     }
   },
   "contextual": {
