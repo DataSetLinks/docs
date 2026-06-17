@@ -627,6 +627,86 @@ Retrieve usage data aggregated by day for the authenticated user.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
+#### get_agent_run_status(run_id)
+
+Get the current status of an agent run.
+
+* **Parameters:**
+  **run_id** (*str*) – UUID of the agent run.
+* **Returns:**
+  Dict with `runId`, `agentKind`, `question`, `status`
+  (`running`/`completed`/`failed`/`expired`), `canResume`,
+  and optionally `lastNodeId`, `errorMessage`, `result`. None on
+  failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### delete_agent_run(run_id)
+
+Permanently delete an agent run and its resume checkpoint.
+
+* **Parameters:**
+  **run_id** (*str*) – UUID of the agent run.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails (e.g. 404 when
+  the run does not exist or is not owned by the caller).
+* **Return type:**
+  `None`
+
+#### resume_agent_run(run_id)
+
+Resume a previously paused or crashed agent run, streaming its events.
+
+The first event is `run-started`, followed by the same domain events as
+[`ask()`](#datalinks.api.DataLinksAPI.ask) (e.g. `plan`, `step`, `answer`). Terminal run states
+arrive as a single synthetic event instead of a stream:
+
+> * `completed` / `expired` (HTTP 410) — yielded as an
+>   `AskEvent(type="terminal", data=<body>)` whose data carries the
+>   original question and, for completed runs, the rendered result.
+> * `failed` (HTTP 422) — yielded as an `AskEvent` of type
+>   `"terminal"`.
+> * not-found / not-owned (HTTP 404) — raises `DataLinksRequestError`.
+* **Parameters:**
+  **run_id** (*str*) – UUID of the agent run to resume.
+* **Returns:**
+  An iterator of [`AskEvent`](#datalinks.api.AskEvent) objects.
+* **Return type:**
+  Iterator[[AskEvent](#datalinks.api.AskEvent)]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – On 404 or transport-level failure.
+
+#### list_conversations(username='self', namespace=None)
+
+List the caller’s conversations within a namespace (most-recently-updated first).
+
+* **Parameters:**
+  * **username** (*str*) – Owner username. Defaults to `"self"`.
+  * **namespace** (*Optional* *[**str* *]*) – Namespace to list within. Defaults to the configured namespace.
+* **Returns:**
+  Dict with a `conversations` list, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_conversation(conversation_id)
+
+Get a conversation and its turns (oldest first).
+
+* **Parameters:**
+  **conversation_id** (*str*) – UUID of the conversation.
+* **Returns:**
+  Dict with `id`, `title`, and a `turns` list (each turn has
+  `runId`, `question`, `status`, and optionally `result`), or
+  None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
 ### *class* datalinks.api.AsyncDataLinksAPI(config=None)
 
 Bases: `object`
@@ -866,6 +946,41 @@ Yields [`AskEvent`](#datalinks.api.AskEvent) objects until the server closes the
   `Optional`[`Dict`]
 
 #### *async* get_usage_by_day(on_or_after=None, before=None, timezone='UTC')
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* get_agent_run_status(run_id)
+
+Get the current status of an agent run (see [`DataLinksAPI.get_agent_run_status()`](#datalinks.api.DataLinksAPI.get_agent_run_status)).
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* delete_agent_run(run_id)
+
+Permanently delete an agent run and its resume checkpoint (see [`DataLinksAPI.delete_agent_run()`](#datalinks.api.DataLinksAPI.delete_agent_run)).
+
+* **Return type:**
+  `None`
+
+#### *async* resume_agent_run(run_id)
+
+Resume an agent run, streaming its events (see [`DataLinksAPI.resume_agent_run()`](#datalinks.api.DataLinksAPI.resume_agent_run)).
+
+* **Return type:**
+  `AsyncIterator`[[`AskEvent`](#datalinks.api.datalinks.AskEvent)]
+
+#### *async* list_conversations(username='self', namespace=None)
+
+List the caller’s conversations within a namespace (see [`DataLinksAPI.list_conversations()`](#datalinks.api.DataLinksAPI.list_conversations)).
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* get_conversation(conversation_id)
+
+Get a conversation and its turns (see [`DataLinksAPI.get_conversation()`](#datalinks.api.DataLinksAPI.get_conversation)).
 
 * **Return type:**
   `Optional`[`Dict`]
@@ -1342,6 +1457,41 @@ Yields `AskEvent` objects until the server closes the stream.
   `Optional`[`Dict`]
 
 #### *async* get_usage_by_day(on_or_after=None, before=None, timezone='UTC')
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* get_agent_run_status(run_id)
+
+Get the current status of an agent run (see `DataLinksAPI.get_agent_run_status()`).
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* delete_agent_run(run_id)
+
+Permanently delete an agent run and its resume checkpoint (see `DataLinksAPI.delete_agent_run()`).
+
+* **Return type:**
+  `None`
+
+#### *async* resume_agent_run(run_id)
+
+Resume an agent run, streaming its events (see `DataLinksAPI.resume_agent_run()`).
+
+* **Return type:**
+  `AsyncIterator`[[`AskEvent`](#datalinks.api.datalinks.AskEvent)]
+
+#### *async* list_conversations(username='self', namespace=None)
+
+List the caller’s conversations within a namespace (see `DataLinksAPI.list_conversations()`).
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* get_conversation(conversation_id)
+
+Get a conversation and its turns (see `DataLinksAPI.get_conversation()`).
 
 * **Return type:**
   `Optional`[`Dict`]
@@ -2038,6 +2188,86 @@ Retrieve usage data aggregated by day for the authenticated user.
   * **timezone** (*str*) – Timezone for date aggregation (e.g. `"America/New_York"`). Defaults to UTC.
 * **Returns:**
   Dict with `data` and `meta` keys, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_agent_run_status(run_id)
+
+Get the current status of an agent run.
+
+* **Parameters:**
+  **run_id** (*str*) – UUID of the agent run.
+* **Returns:**
+  Dict with `runId`, `agentKind`, `question`, `status`
+  (`running`/`completed`/`failed`/`expired`), `canResume`,
+  and optionally `lastNodeId`, `errorMessage`, `result`. None on
+  failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### delete_agent_run(run_id)
+
+Permanently delete an agent run and its resume checkpoint.
+
+* **Parameters:**
+  **run_id** (*str*) – UUID of the agent run.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails (e.g. 404 when
+  the run does not exist or is not owned by the caller).
+* **Return type:**
+  `None`
+
+#### resume_agent_run(run_id)
+
+Resume a previously paused or crashed agent run, streaming its events.
+
+The first event is `run-started`, followed by the same domain events as
+[`ask()`](#datalinks.api.datalinks.DataLinksAPI.ask) (e.g. `plan`, `step`, `answer`). Terminal run states
+arrive as a single synthetic event instead of a stream:
+
+> * `completed` / `expired` (HTTP 410) — yielded as an
+>   `AskEvent(type="terminal", data=<body>)` whose data carries the
+>   original question and, for completed runs, the rendered result.
+> * `failed` (HTTP 422) — yielded as an `AskEvent` of type
+>   `"terminal"`.
+> * not-found / not-owned (HTTP 404) — raises `DataLinksRequestError`.
+* **Parameters:**
+  **run_id** (*str*) – UUID of the agent run to resume.
+* **Returns:**
+  An iterator of [`AskEvent`](#datalinks.api.datalinks.AskEvent) objects.
+* **Return type:**
+  Iterator[[AskEvent](#datalinks.api.datalinks.AskEvent)]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – On 404 or transport-level failure.
+
+#### list_conversations(username='self', namespace=None)
+
+List the caller’s conversations within a namespace (most-recently-updated first).
+
+* **Parameters:**
+  * **username** (*str*) – Owner username. Defaults to `"self"`.
+  * **namespace** (*Optional* *[**str* *]*) – Namespace to list within. Defaults to the configured namespace.
+* **Returns:**
+  Dict with a `conversations` list, or None on failure.
+* **Return type:**
+  Optional[Dict]
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### get_conversation(conversation_id)
+
+Get a conversation and its turns (oldest first).
+
+* **Parameters:**
+  **conversation_id** (*str*) – UUID of the conversation.
+* **Returns:**
+  Dict with `id`, `title`, and a `turns` list (each turn has
+  `runId`, `question`, `status`, and optionally `result`), or
+  None on failure.
 * **Return type:**
   Optional[Dict]
 * **Raises:**
