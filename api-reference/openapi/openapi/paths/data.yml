@@ -1,0 +1,324 @@
+getDatasets:
+  get:
+    summary: Fetch datasets
+    description: Retrieve all available datasets.
+    operationId: getDatasets
+    deprecated: true
+    tags:
+      - datasets
+    responses:
+      '200':
+        $ref: '../components.yml#/components/responses/ListOfDatasets'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+
+getDatasetsInNamespace:
+  get:
+    summary: Fetch datasets in namespace
+    description: Retrieve all datasets for the specified namespace.
+    operationId: getDatasetsInNamespace
+    deprecated: true
+    tags:
+      - datasets
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+    responses:
+      '200':
+        $ref: '../components.yml#/components/responses/ListOfDatasets'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+
+listIngestions:
+  get:
+    summary: List ingestions for a dataset
+    description: Lists ingestion attempts for a dataset.
+    operationId: listIngestions
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+      - $ref: '../components.yml#/components/parameters/Username'
+      - $ref: '#/components/parameters/BeforeCreatedAt'
+      - $ref: '../components.yml#/components/parameters/PageSize'
+    tags:
+      - data
+    responses:
+      '200':
+        description: Returns ingestion records for the specified dataset.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListIngestionsResponseData'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+
+getDatasetInformation:
+  get:
+    summary: Get dataset information
+    description: Get dataset metadata for the specified user, namespace, and dataset.
+    operationId: getDatasetInformation
+    tags:
+      - dataset
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+      - $ref: '../components.yml#/components/parameters/Username'
+    responses:
+      '200':
+        description: Returns dataset metadata.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DatasetResponse'
+      '404':
+        description: The dataset was not found.
+      '400':
+        description: Bad request
+
+renameNamespace:
+  post:
+    summary: Rename a namespace
+    description: Rename the specified namespace.
+    operationId: renameNamespace
+    tags:
+      - dataset
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/Username'
+    requestBody:
+      required: true
+      content:
+        text/plain:
+          schema:
+            type: string
+    responses:
+      '200':
+        description: Renames the specified namespace.
+      '400':
+        description: Bad request
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '404':
+        description: The namespace was not found or the user cannot modify it.
+
+renameDataset:
+  post:
+    summary: Rename a dataset
+    description: Rename the specified dataset.
+    operationId: renameDataset
+    tags:
+      - dataset
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+      - $ref: '../components.yml#/components/parameters/Username'
+    requestBody:
+      required: true
+      content:
+        text/plain:
+          schema:
+            type: string
+    responses:
+      '200':
+        description: Renames the specified dataset.
+      '400':
+        description: Bad request
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '404':
+        description: The dataset was not found or the user cannot modify it.
+
+updateInferDefinition:
+  put:
+    summary: Update inference definition
+    description: Update the saved inference definition for the dataset.
+    operationId: updateInferDefinition
+    tags:
+      - dataset
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+      - $ref: '../components.yml#/components/parameters/Username'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              dataDescription:
+                $ref: '../components.yml#/components/schemas/DataDescription'
+              schemaDefinition:
+                $ref: '../components.yml#/components/schemas/SchemaDefinition'
+    responses:
+      '201':
+        description: Creates a new inference definition.
+      '404':
+        description: The dataset was not found or the user cannot modify it.
+      '400':
+        description: Bad request
+
+clearDataset:
+  post:
+    summary: Clear all data for a dataset
+    description: Remove all data and links from the specified dataset. This action is irreversible.
+    operationId: clearDataset
+    tags:
+      - dataset
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+      - $ref: '../components.yml#/components/parameters/Username'
+    responses:
+      '200':
+        description: Removes all data and links from the dataset.
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '403':
+        $ref: '../components.yml#/components/responses/Forbidden'
+      '404':
+        description: The dataset was not found or the user cannot modify it.
+
+balefireDataset:
+  delete:
+    summary: Delete all data and metadata for a dataset (balefire)
+    description: Remove all data, links, and metadata for the specified dataset. This action is irreversible.
+    operationId: balefireDataset
+    tags:
+      - dataset
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+      - $ref: '../components.yml#/components/parameters/Username'
+    responses:
+      '200':
+        description: Deletes the dataset and all related data.
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '403':
+        $ref: '../components.yml#/components/responses/Forbidden'
+      '404':
+        description: The dataset was not found or the user cannot modify it.
+
+components:
+  parameters:
+    BeforeCreatedAt:
+      name: beforeCreatedAt
+      in: query
+      description: Value of the `created_at` field before or equals which to return ingestions.
+      schema:
+        type: string
+        format: date-time
+        example: "2024-03-01T14:30:22.000Z"
+        default: null
+
+  schemas:
+    DatasetResponse:
+      type: object
+      properties:
+        dataset:
+          $ref: '../components.yml#/components/schemas/ApiDatasetDescription'
+        metadata:
+          $ref: '#/components/schemas/ApiDatasetMetadata'
+      required:
+        - dataset
+        - metadata
+
+    ApiDatasetMetadata:
+      type: object
+      properties:
+        columnNames:
+          type: array
+          items: { type: string }
+          description: List of dataset column names.
+          example: [ "id","name","age","department","salary" ]
+        dataDescription:
+          $ref: '../components.yml#/components/schemas/DataDescription'
+        schemaDefinition:
+          $ref: '../components.yml#/components/schemas/SchemaDefinition'
+        rowCount:
+          type: integer
+          format: int64
+          description: Number of rows in dataset.
+          example: 1250
+      required:
+        - rowCount
+        - columnNames
+
+    ListIngestionsResponseData:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListIngestionsResponseDataItem'
+        metadata:
+          $ref: '#/components/schemas/ListIngestionsResponseMetadata'
+      required:
+        - data
+        - metadata
+
+    ListIngestionsResponseMetadata:
+      type: object
+      properties:
+        beforeCreatedAt:
+          type: string
+          format: date-time
+          description: Value of the `created_at` field before or equal to which return ingestions records.
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 10
+          maximum: 100
+      required:
+        - pageSize
+
+    ListIngestionsResponseDataItem:
+      type: object
+      description: Wrapper object containing details of the ingestion.
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        statusMessage:
+          type: string
+        processedBytes:
+          type: integer
+          format: int64
+        expectedTotalBytes:
+          type: integer
+          format: int64
+        processedRows:
+          type: integer
+          format: int64
+        attributes:
+          $ref: '#/components/schemas/IngestionItemAttributes'
+      required:
+        - id
+        - status
+        - expectedTotalBytes
+
+    IngestionItemAttributes:
+      type: object
+      description: Additional attributes for the ingestion.
+      nullable: true
+      properties:
+        name:
+          type: string
+          description: Filename or identifier for the ingestion.
+          nullable: true
+        seenAt:
+          type: string
+          format: date-time
+          description: Timestamp when the ingestion was first seen.
+          nullable: true
+        originalIngestionId:
+          type: string
+          format: uuid
+          description: In case of retry, it's the original ingestion id.
+        lastRetryAt:
+          type: string
+          format: date-time
+          description: Timestamp of the last retry attempt.
+          nullable: true
