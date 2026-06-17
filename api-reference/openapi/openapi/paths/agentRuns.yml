@@ -1,0 +1,125 @@
+agentRun:
+  get:
+    summary: Get the status of an agent run
+    description: |
+      Returns the current status of an agent run, the original question, and (for completed
+      runs) the rendered result. Use this to discover whether a run is still running, completed,
+      failed, or expired (e.g. after a dropped SSE connection).
+    operationId: getAgentRunStatus
+    tags:
+      - agentRuns
+    parameters:
+      - name: runId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: Run status
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRunStatusResponse'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '404':
+        $ref: '../components.yml#/components/responses/NotFound'
+  delete:
+    summary: Delete an agent run and any resume cache associated with it
+    description: |
+      Permanently removes the run record and its checkpoint blob. Returns 404 for both
+      "never existed" and "owned by someone else" to avoid leaking existence of other
+      users' conversations.
+    operationId: deleteAgentRun
+    tags:
+      - agentRuns
+    parameters:
+      - name: runId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '204':
+        description: Deleted.
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '404':
+        $ref: '../components.yml#/components/responses/NotFound'
+
+resumeAgentRun:
+  post:
+    summary: Resume a previously paused or crashed agent run
+    description: |
+      Resumes a run from its last checkpoint. The response is an SSE stream whose first
+      event is `run-started`, followed by the same domain events as the original streaming
+      endpoint (e.g. `plan`, `step`, `answer` for AutoRag).
+
+      Concurrency: each call rotates the run's session id. If a second resume request
+      arrives while a first is in flight, the first wrapper exits silently on its next
+      checkpoint write; only the latest resume continues streaming events to its caller.
+
+      Terminal states are surfaced via HTTP status codes:
+        - 410 Gone: run is Completed (the final answer is in the body) OR Expired
+          (its resume cache is gone or no longer loadable). The body carries the original
+          question and, for Completed runs, the rendered result.
+        - 422 Unprocessable Content: run is in a Failed state
+        - 404 Not Found: run does not exist or is not owned by the caller
+    operationId: resumeAgentRun
+    tags:
+      - agentRuns
+    parameters:
+      - name: runId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    responses:
+      '200':
+        description: SSE stream of lifecycle and domain events for the resumed run.
+        content:
+          text/event-stream:
+            schema:
+              type: string
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '404':
+        $ref: '../components.yml#/components/responses/NotFound'
+      '410':
+        description: Run is already completed or its checkpoint expired.
+      '422':
+        description: Run is in a failed state.
+
+components:
+  schemas:
+    AgentRunStatusResponse:
+      type: object
+      required: [runId, agentKind, status, question, canResume]
+      properties:
+        runId:
+          type: string
+          format: uuid
+        agentKind:
+          type: string
+          example: auto_rag
+        question:
+          type: string
+          description: The original prompt that started the conversation.
+        status:
+          type: string
+          enum: [running, completed, failed, expired]
+        canResume:
+          type: boolean
+          description: True only when the status is `running` AND the checkpoint blob loads cleanly.
+        lastNodeId:
+          type: string
+        errorMessage:
+          type: string
+        result:
+          type: object
+          additionalProperties: true
+          description: Rendered AutoRag result for completed runs, in the same shape as `POST /query/autorag`'s response body.

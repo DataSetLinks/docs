@@ -3,11 +3,11 @@ info:
   title: DataLinks
   version: 1.0.0
 security:
-  - bearerAuth: []
-  - openId: [implicit]
+  - bearerAuth: [ ]
+  - openId: [ implicit ]
+  - openId-dev: [ implicit ]
 servers:
-  - url: https://api.datalinks.com/api/v1
-    description: production server
+  - url: /api/v1
 paths:
   /a2a:
     $ref: './paths/a2a.yml#/listAgents'
@@ -188,6 +188,8 @@ components:
   securitySchemes:
     bearerAuth:
       $ref: './components.yml#/components/securitySchemes/bearerAuth'
+    openId-dev:
+      $ref: './components.yml#/components/securitySchemes/openId-dev'
     openId:
       $ref: './components.yml#/components/securitySchemes/openId'
   examples:

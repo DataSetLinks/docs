@@ -1,0 +1,131 @@
+listAllDatasets:
+  get:
+    summary: List all datasets
+    description: Retrieve all datasets visible to the authenticated user.
+    operationId: listAllDatasets
+    tags:
+      - schema
+      - datasets
+    responses:
+      '200':
+        $ref: '../components.yml#/components/responses/ListOfDatasets'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+
+listUserNamespaces:
+  get:
+    summary: List user namespaces
+    description: Retrieve namespaces for a specific user. Use 'self' for the current user.
+    operationId: listUserNamespaces
+    tags:
+      - schema
+      - namespaces
+    parameters:
+      - name: user
+        in: path
+        required: true
+        description: Username or 'self' for the current user.
+        schema:
+          type: string
+        example: self
+    responses:
+      '200':
+        $ref: '#/components/responses/ListOfNamespaces'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '404':
+        description: The user was not found.
+
+listDatasetsWithinNamespace:
+  get:
+    summary: List datasets within namespace
+    description: Retrieve datasets within a specific namespace for a user. Use 'self' for the current user.
+    operationId: listDatasetsWithinNamespace
+    tags:
+      - schema
+      - datasets
+    parameters:
+      - name: user
+        in: path
+        required: true
+        description: Username or 'self' for the current user.
+        schema:
+          type: string
+        example: self
+      - $ref: '../components.yml#/components/parameters/Namespace'
+    responses:
+      '200':
+        $ref: '../components.yml#/components/responses/ListOfDatasets'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '404':
+        description: The user or namespace was not found.
+
+updateSortOrder:
+  put:
+    summary: Update dataset sort order
+    description: Update the sort order of columns in a dataset.
+    operationId: updateSortOrder
+    tags:
+      - dataset
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+      - $ref: '../components.yml#/components/parameters/Username'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdateSortOrderRequest'
+    responses:
+      '200':
+        description: Reorders columns.
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '403':
+        $ref: '../components.yml#/components/responses/Forbidden'
+      '404':
+        description: The dataset was not found or is not accessible.
+      '422':
+        $ref: '../components.yml#/components/responses/UnprocessableContent'
+
+components:
+  schemas:
+    ApiNamespace:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the namespace.
+          example: "cinematography"
+        owner:
+          type: string
+          format: uuid
+          description: UUID of the namespace owner.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      required:
+        - name
+        - owner
+
+    UpdateSortOrderRequest:
+      type: object
+      properties:
+        order:
+          type: array
+          items:
+            type: string
+          description: Ordered list of all column names in the desired sequence.
+          example: [ "id", "name", "age", "department", "location" ]
+      required:
+        - order
+
+  responses:
+    ListOfNamespaces:
+      description: Returns a list of namespaces accessible to the user.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ApiNamespace'

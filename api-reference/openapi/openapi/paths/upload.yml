@@ -1,0 +1,238 @@
+prepareMultipartUpload:
+  post:
+    summary: Prepare multipart upload
+    description: Initiate a multipart upload and get presigned URLs for all parts.
+    operationId: prepareMultipartUpload
+    tags:
+      - multipart-upload
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Username'
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PrepareMultipartRequest'
+    responses:
+      '200':
+        description: Returns multipart upload details, including presigned URLs.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrepareMultipartResponse'
+      '400':
+        $ref: '../components.yml#/components/responses/BadRequest'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '500':
+        description: Failed to prepare the multipart upload.
+        content:
+          application/json:
+            schema:
+              $ref: '../components.yml#/components/schemas/ErrorResponse'
+
+finishMultipartUpload:
+  post:
+    summary: Finish multipart upload
+    description: Finish a multipart upload by providing all part ETags.
+    operationId: finishMultipartUpload
+    tags:
+      - multipart-upload
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Username'
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FinishedMultipartRequest'
+    responses:
+      '201':
+        description: Completes the multipart upload and returns the ingestion id.
+        content:
+          application/json:
+            schema:
+              $ref: '../components.yml#/components/schemas/CreatedIngestionTrackingResponse'
+      '400':
+        $ref: '../components.yml#/components/responses/BadRequest'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '500':
+        description: Failed to complete the multipart upload.
+        content:
+          application/json:
+            schema:
+              $ref: '../components.yml#/components/schemas/ErrorResponse'
+
+abortMultipartUpload:
+  post:
+    summary: Abort multipart upload
+    description: Abort a multipart upload and clean up partial data.
+    operationId: abortMultipartUpload
+    tags:
+      - multipart-upload
+    parameters:
+      - $ref: '../components.yml#/components/parameters/Username'
+      - $ref: '../components.yml#/components/parameters/Namespace'
+      - $ref: '../components.yml#/components/parameters/DatasetName'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AbortMultipartRequest'
+    responses:
+      '200':
+        description: Aborts the multipart upload and cleans up partial data.
+      '400':
+        $ref: '../components.yml#/components/responses/BadRequest'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+      '500':
+        description: Failed to abort the multipart upload.
+        content:
+          application/json:
+            schema:
+              $ref: '../components.yml#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    PrepareMultipartRequest:
+      type: object
+      properties:
+        filename:
+          type: string
+          description: Name of the file being uploaded.
+          example: 'large-data.csv'
+        size:
+          type: integer
+          format: int64
+          description: Size of the file in bytes.
+          example: 73473457
+      required:
+        - filename
+        - size
+
+    PrepareMultipartResponse:
+      type: object
+      properties:
+        uploadId:
+          type: string
+          description: Unique identifier for the multipart upload session.
+          example: '2~VmxqYXRlRDZWfjJrRWRiZ2FEQXk3dHI4DGhGLygtTmQNXEZPQXFzMVZOZTUgdEdrXCEyNStkQUp3U3Q2RjJqSkV4MFNBOWxJCk0yIHEkfcQ'
+        key:
+          type: string
+          description: Generated S3 object key.
+          example: 'uploads/data/20240301-143022-uuid.json'
+        partSize:
+          type: integer
+          format: int64
+          description: Size of each part in bytes (8MB).
+          example: 8388608
+        presignedUrls:
+          type: array
+          items:
+            $ref: '#/components/schemas/PresignedUrlItem'
+          description: Array of presigned URLs for multipart upload.
+          minItems: 1
+          maxItems: 10000
+      required:
+        - uploadId
+        - key
+        - partSize
+        - presignedUrls
+
+    PresignedUrlItem:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Presigned URL for uploading this part.
+          example: 'https://my-data-bucket.s3.amazonaws.com/uploads/data/20240301-143022-uuid.json?partNumber=1&uploadId=...'
+        size:
+          type: integer
+          format: int64
+          description: Exact number of bytes to upload to this URL. Use this value to slice the file — the last part will be smaller than partSize when the file size is not a multiple of partSize.
+          example: 8388608
+      required:
+        - url
+        - size
+
+    FinishedMultipartRequest:
+      type: object
+      properties:
+        uploadId:
+          type: string
+          description: Upload ID from the prepare response.
+          example: '2~VmxqYXRlRDZWfjJrRWRiZ2FEQXk3dHI4DGhGLygtTmQNXEZPQXFzMVZOZTUgdEdrXCEyNStkQUp3U3Q2RjJqSkV4MFNBOWxJCk0yIHEkfcQ'
+        key:
+          type: string
+          description: S3 object key from the prepare response.
+          example: 'uploads/data/20240301-143022-uuid.json'
+        parts:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinishedMultipartItem'
+          description: Array of completed parts with their ETags.
+          minItems: 1
+        name:
+          type: string
+          description: Optional name/label for the ingestion (e.g., original filename).
+          example: "sales-data-2024.csv"
+        infer:
+          $ref: '../components.yml#/components/schemas/IngestRequestInfer'
+          nullable: true
+          description: Optional inference pipeline steps to run on each batch of data after reading from S3.
+        link:
+          $ref: '../components.yml#/components/schemas/IngestLink'
+          nullable: true
+          description: Optional entity resolution configuration.
+        inferBatchSize:
+          type: integer
+          nullable: true
+          description: Number of rows per LLM inference batch. Defaults to 1000. Reduce for large files to avoid S3 read timeouts caused by slow LLM processing.
+          example: 100
+        dataDescription:
+          $ref: '../components.yml#/components/schemas/DataDescription'
+          nullable: true
+        schemaDefinition:
+          $ref: '../components.yml#/components/schemas/SchemaDefinition'
+          nullable: true
+      required:
+        - uploadId
+        - key
+        - parts
+
+    FinishedMultipartItem:
+      type: object
+      properties:
+        partNumber:
+          type: integer
+          description: Part number (1-based)
+          example: 1
+        etag:
+          type: string
+          description: ETag returned by S3 after uploading the part.
+          example: 'd41d8cd98f00b204e9800998ecf8427e'
+      required:
+        - partNumber
+        - etag
+
+    AbortMultipartRequest:
+      type: object
+      properties:
+        uploadId:
+          type: string
+          description: Upload ID to abort.
+          example: '2~VmxqYXRlRDZWfjJrRWRiZ2FEQXk3dHI4DGhGLygtTmQNXEZPQXFzMVZOZTUgdEdrXCEyNStkQUp3U3Q2RjJqSkV4MFNBOWxJCk0yIHEkfcQ'
+        key:
+          type: string
+          description: S3 object key to abort.
+          example: 'uploads/data/20240301-143022-uuid.json'
+      required:
+        - uploadId
+        - key

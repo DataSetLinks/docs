@@ -1,0 +1,371 @@
+queryData:
+  post:
+    summary: Query data
+    description: Execute an ontology query.
+    operationId: queryData
+    tags:
+      - query
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/QueryDataRequest'
+    responses:
+      '200':
+        $ref: '#/components/responses/QueryResponse'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+
+autorag:
+  post:
+    summary: Run AutoRAG agent over all data
+    description: Uses the AutoRAG agent to answer a question about any data that the user can access.
+    operationId: autorag
+    tags:
+      - autorag
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AutoRagRequest'
+    responses:
+      '200':
+        $ref: '#/components/responses/AutoRagResponse'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+
+autoragStream:
+  post:
+    summary: Run AutoRAG agent with streaming response
+    description: |
+      Uses the AutoRAG agent to answer a question about any data that the user can access.
+      Returns results as a Server-Sent Events (SSE) stream with incremental updates.
+
+      The stream emits the following event types in order:
+      - `plan`: The execution plan with a list of steps to be performed.
+      - `step`: One event per step, containing the instruction, query, and result data.
+      - `answer`: The final synthesized answer to the user's question.
+      - `error`: Emitted if an error occurs during processing (instead of answer).
+    operationId: autoragStream
+    tags:
+      - autorag
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AutoRagRequest'
+    responses:
+      '200':
+        $ref: '#/components/responses/AutoRagStreamResponse'
+      '401':
+        $ref: '../components.yml#/components/responses/Unauthorized'
+
+components:
+  schemas:
+    QueryDataRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        namespace:
+          type: string
+        dataset:
+          type: string
+        query:
+          type: string
+          default: ""
+        naturalLanguageQuery:
+          type: string
+        model:
+          type: string
+        provider:
+          type: string
+        explainRequested:
+          type: boolean
+      required:
+        - username
+        - namespace
+
+    AutoRagRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        namespace:
+          type: string
+        query:
+          type: string
+          example: "What do llamas drink to cool themselves down?"
+        helperPrompt:
+          type: string
+          example: "You're a prophet of the alpacalypse. Your task is to spit the word!"
+        model:
+          type: string
+        provider:
+          type: string
+        conversationId:
+          type: string
+          description: "Existing conversation to continue. Omit to start a new conversation; the id is returned on the run-started SSE event."
+      required:
+        - username
+        - namespace
+        - query
+
+    QueryResponseData:
+      type: object
+      properties:
+        data:
+          $ref: '../components.yml#/components/schemas/DataArray'
+        explainResults:
+          $ref: '#/components/schemas/QueryExplainResponse'
+        metadata:
+          $ref: '#/components/schemas/QueryResponseMetadata'
+        resultType:
+          $ref: '#/components/schemas/OperationResult'
+      required:
+        - data
+        - metadata
+
+    QueryResponseMetadata:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Number of results returned.
+        executedQuery:
+          type: string
+          description: The actual query that was executed.
+        originalQuery:
+          type: string
+          description: The original query provided by the user.
+        startingDataset:
+          type: string
+          description: The initial dataset used when evaluating the query. For linked queries, this is the dataset where the query begins.
+        finalDataset:
+          type: string
+          description: The dataset that the query ultimately returns results from. For linked queries, this is the final dataset after following links.
+
+    QueryExplainResponse:
+      type: object
+      description: Explain results for the query.
+      properties:
+        id:
+          type: string
+          description: Id of the step.
+          example: "930f9d0d-eb0e-4e2f-9b1f-91855efe6b94"
+        datasetQueriesStat:
+          $ref: '#/components/schemas/QueryExplainResponseDatasetQueriesStat'
+        start:
+          type: string
+          format: date-time
+          description: Timestamp of the step start.
+          example: "2024-03-01T14:30:22.000Z"
+        duration:
+          type: string
+          format: duration
+          description: Duration of the step in ISO 8601 format.
+          example: "PT1M30S"
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryExplainResponse'
+      required:
+        - id
+        - datasetQueriesStat
+        - start
+        - duration
+        - children
+
+    QueryExplainResponseDatasetQueriesStat:
+      type: object
+      description: Contains how much data was queried from dataset.
+      properties:
+        username:
+          type: string
+          description: Username that dataset belong to
+        namespace:
+          type: string
+          description: Namespace dataset belongs to.
+        dataset:
+          type: string
+          description: Name of dataset.
+        resultCount:
+          type: integer
+          format: int64
+          description: Number of results returned from the dataset.
+      required:
+        - username
+        - namespace
+        - dataset
+        - resultCount
+
+    OperationResult:
+      type: string
+      description: Type for the result of an operation.
+
+    AutoRagResponseData:
+      type: object
+      properties:
+        response:
+          type: string
+          description: Final response generated for the user's question.
+        steps:
+          type: array
+          description: List of steps executed during the AutoRAG process.
+          items:
+            type: object
+            properties:
+              instruction:
+                type: string
+                description: The instruction generated and executed for this step.
+              query:
+                type: string
+                description: The query derived from the instruction.
+              reasoning:
+                type: string
+                description: The reasoning produced by the LLM when generating the query for this step.
+              data:
+                $ref: '../components.yml#/components/schemas/DataArray'
+            required:
+              - instruction
+              - query
+              - reasoning
+              - data
+      required:
+        - response
+        - steps
+
+    AutoRagPlanningStartedEvent:
+      type: object
+      description: >-
+        SSE lifecycle event signalling that the agent has started planning. Event name is
+        "planningStarted". The event name carries the meaning; the body is an empty object.
+
+    AutoRagStepStartedEvent:
+      type: object
+      description: SSE lifecycle event signalling that a plan step has started. Event name is "stepStarted".
+      properties:
+        index:
+          type: integer
+          description: Zero-based index of the step that just started.
+        instruction:
+          type: string
+          description: The plan instruction for this step.
+      required:
+        - index
+        - instruction
+
+    AutoRagQueryExecutingEvent:
+      type: object
+      description: >-
+        SSE lifecycle event signalling that the query for a step is now executing against the data.
+        Event name is "queryExecuting".
+      properties:
+        index:
+          type: integer
+          description: Zero-based index of the step whose query is executing.
+      required:
+        - index
+
+    AutoRagAnswerStartedEvent:
+      type: object
+      description: >-
+        SSE lifecycle event signalling that the agent has started generating the final answer. Event
+        name is "answerStarted". The event name carries the meaning; the body is an empty object.
+
+    AutoRagPlanEvent:
+      type: object
+      description: SSE event containing the execution plan. Event name is "plan".
+      properties:
+        steps:
+          type: array
+          description: List of step descriptions that will be executed.
+          items:
+            type: string
+        reasoning:
+          type: string
+          description: The reasoning produced by the LLM when generating the plan.
+      required:
+        - steps
+        - reasoning
+
+    AutoRagStepEvent:
+      type: object
+      description: SSE event containing the result of a single execution step. Event name is "step".
+      properties:
+        index:
+          type: integer
+          description: Zero-based index of this step in the plan.
+        instruction:
+          type: string
+          description: The instruction generated and executed for this step.
+        query:
+          type: string
+          description: The query derived from the instruction.
+        reasoning:
+          type: string
+          description: The reasoning produced by the LLM when generating the query for this step.
+        data:
+          $ref: '../components.yml#/components/schemas/DataArray'
+      required:
+        - index
+        - instruction
+        - query
+        - reasoning
+        - data
+
+    AutoRagAnswerEvent:
+      type: object
+      description: SSE event containing the final answer. Event name is "answer".
+      properties:
+        response:
+          type: string
+          description: The final synthesized answer to the user's question.
+      required:
+        - response
+
+    AutoRagErrorEvent:
+      type: object
+      description: SSE event emitted when an error occurs. Event name is "error".
+      properties:
+        message:
+          type: string
+          description: Error message describing what went wrong.
+      required:
+        - message
+
+    AutoRagStreamEvent:
+      oneOf:
+        - $ref: '#/components/schemas/AutoRagPlanEvent'
+        - $ref: '#/components/schemas/AutoRagStepEvent'
+        - $ref: '#/components/schemas/AutoRagAnswerEvent'
+        - $ref: '#/components/schemas/AutoRagErrorEvent'
+        - $ref: '#/components/schemas/AutoRagPlanningStartedEvent'
+        - $ref: '#/components/schemas/AutoRagStepStartedEvent'
+        - $ref: '#/components/schemas/AutoRagQueryExecutingEvent'
+        - $ref: '#/components/schemas/AutoRagAnswerStartedEvent'
+
+  responses:
+    QueryResponse:
+      description: Returns query results.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/QueryResponseData'
+
+    AutoRagResponse:
+      description: Response containing step-by-step RAG execution results and the final answer.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AutoRagResponseData'
+
+    AutoRagStreamResponse:
+      description: SSE stream of AutoRAG execution events.
+      content:
+        text/event-stream:
+          schema:
+            $ref: '#/components/schemas/AutoRagStreamEvent'
