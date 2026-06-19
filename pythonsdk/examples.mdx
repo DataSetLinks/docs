@@ -483,3 +483,172 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
+---
+
+# A2A Client (Agent2Agent Protocol)
+
+```python
+# This example talks to a DataLinks agent over the Agent2Agent (A2A) protocol
+# using the official A2A Python SDK (`a2a-sdk`)
+#
+# DataLinks exposes every agent as a standard A2A 1.0 server:
+#
+#   GET  {host}/a2a                                          -> list agents (public)
+#   GET  {host}/a2a/{agent}/.well-known/agent-card.json      -> AgentCard (public)
+#   POST {host}/a2a/{agent}                                  -> JSON-RPC (bearer auth)
+#
+# So any A2A-compliant client can drive it. Here we:
+#   1. discover the available agents,
+#   2. resolve the chosen agent's AgentCard,
+#   3. wire the DataLinks API key as the bearer credential for the card's
+#      declared security scheme(s),
+#   4. stream a natural-language question, passing the target namespace in the
+#      message metadata (the server reads `message.metadata.namespace`).
+#
+# Install the extra dependency first:
+#   uv pip install a2a-sdk httpx
+#
+# Run it (reads DL_HOST / DL_API_KEY / DL_NAMESPACE from the environment / .env):
+#   uv run python examples/a2a_client.py "How many orders were placed today?"
+#   # optionally pick an agent: DL_A2A_AGENT=nl2ql uv run python examples/a2a_client.py "..."
+
+import asyncio
+import os
+import sys
+from pprint import pformat
+from uuid import uuid4
+
+import httpx
+from google.protobuf.json_format import MessageToDict
+from google.protobuf.struct_pb2 import Struct
+
+from a2a.client import A2ACardResolver, AuthInterceptor, ClientConfig, ClientFactory
+from a2a.client import ClientCallContext, InMemoryContextCredentialStore
+from a2a.types import Message, Part, Role, SendMessageConfiguration, SendMessageRequest, TaskState
+
+from datalinks.api import DLConfig
+
+SESSION_ID = "datalinks-a2a-example"
+
+
+async def list_agents(http: httpx.AsyncClient, host: str) -> list[dict]:
+    """Return the agents DataLinks exposes over A2A (the public `/a2a` listing)."""
+    resp = await http.get(f"{host}/a2a")
+    resp.raise_for_status()
+    return resp.json()
+
+
+def render(response) -> None:
+    """Print a single streamed A2A event.
+
+    A2A streaming yields a `StreamResponse` whose `payload` oneof is one of
+    task / message / status_update / artifact_update. We pull text out of
+    whichever variant arrived.
+    """
+    kind = response.WhichOneof("payload")
+
+    if kind == "message":
+        _print_parts(response.message.parts)
+    elif kind == "artifact_update":
+        artifact = response.artifact_update.artifact
+        print(f"\n[{artifact.name or artifact.artifact_id}]")
+        _print_parts(artifact.parts)
+    elif kind == "status_update":
+        status = response.status_update.status
+        print(f"\n[status: {TaskState.Name(status.state)}]", flush=True)
+        if status.HasField("message"):
+            _print_parts(status.message.parts)
+    elif kind == "task":
+        task = response.task
+        print(f"\n[task {task.id}: {TaskState.Name(task.status.state)}]", flush=True)
+        for artifact in task.artifacts:
+            print(f"[{artifact.name or artifact.artifact_id}]")
+            _print_parts(artifact.parts)
+
+
+def _pprint(value, indent: str = "") -> None:
+    """Pretty-print a nested dict/list, prefixing every line with `indent`."""
+    text = pformat(value, width=100, sort_dicts=False)
+    for line in text.splitlines():
+        print(f"{indent}{line}")
+
+
+def _print_parts(parts) -> None:
+    # The nl2ql agent returns the generated query as a TextPart and the result
+    # rows as a DataPart (`part.data`). Handling only text drops the rows — which
+    # is why the query was the only thing showing up.
+    for part in parts:
+        content = part.WhichOneof("content")
+        if content == "text":
+            print(part.text)
+        elif content == "data":
+            payload = MessageToDict(part.data)  # protobuf Value -> native dict/list
+            rows = payload.get("rows") if isinstance(payload, dict) else None
+            if rows is not None:
+                print(f"  {len(rows)} row(s):")
+                _pprint(rows, indent="    ")
+            else:
+                _pprint(payload, indent="  ")
+
+
+async def ask(host: str, api_key: str, namespace: str, agent_name: str, question: str) -> None:
+    async with httpx.AsyncClient(timeout=httpx.Timeout(120.0)) as http:
+        # 1. Resolve the agent's AgentCard from its discovery document.
+        agent_base = f"{host}/a2a/{agent_name}"
+        card = await A2ACardResolver(http, base_url=agent_base).get_agent_card()
+
+        # 2. Register the bearer credential for whatever scheme(s) the card declares
+        #    (DataLinks uses bearerAuth / openId — both are sent as `Bearer <key>`).
+        store = InMemoryContextCredentialStore()
+        for requirement in card.security_requirements:
+            for scheme_name in requirement.schemes:
+                await store.set_credentials(SESSION_ID, scheme_name, api_key)
+
+        # 3. Build a streaming client that injects the credential on every call.
+        factory = ClientFactory(ClientConfig(httpx_client=http, streaming=True))
+        client = factory.create(card, interceptors=[AuthInterceptor(store)])
+
+        # 4. Build the message; the target namespace travels in the metadata.
+        metadata = Struct()
+        metadata.update({"namespace": namespace})
+        request = SendMessageRequest(
+            message=Message(
+                message_id=str(uuid4()),
+                role=Role.ROLE_USER,
+                parts=[Part(text=question)],
+                metadata=metadata,
+            ),
+            configuration=SendMessageConfiguration(accepted_output_modes=["text"]),
+        )
+
+        # 5. Stream the answer. The ClientCallContext.sessionId matches the
+        #    credential store key set above.
+        context = ClientCallContext(state={"sessionId": SESSION_ID})
+        print(f"Q: {question}\nA: ", end="", flush=True)
+        async for response in client.send_message(request, context=context):
+            render(response)
+        print()
+
+
+async def main() -> None:
+    config = DLConfig.from_env()
+    question = " ".join(sys.argv[1:]) or "What can you tell me about this dataset?"
+
+    async with httpx.AsyncClient(timeout=httpx.Timeout(30.0)) as http:
+        agents = await list_agents(http, config.host)
+
+    if not agents:
+        print("No A2A agents are exposed by this DataLinks server.", file=sys.stderr)
+        return
+
+    agent_name = os.getenv("DL_A2A_AGENT") or agents[0]["name"]
+    print(f"Available A2A agents: {', '.join(a['name'] for a in agents)}")
+    print(f"Using agent: {agent_name} (namespace: {config.namespace})\n")
+
+    await ask(config.host, config.apikey, config.namespace, agent_name, question)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
