@@ -2846,9 +2846,8 @@ components:
           example: cinematography
         owner:
           type: string
-          description: UUID of the namespace owner.
-          format: uuid
-          example: 550e8400-e29b-41d4-a716-446655440000
+          description: Username of the namespace owner.
+          example: datalinks
     UpdateSortOrderRequest:
       required:
         - order
