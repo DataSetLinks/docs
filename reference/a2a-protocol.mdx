@@ -1,0 +1,119 @@
+---
+title: "A2A Protocol Reference"
+description: "Endpoints, AgentCard, agent catalog, and streaming event types for the DataLinks Agent2Agent (A2A) interface."
+sidebarTitle: "A2A Protocol"
+---
+
+{/*
+  BEFORE PUBLISHING - confirm these product facts (see TODO markers below):
+  1. Public A2A host/base URL.
+  2. The full list of publicly exposed agents and each one's description.
+  3. Release status (GA / beta / preview) and any plan or rate-limit restrictions.
+  4. A real AgentCard payload and a real streamed DataPart, to replace the shape-only samples.
+*/}
+
+DataLinks exposes its agents as standard **Agent2Agent (A2A) 1.0** servers. This page is the lookup reference for the endpoints, authentication, agent catalog, message format, and streaming event types. For a step-by-step walkthrough, see [Connect an Agent to DataLinks over A2A](/a2a/general-a2a).
+
+## Endpoints
+
+Each agent is reachable at three endpoints under `{host}/a2a`:
+
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| `GET` | `/a2a` | Public | List the agents this server exposes. Returns a JSON array of agent objects (each has at least a `name`). |
+| `GET` | `/a2a/{agent}/.well-known/agent-card.json` | Public | Return the agent's **AgentCard** discovery document. |
+| `POST` | `/a2a/{agent}` | Bearer | Send messages to the agent (JSON-RPC 2.0, supports streaming). |
+
+{/* TODO(confirm): production {host} value, e.g. https://api.datalinks.com */}
+
+## Authentication
+
+The `POST` endpoint requires a **bearer token**: your DataLinks API token, sent as `Authorization: Bearer <token>`.
+
+The AgentCard declares which security scheme(s) it accepts. DataLinks agents use `bearerAuth` and `openId`, both satisfied by sending the API token as a bearer credential. A compliant client reads `card.security_requirements` and registers the same token for each declared scheme rather than assuming a scheme name.
+
+See [Get an API token](/how-to/get-api-token) for issuing a token.
+
+## Agent Catalog
+
+`GET /a2a` returns the agents currently exposed. The confirmed agent is:
+
+| Agent | Purpose |
+| --- | --- |
+| `nl2ql` | Natural-language-to-query. Translates a plain-language question into a DataLinks query, runs it against the target namespace, and returns the generated query plus the result rows. |
+
+{/* TODO(confirm): list all publicly exposed agents and descriptions. The backend defines additional internal agents (QueryHandler, Planner, AutoRag, InferDataDescription, InferSchemaDescription); confirm which, if any, are exposed over A2A. */}
+
+<Note>
+  Do not hardcode a single agent name. Call `GET /a2a` and select from the returned list so your client keeps working as the catalog changes.
+</Note>
+
+## Message Format
+
+Send a user message whose parts carry your question. The **target namespace is passed in the message metadata**, not in the URL or body:
+
+```json
+{
+  "message": {
+    "messageId": "<uuid>",
+    "role": "ROLE_USER",
+    "parts": [{ "text": "How many orders were placed today?" }],
+    "metadata": { "namespace": "<your-namespace>" }
+  },
+  "configuration": { "acceptedOutputModes": ["text"] }
+}
+```
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `message.messageId` | Yes | Unique per message (a UUID). |
+| `message.role` | Yes | `ROLE_USER` for requests. |
+| `message.parts` | Yes | The question, as one or more `TextPart`s. |
+| `message.metadata.namespace` | Yes | The namespace the agent queries. The server reads this key. |
+| `configuration.acceptedOutputModes` | No | Output modes the client accepts, for example `["text"]`. |
+
+## Streaming Events
+
+A streaming call yields a sequence of `StreamResponse` events. Each event's `payload` is exactly one of the following:
+
+| Event (`payload`) | Meaning |
+| --- | --- |
+| `task` | The overall task, its `id`, `status.state`, and any `artifacts`. |
+| `status_update` | A transition in the task's lifecycle. Carries a `TaskState` and may include a message. |
+| `message` | A message from the agent, containing parts. |
+| `artifact_update` | A produced result delivered as an artifact, containing parts. |
+
+Task states are reported via `TaskState` (for example working, completed, failed). Read `response.WhichOneof("payload")` to branch on the event type.
+
+## Part Types
+
+Messages and artifacts contain **parts**. Each part's content is one of:
+
+| Part content | Field | Contains |
+| --- | --- | --- |
+| `text` | `part.text` | A string. For `nl2ql`, this is the generated query. |
+| `data` | `part.data` | A structured payload (protobuf `Struct`). For `nl2ql`, this holds the result under a `rows` key. |
+
+Convert a `DataPart` to native Python with `google.protobuf.json_format.MessageToDict(part.data)`.
+
+<Warning>
+  A response can contain both a `TextPart` and a `DataPart`. Clients that handle only text will receive the generated query but silently drop the result rows. Always handle `DataPart`s.
+</Warning>
+
+## AgentCard
+
+The discovery document a client fetches before connecting. The fields the reference client relies on:
+
+| Field | Used for |
+| --- | --- |
+| `security_requirements[].schemes` | The security scheme name(s) to register the bearer token against. |
+| capabilities / skills | What the agent can do (per the A2A spec). |
+| service endpoint | Where the client sends messages. |
+
+{/* TODO(confirm): paste a real AgentCard payload from GET /a2a/nl2ql/.well-known/agent-card.json so this table can be replaced with the actual documented schema. */}
+
+## Related
+
+- [Connect an Agent to DataLinks over A2A](/a2a/general-a2a) - step-by-step guide.
+- [A2A Client example](/pythonsdk/examples#a2a-client-agent2agent-protocol) - complete runnable client.
+- [Get an API token](/how-to/get-api-token) - issuing the bearer credential.

@@ -1,0 +1,245 @@
+---
+title: "Connect an Agent to DataLinks over A2A"
+description: "Connect any A2A-compliant client or agent framework to a DataLinks agent using the Agent2Agent protocol."
+sidebarTitle: "General Connection Guide"
+---
+
+{/*
+  BEFORE PUBLISHING - confirm these product facts (see TODO markers below):
+  1. Public A2A host/base URL (this draft uses the generic {host} from the SDK example).
+  2. The full list of publicly exposed agents (only `nl2ql` is confirmed from the example).
+  3. Release status (GA / beta / preview) and any plan or rate-limit restrictions.
+*/}
+
+DataLinks exposes its agents over the **Agent2Agent (A2A)** protocol, an open standard for programs and agents to talk to each other over HTTP. Every DataLinks agent is a standard **A2A 1.0 server**, so any A2A-compliant client or framework can discover it, authenticate, and stream answers back, without a DataLinks-specific client library.
+
+This guide covers:
+
+1. Prerequisites
+2. Installing the required dependencies
+3. Configuring your environment
+4. How the DataLinks A2A endpoints are laid out
+5. Connecting and asking a question
+6. Handling the streamed response
+7. Verifying the setup
+8. Troubleshooting common issues
+
+<Note>
+  Prefer native Python without a protocol layer? The DataLinks Python SDK has its own `ask` API. See [When to use A2A, MCP, or the SDK](#when-to-use-a2a-mcp-or-the-sdk) below.
+</Note>
+
+## Prerequisites
+
+Before starting, make sure you have:
+
+- A DataLinks API token. See [Get an API token](/how-to/get-api-token).
+- The **namespace** you want the agent to work against. You can find it under **My Data**.
+- Python 3.10+ (this guide uses the official `a2a-sdk` client; any A2A-compliant client works).
+
+## Install Required Dependencies
+
+The reference client uses the official A2A Python SDK and an async HTTP client:
+
+```bash
+uv pip install a2a-sdk httpx
+```
+
+If you also use the DataLinks Python SDK for configuration, install it as well:
+
+```bash
+uv pip install datalinks
+```
+
+## Configure Your Environment
+
+The client reads standard DataLinks settings from the environment (or a `.env` file):
+
+- `DL_HOST` - the DataLinks host that serves the A2A endpoints
+- `DL_API_KEY` - your DataLinks API token
+- `DL_NAMESPACE` - the namespace the agent should query
+- `DL_A2A_AGENT` - *(optional)* the agent to use; defaults to the first agent listed by the server
+
+{/* TODO(confirm): document the production host value here, e.g. api.datalinks.com. The MCP guide hardcodes mcp.datalinks.com; A2A needs its confirmed equivalent. */}
+
+<Info>
+  Alternatively, place these values in a `.env` file at the root of your project.
+</Info>
+
+## How the DataLinks A2A Endpoints Work
+
+DataLinks exposes every agent through three endpoints:
+
+| Endpoint | Auth | Purpose |
+| --- | --- | --- |
+| `GET {host}/a2a` | Public | List the agents this server exposes |
+| `GET {host}/a2a/{agent}/.well-known/agent-card.json` | Public | Fetch the agent's **AgentCard** (capabilities and security schemes) |
+| `POST {host}/a2a/{agent}` | Bearer token | Send messages (JSON-RPC, streaming) |
+
+The **AgentCard** is the key idea: it's a self-describing manifest that tells your client what the agent can do and how to authenticate. Your client reads the card first, then uses it to configure the connection, so nothing about the auth flow needs to be hardcoded.
+
+For the full endpoint, AgentCard, and event specification, see the [A2A Protocol Reference](/reference/a2a-protocol).
+
+## Connect and Ask a Question
+
+The flow has five steps: discover agents, resolve the chosen agent's card, register your API key as the bearer credential, send the message with the target namespace, and stream the answer.
+
+<Steps>
+  <Step title="Discover the available agents">
+    ```python
+    import httpx
+
+    async def list_agents(http: httpx.AsyncClient, host: str) -> list[dict]:
+        resp = await http.get(f"{host}/a2a")
+        resp.raise_for_status()
+        return resp.json()
+    ```
+  </Step>
+  <Step title="Resolve the AgentCard and register credentials">
+    Your API key is sent as a bearer token for whatever security scheme(s) the card declares (DataLinks uses `bearerAuth` / `openId`, both sent as `Bearer <key>`).
+
+    ```python
+    from a2a.client import (
+        A2ACardResolver, AuthInterceptor, ClientConfig, ClientFactory,
+        ClientCallContext, InMemoryContextCredentialStore,
+    )
+
+    SESSION_ID = "datalinks-a2a-example"
+
+    agent_base = f"{host}/a2a/{agent_name}"
+    card = await A2ACardResolver(http, base_url=agent_base).get_agent_card()
+
+    store = InMemoryContextCredentialStore()
+    for requirement in card.security_requirements:
+        for scheme_name in requirement.schemes:
+            await store.set_credentials(SESSION_ID, scheme_name, api_key)
+    ```
+  </Step>
+  <Step title="Build a streaming client">
+    ```python
+    factory = ClientFactory(ClientConfig(httpx_client=http, streaming=True))
+    client = factory.create(card, interceptors=[AuthInterceptor(store)])
+    ```
+  </Step>
+  <Step title="Send the message with the target namespace">
+    The namespace travels in the message metadata; the server reads `message.metadata.namespace`.
+
+    ```python
+    from uuid import uuid4
+    from google.protobuf.struct_pb2 import Struct
+    from a2a.types import (
+        Message, Part, Role, SendMessageConfiguration, SendMessageRequest,
+    )
+
+    metadata = Struct()
+    metadata.update({"namespace": namespace})
+
+    request = SendMessageRequest(
+        message=Message(
+            message_id=str(uuid4()),
+            role=Role.ROLE_USER,
+            parts=[Part(text=question)],
+            metadata=metadata,
+        ),
+        configuration=SendMessageConfiguration(accepted_output_modes=["text"]),
+    )
+    ```
+  </Step>
+  <Step title="Stream the answer">
+    ```python
+    context = ClientCallContext(state={"sessionId": SESSION_ID})
+    async for response in client.send_message(request, context=context):
+        render(response)   # see "Handling the streamed response" below
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+  A complete, runnable version of this client is in the Python SDK examples under [A2A Client (Agent2Agent Protocol)](/pythonsdk/examples#a2a-client-agent2agent-protocol).
+</Tip>
+
+## Handling the Streamed Response
+
+A2A streaming yields a sequence of typed events, not a single answer. Each event's `payload` is one of `task`, `message`, `status_update`, or `artifact_update`. Within a message or artifact, the content arrives as **parts**, and each part is either a **TextPart** or a **DataPart**.
+
+<Warning>
+  Handle **both** part types. Agents like `nl2ql` return the generated query as a `TextPart` and the result **rows as a DataPart**. If you only read text parts, the rows are silently dropped and you will see the query but not the data.
+</Warning>
+
+```python
+from google.protobuf.json_format import MessageToDict
+from a2a.types import TaskState
+
+def render(response) -> None:
+    kind = response.WhichOneof("payload")
+    if kind == "message":
+        _print_parts(response.message.parts)
+    elif kind == "artifact_update":
+        _print_parts(response.artifact_update.artifact.parts)
+    elif kind == "status_update":
+        status = response.status_update.status
+        print(f"[status: {TaskState.Name(status.state)}]")
+        if status.HasField("message"):
+            _print_parts(status.message.parts)
+    elif kind == "task":
+        task = response.task
+        print(f"[task {task.id}: {TaskState.Name(task.status.state)}]")
+        for artifact in task.artifacts:
+            _print_parts(artifact.parts)
+
+def _print_parts(parts) -> None:
+    for part in parts:
+        content = part.WhichOneof("content")
+        if content == "text":
+            print(part.text)
+        elif content == "data":
+            payload = MessageToDict(part.data)   # protobuf -> native dict/list
+            rows = payload.get("rows") if isinstance(payload, dict) else None
+            print(rows if rows is not None else payload)
+```
+
+## Verify the Connection
+
+To confirm everything is working:
+
+- `GET {host}/a2a` returns a non-empty list of agents.
+- Fetching the AgentCard for your chosen agent succeeds.
+- A simple question streams back a `status_update` reaching a completed state, followed by an answer.
+- No `401`/`403` authorization errors appear.
+
+## Troubleshooting
+
+**Authorization errors (401 / 403)**
+
+- Confirm your DataLinks API token is correct and current.
+- Make sure the token is sent as `Bearer <token>` with no extra spaces.
+- Confirm the scheme name you registered matches one the AgentCard declares.
+
+**No agents returned**
+
+- Confirm `DL_HOST` points at the DataLinks host that serves A2A.
+- Confirm A2A is enabled for your account. {/* TODO(confirm): availability / plan gating */}
+
+**You see the query but not the data**
+
+- You are only handling `TextPart`s. Handle `DataPart`s too (see the warning above).
+
+**Empty or hanging responses**
+
+- Increase the HTTP client timeout; some agent runs take longer than the default.
+- Confirm the `namespace` in the message metadata exists and you have access to it.
+
+## When to Use A2A, MCP, or the SDK
+
+DataLinks offers three ways to reach the same data. Pick by how you're building:
+
+| You want to... | Use |
+| --- | --- |
+| Talk to a DataLinks **agent** as a peer, from any A2A-compliant framework | **A2A** (this guide) |
+| Expose DataLinks as a **tool** inside an AI client (Claude Desktop, IDEs, agent frameworks that speak MCP) | [MCP](/mcp/general-mcp) |
+| Write native **Python** with no protocol layer | [Python SDK `ask`](/pythonsdk/examples) |
+
+## Next Steps
+
+- Read the [A2A Protocol Reference](/reference/a2a-protocol) for the full endpoint, AgentCard, and event details.
+- Try the [complete runnable client](/pythonsdk/examples#a2a-client-agent2agent-protocol).
+- Combine the agent's answers with your own workflow or multi-agent system.

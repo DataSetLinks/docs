@@ -43,6 +43,12 @@
                   "mcp/docs-mcp",
                   "mcp/claude-desktop"
                 ]
+              },
+              {
+                "group": "A2A Guides",
+                "pages": [
+                  "a2a/general-a2a"
+                ]
               }
             ]
           },
@@ -62,7 +68,8 @@
             "pages": [
               "reference/ai_inference",
               "reference/automodeler",
-              "reference/query_commands"
+              "reference/query_commands",
+              "reference/a2a-protocol"
             ]
           },
           {
