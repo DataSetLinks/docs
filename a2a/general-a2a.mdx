@@ -7,7 +7,7 @@ sidebarTitle: "General Connection Guide"
 DataLinks exposes its agents over the **Agent2Agent (A2A)** protocol, an open standard for programs and agents to talk to each other over HTTP. Every DataLinks agent is a standard **A2A 1.0 server**, so any A2A-compliant client or framework can discover it, authenticate, and stream answers back, without a DataLinks-specific client library.
 
 <Note>
-  A2A support is in **preview**. It's available to every account with no extra rate limits, but the surface may still change. Prefer native Python without a protocol layer? The DataLinks Python SDK has its own `ask` API. See [When to use A2A, MCP, or the SDK](#when-to-use-a2a-mcp-or-the-sdk) below.
+  A2A support is in **preview**. It's available to every account with no extra rate limits, but the surface may still change. Prefer native Python without a protocol layer? The DataLinks [Python SDK](/pythonsdk/index) has its own `ask` API. 
 </Note>
 
 This guide covers:
@@ -27,7 +27,7 @@ Before starting, make sure you have:
 
 - A DataLinks API token. See [Get an API token](/how-to/get-api-token). The same token you use for the REST API and SDK works for A2A.
 - The **namespace** you want the agent to work against. You can find it under **My Data**.
-- Python 3.10+ (this guide uses the official `a2a-sdk` client; any A2A-compliant client works).
+- Python 3.10\+ (this guide uses the official `a2a-sdk` client; any A2A-compliant client works).
 
 ## Install Required Dependencies
 
@@ -50,7 +50,7 @@ The client reads standard DataLinks settings from the environment (or a `.env` f
 - `DL_HOST` - the DataLinks host that serves the A2A endpoints: `https://api.datalinks.com/api/v1`
 - `DL_API_KEY` - your DataLinks API token
 - `DL_NAMESPACE` - the namespace the agent should query
-- `DL_A2A_AGENT` - *(optional)* the agent to use; defaults to the first agent listed by the server
+- `DL_A2A_AGENT` - _(optional)_ the agent to use; defaults to the first agent listed by the server
 
 <Info>
   Alternatively, place these values in a `.env` file at the root of your project.
@@ -85,7 +85,7 @@ The flow has five steps: discover agents, resolve the chosen agent's card, regis
   <Step title="Discover the available agents">
     ```python
     import httpx
-
+    
     async def list_agents(http: httpx.AsyncClient, host: str) -> list[dict]:
         resp = await http.get(f"{host}/a2a")
         resp.raise_for_status()
@@ -100,12 +100,12 @@ The flow has five steps: discover agents, resolve the chosen agent's card, regis
         A2ACardResolver, AuthInterceptor, ClientConfig, ClientFactory,
         ClientCallContext, InMemoryContextCredentialStore,
     )
-
+    
     SESSION_ID = "datalinks-a2a-example"
-
+    
     agent_base = f"{host}/a2a/{agent_name}"
     card = await A2ACardResolver(http, base_url=agent_base).get_agent_card()
-
+    
     store = InMemoryContextCredentialStore()
     for requirement in card.security_requirements:
         for scheme_name in requirement.schemes:
@@ -129,10 +129,10 @@ The flow has five steps: discover agents, resolve the chosen agent's card, regis
     from a2a.types import (
         Message, Part, Role, SendMessageConfiguration, SendMessageRequest,
     )
-
+    
     metadata = Struct()
     metadata.update({"namespace": namespace})   # optionally: "model", "provider"
-
+    
     request = SendMessageRequest(
         message=Message(
             message_id=str(uuid4()),
@@ -242,8 +242,8 @@ DataLinks offers three ways to reach the same data. Pick by how you're building:
 
 | You want to... | Use |
 | --- | --- |
-| Talk to a DataLinks **agent** as a peer, from any A2A-compliant framework | **A2A** (this guide) |
-| Expose DataLinks as a **tool** inside an AI client (Claude Desktop, IDEs, agent frameworks that speak MCP) | [MCP](/mcp/general-mcp) |
+| Talk to a DataLinks **agent** as a peer, from any A2A-compliant <br />framework | **A2A** (this guide) |
+| Expose DataLinks as a **tool** inside an AI client (Claude Desktop, <br />IDEs, agent frameworks that speak MCP) | [MCP](/mcp/general-mcp) |
 | Write native **Python** with no protocol layer | [Python SDK `ask`](/pythonsdk/examples) |
 
 ## Next Steps
