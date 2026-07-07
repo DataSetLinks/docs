@@ -1,0 +1,219 @@
+---
+title: "A2A Protocol Reference"
+description: "Endpoints, AgentCard, agent catalog, and streaming event types for the DataLinks Agent2Agent (A2A) interface."
+sidebarTitle: "A2A Protocol"
+---
+
+DataLinks exposes its agents as standard **Agent2Agent (A2A) 1.0** servers. This page is the lookup reference for the endpoints, authentication, agent catalog, message format, and streaming event types. For a step-by-step walkthrough, see [Connect an Agent to DataLinks over A2A](/a2a/general-a2a).
+
+<Note>
+  A2A support is in **preview**: available to every account with no extra rate limits, but the surface may still change.
+</Note>
+
+## Endpoints
+
+A2A lives under the API base URL, `https://api.datalinks.com/api/v1`. Each agent is reachable at three endpoints under `{host}/a2a`:
+
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| `GET` | `/a2a` | Public | List the agents this server exposes. Returns a JSON array of agent objects (`name`, `url`, `agentCard`). |
+| `GET` | `/a2a/{agent}/.well-known/agent-card.json` | Public | Return the agent's **AgentCard** discovery document. |
+| `POST` | `/a2a/{agent}` | Bearer | Send messages to the agent (JSON-RPC 2.0, supports streaming). |
+
+## Authentication
+
+The `POST` endpoint requires a **bearer token**: your DataLinks API token, sent as `Authorization: Bearer <token>`. The same token you use for the REST API and Python SDK works here.
+
+The AgentCard declares a single security scheme named **`bearer`** (`bearerFormat: JWT`). A compliant client reads `card.security_requirements` and registers the token for each declared scheme rather than assuming a scheme name.
+
+See [Get an API token](/how-to/get-api-token) for issuing a token.
+
+## Agent Catalog
+
+`GET /a2a` returns the two agents DataLinks exposes:
+
+| Agent | Purpose |
+| --- | --- |
+| `nl2ql` | Natural-language-to-query. Translates a plain-language question into a structured query, runs it against the target namespace, and returns the generated query plus the result rows. |
+| `assistant` | Retrieval-augmented answering. Plans a multi-step query strategy, runs the queries, and synthesises an answer. Same assistant as the `ask` endpoint. Accepts a `contextId` to continue a prior conversation. |
+
+Example response:
+
+```json
+[
+  {
+    "name": "nl2ql",
+    "url": "https://api.datalinks.com/api/v1/a2a/nl2ql",
+    "agentCard": "https://api.datalinks.com/api/v1/a2a/nl2ql/.well-known/agent-card.json"
+  },
+  {
+    "name": "assistant",
+    "url": "https://api.datalinks.com/api/v1/a2a/assistant",
+    "agentCard": "https://api.datalinks.com/api/v1/a2a/assistant/.well-known/agent-card.json"
+  }
+]
+```
+
+<Note>
+  Don't hardcode a single agent name. Call `GET /a2a` and select from the returned list so your client keeps working as the catalog changes.
+</Note>
+
+## Message Format
+
+Send messages with the JSON-RPC method `SendMessage` (single response) or `SendStreamingMessage` (SSE stream). The message parts carry your question. The **target namespace is passed in the message metadata**, not in the URL or body:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "1",
+  "method": "SendStreamingMessage",
+  "params": {
+    "message": {
+      "messageId": "<uuid>",
+      "role": "ROLE_USER",
+      "parts": [{ "text": "How many orders were placed today?" }],
+      "metadata": { "namespace": "<your-namespace>" }
+    },
+    "configuration": { "acceptedOutputModes": ["text", "data"] }
+  }
+}
+```
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `message.messageId` | Yes | Unique per message (a UUID). |
+| `message.role` | Yes | `ROLE_USER` for requests. |
+| `message.parts` | Yes | The question. The agent reads the first `TextPart`. |
+| `message.metadata.namespace` | Yes | The namespace the agent queries. The server reads this key from the message metadata. |
+| `message.metadata.model` | No | Override the LLM model the agent uses. |
+| `message.metadata.provider` | No | Override the LLM provider the agent uses. |
+| `message.contextId` | No | *(assistant only)* A prior `contextId` to continue a multi-turn conversation. |
+| `configuration.acceptedOutputModes` | No | Output modes the client accepts, for example `["text", "data"]`. |
+
+### JSON-RPC methods
+
+| Method | Purpose |
+| --- | --- |
+| `SendMessage` | Send a message and get a single `Task` result. |
+| `SendStreamingMessage` | Send a message and stream events over SSE. |
+| `GetTask` / `CancelTask` | Task lifecycle methods. Both agents are effectively stateless over A2A, so these return not-found / unsupported. |
+| `GetExtendedAgentCard` | Return the extended AgentCard (richer skill descriptions and examples). |
+
+## Streaming Events
+
+A streaming call (`SendStreamingMessage`) returns Server-Sent Events. Each SSE `data:` line is a JSON-RPC response wrapping one event under `result`:
+
+```json
+{ "jsonrpc": "2.0", "id": "1", "result": { "statusUpdate": { "…": "…" } } }
+```
+
+Each event's `payload` is exactly one of the following (proto3-JSON oneof; the wrapper key is shown in parentheses):
+
+| Event (`payload`) | Wrapper key | Meaning |
+| --- | --- | --- |
+| `task` | `task` | The overall task, its `id`, `status.state`, and any `artifacts`. |
+| `status_update` | `statusUpdate` | A transition in the task's lifecycle. Carries a `TaskState` and may include a message. |
+| `message` | `message` | A message from the agent, containing parts. |
+| `artifact_update` | `artifactUpdate` | A produced result delivered as an artifact, containing parts. |
+
+Task states are reported via `TaskState`, for example `TASK_STATE_WORKING`, `TASK_STATE_COMPLETED`, `TASK_STATE_FAILED`. Read `response.WhichOneof("payload")` to branch on the event type.
+
+### `nl2ql` stream sequence
+
+`nl2ql` emits four events: a `working` status, the generated query as an artifact, the rows as an artifact, then a `completed` status. A real stream for "list the tickets" (`taskId` / `contextId` / `timestamp` elided):
+
+```json
+{"jsonrpc":"2.0","id":"1","result":{"statusUpdate":{"status":{"state":"TASK_STATE_WORKING"}}}}
+{"jsonrpc":"2.0","id":"1","result":{"artifactUpdate":{"artifact":{"artifactId":"generated-query","name":"generated-query","parts":[{"text":"Ontology(\"test1/tickets\").limit(100)"}]}}}}
+{"jsonrpc":"2.0","id":"1","result":{"artifactUpdate":{"artifact":{"artifactId":"result-data","name":"result-data","parts":[{"data":{"rows":[{"id":"1","subject":"Cannot login","status":"open","created_at":"2024-01-15T10:00:00Z","__metadata":{"score":1.0}},{"id":"2","subject":"Billing issue","status":"closed","created_at":"2024-01-16T12:00:00Z","__metadata":{"score":1.0}}]}}]}}}}
+{"jsonrpc":"2.0","id":"1","result":{"statusUpdate":{"status":{"state":"TASK_STATE_COMPLETED"}}}}
+```
+
+### `assistant` stream sequence
+
+`assistant` streams its planning and execution: a `submitted` task, `working` statuses (with the plan carried as a text + data part, then each step's instruction), one `step-N` artifact per query step, then the final `answer` artifact and a `completed` status. A real (trimmed) stream:
+
+```json
+{"jsonrpc":"2.0","id":"1","result":{"task":{"id":"…","contextId":"…","status":{"state":"TASK_STATE_SUBMITTED"},"artifacts":[],"history":[]}}}
+{"jsonrpc":"2.0","id":"1","result":{"statusUpdate":{"status":{"state":"TASK_STATE_WORKING"}}}}
+{"jsonrpc":"2.0","id":"1","result":{"statusUpdate":{"status":{"state":"TASK_STATE_WORKING","message":{"role":"ROLE_AGENT","parts":[{"text":"This step retrieves all support tickets…"},{"data":{"steps":["Find `test1/tickets`."]}}],"messageId":"…-plan"}}}}}
+{"jsonrpc":"2.0","id":"1","result":{"statusUpdate":{"status":{"state":"TASK_STATE_WORKING","message":{"role":"ROLE_AGENT","parts":[{"text":"Find `test1/tickets`."}],"messageId":"…-step-0"}}}}}
+{"jsonrpc":"2.0","id":"1","result":{"artifactUpdate":{"artifact":{"artifactId":"step-0","name":"step-0","parts":[{"text":"Ontology(\"test1/tickets\").limit(100)"},{"data":{"rows":[{"id":"1","subject":"Cannot login","status":"open","__metadata":{"score":1.0}},{"id":"2","subject":"Billing issue","status":"closed","__metadata":{"score":1.0}}]}}],"metadata":{"index":0,"instruction":"Find `test1/tickets`.","reasoning":"Querying the 'test1/tickets' ontology class with a limit of 100…"}}}}}
+{"jsonrpc":"2.0","id":"1","result":{"artifactUpdate":{"artifact":{"artifactId":"answer","name":"answer","parts":[{"text":"There are **2** tickets in the dataset:\n\n* **Cannot login** (Status: open, Created: 2024-01-15)\n* **Billing issue** (Status: closed, Created: 2024-01-16)"}]}}}}
+{"jsonrpc":"2.0","id":"1","result":{"statusUpdate":{"status":{"state":"TASK_STATE_COMPLETED"}}}}
+```
+
+## Artifacts
+
+| Agent | Artifact | Parts | Contains |
+| --- | --- | --- | --- |
+| `nl2ql` | `generated-query` | `TextPart` | The generated query. |
+| `nl2ql` | `result-data` | `DataPart` | The result rows, under a `rows` key. |
+| `assistant` | `step-N` | `TextPart` + `DataPart` | Each step's query and its rows. Artifact `metadata` carries `index`, `instruction`, `reasoning`. |
+| `assistant` | `answer` | `TextPart` | The final synthesised answer. |
+
+## Part Types
+
+Messages and artifacts contain **parts**. A2A 1.0 parts are proto3-JSON, so a part has no `kind` discriminator; its content is one of:
+
+| Part content | Field | Contains |
+| --- | --- | --- |
+| `text` | `part.text` | A string. |
+| `data` | `part.data` | A structured object. For query results this is `{ "rows": [ … ] }`. |
+
+Convert a `DataPart` to native Python with `google.protobuf.json_format.MessageToDict(part.data)`.
+
+<Warning>
+  A response can contain both a `TextPart` and a `DataPart`. Clients that handle only text will receive the query or answer but silently drop the result rows. Always handle `DataPart`s.
+</Warning>
+
+<Note>
+  Rows preserve DataLinks internal `__`-prefixed fields (for example `__metadata`, which carries a match `score`), matching the `/query/ask` wire format. Filter them out if your consumer doesn't need them.
+</Note>
+
+## AgentCard
+
+The discovery document a client fetches before connecting. A live `nl2ql` card:
+
+```json
+{
+  "name": "NL2QL",
+  "description": "Translates a natural-language question into a structured query and executes it.",
+  "version": "1.0.0",
+  "capabilities": { "streaming": true, "pushNotifications": false, "extendedAgentCard": true },
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text", "data"],
+  "skills": [
+    {
+      "id": "nl2ql",
+      "name": "Natural language to query",
+      "description": "Generate and run a query from natural language.",
+      "tags": ["query", "nl2ql"]
+    }
+  ],
+  "securitySchemes": {
+    "bearer": { "httpAuthSecurityScheme": { "bearerFormat": "JWT", "scheme": "bearer" } }
+  },
+  "securityRequirements": [{ "schemes": { "bearer": { "list": [] } } }],
+  "supportedInterfaces": [
+    { "protocolBinding": "JSONRPC", "url": "https://api.datalinks.com/api/v1/a2a/nl2ql", "protocolVersion": "1.0" }
+  ],
+  "preferredTransport": "JSONRPC"
+}
+```
+
+The fields the reference client relies on:
+
+| Field | Used for |
+| --- | --- |
+| `securityRequirements[].schemes` | The security scheme name(s) to register the bearer token against (`bearer`). |
+| `capabilities` / `skills` | What the agent can do. |
+| `supportedInterfaces[].url` | Where the client sends messages. |
+
+The `assistant` card is identical in shape, with the `assistant` skill (`tags: ["assistant", "rag", "query"]`).
+
+## Related
+
+- [Connect an Agent to DataLinks over A2A](/a2a/general-a2a) - step-by-step guide.
+- [A2A Client example](/pythonsdk/examples#a2a-client-agent2agent-protocol) - complete runnable client.
+- [Get an API token](/how-to/get-api-token) - issuing the bearer credential.
