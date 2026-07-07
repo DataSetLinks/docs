@@ -619,7 +619,7 @@ async def ask(host: str, api_key: str, namespace: str, agent_name: str, question
                 parts=[Part(text=question)],
                 metadata=metadata,
             ),
-            configuration=SendMessageConfiguration(accepted_output_modes=["text", "data"]),
+            configuration=SendMessageConfiguration(accepted_output_modes=["text"]),
         )
 
         # 5. Stream the answer. The ClientCallContext.sessionId matches the
