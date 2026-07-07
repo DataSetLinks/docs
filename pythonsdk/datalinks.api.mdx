@@ -59,7 +59,7 @@ and response reason. If the namespace already exists, a warning will be logged.
   **HTTPError** – If the HTTP request fails due to connectivity issues or
   server-side problems.
 
-#### update_infer_definition(data_description, field_definition)
+#### update_infer_definition(data_description=None, schema_definition=None)
 
 Update the saved inference definition for the configured dataset.
 
@@ -67,9 +67,9 @@ The inference definition is used automatically on future ingest calls to guide
 field extraction and normalization.
 
 * **Parameters:**
-  * **data_description** (*str*) – Free-text description of the dataset (max 10,000 chars).
-  * **field_definition** (*str*) – Field-level definitions, one per line as `field=description`
-    (max 10,000 chars).
+  * **data_description** (*Optional* *[**str* *]*) – Free-text description of the dataset (max 10,000 chars).
+  * **schema_definition** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Field-name-to-description mapping to guide the AI in
+    structuring extracted data.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
@@ -746,7 +746,7 @@ Same batching + retry semantics as the sync facade.
 * **Return type:**
   `None`
 
-#### *async* update_infer_definition(data_description, field_definition)
+#### *async* update_infer_definition(data_description=None, schema_definition=None)
 
 * **Return type:**
   `None`
@@ -1257,7 +1257,7 @@ Same batching + retry semantics as the sync facade.
 * **Return type:**
   `None`
 
-#### *async* update_infer_definition(data_description, field_definition)
+#### *async* update_infer_definition(data_description=None, schema_definition=None)
 
 * **Return type:**
   `None`
@@ -1625,7 +1625,7 @@ and response reason. If the namespace already exists, a warning will be logged.
   **HTTPError** – If the HTTP request fails due to connectivity issues or
   server-side problems.
 
-#### update_infer_definition(data_description, field_definition)
+#### update_infer_definition(data_description=None, schema_definition=None)
 
 Update the saved inference definition for the configured dataset.
 
@@ -1633,9 +1633,9 @@ The inference definition is used automatically on future ingest calls to guide
 field extraction and normalization.
 
 * **Parameters:**
-  * **data_description** (*str*) – Free-text description of the dataset (max 10,000 chars).
-  * **field_definition** (*str*) – Field-level definitions, one per line as `field=description`
-    (max 10,000 chars).
+  * **data_description** (*Optional* *[**str* *]*) – Free-text description of the dataset (max 10,000 chars).
+  * **schema_definition** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Field-name-to-description mapping to guide the AI in
+    structuring extracted data.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
