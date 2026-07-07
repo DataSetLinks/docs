@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DataLinks
-  version: 1.0.0
+  version: 2.2.0
 servers:
   - url: https://api.datalinks.com/api/v1
     description: production server
@@ -1597,6 +1597,42 @@ paths:
           description: Run is already completed or its checkpoint expired.
         "422":
           description: Run is in a failed state.
+  /query/runs/{runId}/feedback:
+    post:
+      tags:
+        - agentRuns
+      summary: Submit thumbs up/down feedback on a completed agent run
+      description: |
+        Records user feedback (thumbs up/down plus an optional comment) as a score on the
+        Langfuse trace that produced the run's answer. Only completed runs can be rated.
+        Resubmitting overwrites the previous feedback for the same run.
+      operationId: submitAgentRunFeedback
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentRunFeedbackRequest"
+        required: true
+      responses:
+        "204":
+          description: Feedback recorded.
+        "400":
+          description: Malformed (unparseable) request body.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: "Run is not completed, or the request body is well-formed JSON that fails validation (e.g. missing or non-boolean rating)."
+        "502":
+          description: The feedback store (Langfuse) could not be reached.
   /query/conversations:
     get:
       tags:
@@ -1671,6 +1707,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserTokenResponse"
+        "403":
+          description: Forbidden. Restricted token cannot manage API tokens.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /user/token:
     post:
       tags:
@@ -1691,6 +1733,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserToken"
+        "403":
+          description: Forbidden. Restricted token cannot manage API tokens.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /user/token/{tokenId}:
     delete:
       tags:
@@ -1708,6 +1756,12 @@ paths:
       responses:
         "200":
           description: Deletes the specified token.
+        "403":
+          description: Forbidden. Restricted token cannot manage API tokens.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /user/tokens/{tokenId}/permissions:
     get:
       tags:
@@ -1731,6 +1785,12 @@ paths:
                 $ref: "#/components/schemas/TokenPermissionsResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Forbidden. Restricted token cannot get token permissions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           $ref: "#/components/responses/NotFound"
   /user/usage/history:
@@ -3186,6 +3246,17 @@ components:
           type: object
           additionalProperties: true
           description: "Rendered AutoRag result for completed runs, in the same shape as `POST /query/autorag`'s response body."
+    AgentRunFeedbackRequest:
+      required:
+        - thumbsUp
+      type: object
+      properties:
+        thumbsUp:
+          type: boolean
+          description: "True for a thumbs up, false for a thumbs down."
+        comment:
+          type: string
+          description: Optional free-text comment accompanying the rating.
     ConversationListResponse:
       required:
         - conversations
