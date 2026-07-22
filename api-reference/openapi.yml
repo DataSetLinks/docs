@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DataLinks
-  version: 2.2.3
+  version: 2.11.0
 servers:
   - url: https://api.datalinks.com/api/v1
     description: production server
