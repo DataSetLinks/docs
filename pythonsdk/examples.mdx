@@ -36,7 +36,7 @@ def main():
     dl_config.objectname = "products_direct"
 
     dlapi = datalinks.api.DataLinksAPI(dl_config)
-    dlapi.create_space(is_private=True)
+    dlapi.create_space()
 
     jsonfile = "data/pgproducts.json"
     logging.info(f"Loading {jsonfile}")
@@ -96,7 +96,7 @@ def main():
     #)
 
     dlapi = datalinks.api.DataLinksAPI(dl_config)
-    dlapi.create_space(is_private=True) # default
+    dlapi.create_space()
 
     jsonfile = "data/pgproducts.json"
     logging.info(f"Loading json data in {jsonfile}")
@@ -167,7 +167,7 @@ def main():
     # )
 
     dlapi = datalinks.api.DataLinksAPI(dl_config)
-    dlapi.create_space(is_private=True) # default
+    dlapi.create_space()
 
     textfile = "data/movies.txt"
     logging.info(f"Loading text in {textfile}")
@@ -262,7 +262,7 @@ def upload_multipart(filepath: str):
     dl_config.objectname = "products"
 
     dlapi = datalinks.api.DataLinksAPI(dl_config)
-    dlapi.create_space(is_private=True)
+    dlapi.create_space()
 
     filename = os.path.basename(filepath)
     size = os.path.getsize(filepath)
