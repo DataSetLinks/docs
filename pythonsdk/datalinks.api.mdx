@@ -39,16 +39,20 @@ is retried up to a maximum number of attempts.
   An IngestionResult object containing lists of successfully ingested data blocks and
   data blocks that failed to be ingested.
 
-#### create_space(is_private=True, data_description=None, schema_definition=None)
+#### create_space(is_private=None, data_description=None, schema_definition=None)
 
-Creates a new space with the specified privacy settings. This function sends a
-POST request to create a namespace with the given privacy status. Information
-about the namespace creation will be logged, including the HTTP status code
-and response reason. If the namespace already exists, a warning will be logged.
+Creates a new space. This function sends a POST request to create a namespace.
+Information about the namespace creation will be logged, including the HTTP
+status code and response reason. A space that already exists is left alone
+and reported as success.
+
+#### Versionchanged
+Changed in version 1.2.13: `is_private` is ignored. Public datasets have been removed; every
+space is private and access is granted per user with
+[`share_dataset_access()`](#datalinks.api.DataLinksAPI.share_dataset_access) / [`share_namespace_access()`](#datalinks.api.DataLinksAPI.share_namespace_access).
 
 * **Parameters:**
-  * **is_private** (*bool*) – Determines whether the created namespace will be private
-    or public.
+  * **is_private** (*Optional* *[**bool* *]*) – Ignored; see the note above.
   * **data_description** (*Optional* *[**str* *]*) – Free-text description of the dataset (max 10,000 chars).
   * **schema_definition** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Field-name-to-description mapping to guide the AI in structuring data.
 * **Return type:**
@@ -306,7 +310,7 @@ Retrieves the list of datasets for the user, optionally filtered by a specific n
 * **Return type:**
   List[Dict] | None
 
-#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False)
+#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False, , username='self')
 
 Queries data from a specified data source and processes the response.
 
@@ -324,6 +328,7 @@ identified by key names starting with an underscore.
   * **include_metadata** (*bool*) – Specifies whether to include metadata fields in
     the returned data. Defaults to False.
   * **explain** (*bool*) – If True, request an explanation of how the query was resolved.
+  * **username** (*str*) – Owner of the namespace being queried.
 * **Returns:**
   A list of records represented as dictionaries, or None if the query
   fails or an exception occurs during the request.
@@ -332,7 +337,7 @@ identified by key names starting with an underscore.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If a transport-level error occurs.
 
-#### ask(query, model=None, provider=None, helper_prompt=None)
+#### ask(query, model=None, provider=None, helper_prompt=None, , username='self', stage_models=None, conversation_id=None, web_search=None)
 
 Talk to your data with natural language using the DataLinks AutoRAG agent.
 
@@ -345,12 +350,28 @@ yielded in order: one `plan` event, one or more `step` events, then either an
   * **model** (*str*) – The model name to use for inference.
   * **provider** (*str*) – The LLM provider (e.g. `openai`, `ollama`).
   * **helper_prompt** (*str*) – Optional custom system prompt.
+  * **stage_models** (*Optional* *[**Dict* *[**str* *,* *Dict* *[**str* *,* *str* *]* *]* *]*) – Per-stage model overrides, keyed by stage (`plan`,
+    `query`, `answer`), each mapping to a dict with optional `model`
+    and `provider`. An override wins over the run-wide
+    `model`/`provider` *as a whole*: a stage that sets only `model`
+    does not inherit the run-wide `provider` but falls back to the
+    deployment default, so set both fields or neither.
+  * **conversation_id** (*Optional* *[**str* *]*) – Existing conversation to continue. Omit to start a new
+    one; its id arrives on the `run-started` event.
+  * **web_search** (*Optional* *[**bool* *]*) – Pass False to disable web search. `True` is
+    equivalent to omitting it — there is no way to force-enable a
+    deployment that has web search switched off.
+  * **username** (*str*) – Owner of the namespace being queried.
 * **Returns:**
-  An iterator of [`AskEvent`](#datalinks.api.AskEvent) objects.
+  An iterator of [`AskEvent`](#datalinks.api.AskEvent) objects, also exposing the
+  streaming response once it is open.
 * **Return type:**
-  Iterator[[AskEvent](#datalinks.api.AskEvent)]
+  [AskStream](#datalinks.api.AskStream)
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+
+#### Versionchanged
+Changed in version 1.2.15: Returns [`AskStream`](#datalinks.api.AskStream) rather than a bare iterator.
 
 #### preview_ingest(data, inference_steps=None)
 
@@ -406,7 +427,7 @@ Mark an ingestion as seen, updating its `seenAt` timestamp.
 * **Return type:**
   `None`
 
-#### autorag(query, model=None, provider=None, helper_prompt=None)
+#### autorag(query, model=None, provider=None, helper_prompt=None, , username='self', stage_models=None, conversation_id=None, web_search=None)
 
 Answer a natural language question using the AutoRAG agent (non-streaming).
 
@@ -418,12 +439,29 @@ For incremental streaming results, use [`ask()`](#datalinks.api.DataLinksAPI.ask
   * **model** (*Optional* *[**str* *]*) – LLM model name.
   * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
   * **helper_prompt** (*Optional* *[**str* *]*) – Optional custom system prompt.
+  * **stage_models** (*Optional* *[**Dict* *[**str* *,* *Dict* *[**str* *,* *str* *]* *]* *]*) – Per-stage model overrides, keyed by stage (`plan`,
+    `query`, `answer`), each mapping to a dict with optional `model`
+    and `provider`. An override wins over the run-wide
+    `model`/`provider` *as a whole*: a stage that sets only `model`
+    does not inherit the run-wide `provider` but falls back to the
+    deployment default, so set both fields or neither.
+  * **conversation_id** (*Optional* *[**str* *]*) – Existing conversation to continue. Omit to start a new one.
+  * **web_search** (*Optional* *[**bool* *]*) – Pass False to disable web search. `True` is
+    equivalent to omitting it — there is no way to force-enable a
+    deployment that has web search switched off.
+  * **username** (*str*) – Owner of the namespace being queried.
 * **Returns:**
-  Dict with `response` (str) and `steps` (list) keys, or None on failure.
+  Dict with `response` (str) and `steps` (list) keys, also
+  carrying the response `headers`.
 * **Return type:**
-  Optional[Dict]
+  [AutoRagResult](#datalinks.api.AutoRagResult)
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the request fails, the server answers
+  non-2xx, or the body is not a JSON object.
+
+#### Versionchanged
+Changed in version 1.2.15: Raises on failure instead of returning `None`, and returns
+[`AutoRagResult`](#datalinks.api.AutoRagResult) rather than a plain dict.
 
 #### request_cleaning(prompts, output_namespace, output_dataset_name)
 
@@ -545,16 +583,25 @@ Retrieve datasets within a specific namespace (schema endpoint).
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
+#### get_current_user()
+
+Resolve the identity of the user owning the configured API key.
+
+* **Returns:**
+  Dict with `id` and `username`, plus nullable `name` and
+  `email`; or None on failure.
+* **Return type:**
+  Optional[Dict]
+
 #### list_tokens()
 
 List all API tokens for the authenticated user.
 
 * **Returns:**
-  List of token dicts, or None on failure.
+  List of token dicts, or None on failure — including the 403 a
+  restricted token gets, since it may not manage API tokens.
 * **Return type:**
   Optional[List[Dict]]
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### add_token(name, expires_at=None, access_restricted_to=None)
 
@@ -655,19 +702,40 @@ Permanently delete an agent run and its resume checkpoint.
 * **Return type:**
   `None`
 
+#### submit_agent_run_feedback(run_id, , thumbs_up, comment=None)
+
+Rate the answer a completed agent run produced.
+
+Resubmitting replaces the previous rating for the same run.
+
+* **Parameters:**
+  * **run_id** (*str*) – UUID of the agent run.
+  * **thumbs_up** (*bool*) – True for a thumbs up, False for a thumbs down.
+  * **comment** (*Optional* *[**str* *]*) – Optional free-text comment accompanying the rating.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails (e.g. 404 when the
+  run does not exist or is not owned by the caller, 422 when it has not
+  completed).
+* **Return type:**
+  `None`
+
 #### resume_agent_run(run_id)
 
 Resume a previously paused or crashed agent run, streaming its events.
 
 The first event is `run-started`, followed by the same domain events as
-[`ask()`](#datalinks.api.DataLinksAPI.ask) (e.g. `plan`, `step`, `answer`). Terminal run states
-arrive as a single synthetic event instead of a stream:
+[`ask()`](#datalinks.api.DataLinksAPI.ask) (e.g. `plan`, `step`, `answer`). Runs that cannot be
+streamed arrive as a single synthetic event instead:
 
 > * `completed` / `expired` (HTTP 410) — yielded as an
 >   `AskEvent(type="terminal", data=<body>)` whose data carries the
 >   original question and, for completed runs, the rendered result.
 > * `failed` (HTTP 422) — yielded as an `AskEvent` of type
 >   `"terminal"`.
+> * no checkpoint to resume from (HTTP 409) — yielded as an
+>   `AskEvent(type="no-checkpoint", data=<body>)`. The run is untouched
+>   and still in progress; poll [`get_agent_run_status()`](#datalinks.api.DataLinksAPI.get_agent_run_status) for its
+>   eventual outcome.
 > * not-found / not-owned (HTTP 404) — raises `DataLinksRequestError`.
 * **Parameters:**
   **run_id** (*str*) – UUID of the agent run to resume.
@@ -677,6 +745,82 @@ arrive as a single synthetic event instead of a stream:
   Iterator[[AskEvent](#datalinks.api.AskEvent)]
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – On 404 or transport-level failure.
+
+#### share_dataset_access(username, role)
+
+Grant another user access to the configured dataset.
+
+Since public datasets were removed, this is how you give someone else
+access. Re-sharing with a different role replaces the existing grant.
+
+* **Parameters:**
+  * **username** (*str*) – User to grant access to.
+  * **role** (*str*) – `"viewer"` (read-only) or `"editor"` (read and write).
+* **Raises:**
+  * **ValueError** – If `role` is not a valid access level.
+  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails (e.g. 403 when
+    the caller does not own the dataset).
+* **Return type:**
+  `None`
+
+#### revoke_dataset_access(username, role)
+
+Remove a user’s access to the configured dataset.
+
+* **Parameters:**
+  * **username** (*str*) – User whose access is being removed.
+  * **role** (*str*) – The granted access level to remove.
+* **Raises:**
+  * **ValueError** – If `role` is not a valid access level.
+  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### list_dataset_shares()
+
+List the per-user grants on the configured dataset.
+
+* **Returns:**
+  List of dicts with `username` and `role`, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+
+#### share_namespace_access(username, role)
+
+Grant another user access to the configured namespace.
+
+The grant cascades to every dataset in the namespace.
+
+* **Parameters:**
+  * **username** (*str*) – User to grant access to.
+  * **role** (*str*) – `"viewer"` (read-only) or `"editor"` (read and write).
+* **Raises:**
+  * **ValueError** – If `role` is not a valid access level.
+  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### revoke_namespace_access(username, role)
+
+Remove a user’s access to the configured namespace.
+
+* **Parameters:**
+  * **username** (*str*) – User whose access is being removed.
+  * **role** (*str*) – The granted access level to remove.
+* **Raises:**
+  * **ValueError** – If `role` is not a valid access level.
+  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### list_namespace_shares()
+
+List the per-user grants on the configured namespace.
+
+* **Returns:**
+  List of dicts with `username` and `role`, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
 
 #### list_conversations(username='self', namespace=None)
 
@@ -715,7 +859,8 @@ Async counterpart of [`DataLinksAPI`](#datalinks.api.DataLinksAPI).
 
 Method signatures mirror the sync facade — same parameter names, defaults,
 and return types. Every networked method is `async def`. The streaming
-`ask` method returns an `AsyncIterator` instead of an iterator.
+`ask` method returns an [`AsyncAskStream`](#datalinks.api.AsyncAskStream) instead of an
+[`AskStream`](#datalinks.api.datalinks.AskStream).
 
 Use `async with` for guaranteed cleanup of the underlying
 `httpx.AsyncClient`, or call [`aclose()`](#datalinks.api.AsyncDataLinksAPI.aclose) manually:
@@ -741,10 +886,17 @@ Same batching + retry semantics as the sync facade.
 * **Return type:**
   [`IngestionResult`](#datalinks.api.datalinks.IngestionResult)
 
-#### *async* create_space(is_private=True, data_description=None, schema_definition=None)
+#### create_space(is_private=None, data_description=None, schema_definition=None)
+
+Create a new space (see [`DataLinksAPI.create_space()`](#datalinks.api.DataLinksAPI.create_space)).
+
+Deliberately not an `async def`: the body of a coroutine runs on
+whoever resumes it, so under `asyncio.gather` the deprecation warning
+below would be filed against `asyncio/events.py` instead of the
+caller. Warning here, at call time, keeps the attribution right.
 
 * **Return type:**
-  `None`
+  `Coroutine`[`Any`, `Any`, `None`]
 
 #### *async* update_infer_definition(data_description=None, schema_definition=None)
 
@@ -856,24 +1008,29 @@ ticks instead of blocking the event loop with `time.sleep`.
 * **Return type:**
   `Optional`[`List`[`Dict`]]
 
-#### *async* query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False)
+#### *async* query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False, , username='self')
+
+Query the configured dataset (see [`DataLinksAPI.query_data()`](#datalinks.api.DataLinksAPI.query_data)).
 
 * **Return type:**
   `Optional`[`List`[`Dict`[`str`, `Any`]]]
 
-#### *async* autorag(query, model=None, provider=None, helper_prompt=None)
+#### *async* autorag(query, model=None, provider=None, helper_prompt=None, , username='self', stage_models=None, conversation_id=None, web_search=None)
+
+Answer a question with the AutoRAG agent (see [`DataLinksAPI.autorag()`](#datalinks.api.DataLinksAPI.autorag)).
 
 * **Return type:**
-  `Optional`[`Dict`]
+  [`AutoRagResult`](#datalinks.api.datalinks.AutoRagResult)
 
-#### *async* ask(query, model=None, provider=None, helper_prompt=None)
+#### ask(query, model=None, provider=None, helper_prompt=None, , username='self', stage_models=None, conversation_id=None, web_search=None)
 
 Async SSE stream of [`DataLinksAPI.ask()`](#datalinks.api.DataLinksAPI.ask) events.
 
-Yields [`AskEvent`](#datalinks.api.AskEvent) objects until the server closes the stream.
+Yields [`AskEvent`](#datalinks.api.AskEvent) objects until the server closes the stream, and
+exposes the response headers once the stream is open (see [`AsyncAskStream`](#datalinks.api.AsyncAskStream)).
 
 * **Return type:**
-  `AsyncIterator`[[`AskEvent`](#datalinks.api.datalinks.AskEvent)]
+  [`AsyncAskStream`](#datalinks.api.async_datalinks.AsyncAskStream)
 
 #### *async* preview_ingest(data, inference_steps=None)
 
@@ -916,6 +1073,13 @@ Yields [`AskEvent`](#datalinks.api.AskEvent) objects until the server closes the
   `None`
 
 #### *async* curate_links(namespace=None, dataset=None, model=None, provider=None, activate=False)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* get_current_user()
+
+Resolve the current user’s identity (see [`DataLinksAPI.get_current_user()`](#datalinks.api.DataLinksAPI.get_current_user)).
 
 * **Return type:**
   `Optional`[`Dict`]
@@ -964,12 +1128,61 @@ Permanently delete an agent run and its resume checkpoint (see [`DataLinksAPI.de
 * **Return type:**
   `None`
 
+#### *async* submit_agent_run_feedback(run_id, , thumbs_up, comment=None)
+
+Rate a completed agent run (see [`DataLinksAPI.submit_agent_run_feedback()`](#datalinks.api.DataLinksAPI.submit_agent_run_feedback)).
+
+* **Return type:**
+  `None`
+
 #### *async* resume_agent_run(run_id)
 
 Resume an agent run, streaming its events (see [`DataLinksAPI.resume_agent_run()`](#datalinks.api.DataLinksAPI.resume_agent_run)).
 
 * **Return type:**
   `AsyncIterator`[[`AskEvent`](#datalinks.api.datalinks.AskEvent)]
+
+#### *async* share_dataset_access(username, role)
+
+Grant a user access to the dataset (see [`DataLinksAPI.share_dataset_access()`](#datalinks.api.DataLinksAPI.share_dataset_access)).
+
+* **Return type:**
+  `None`
+
+#### *async* revoke_dataset_access(username, role)
+
+Remove a user’s dataset access (see [`DataLinksAPI.revoke_dataset_access()`](#datalinks.api.DataLinksAPI.revoke_dataset_access)).
+
+* **Return type:**
+  `None`
+
+#### *async* list_dataset_shares()
+
+List grants on the dataset (see [`DataLinksAPI.list_dataset_shares()`](#datalinks.api.DataLinksAPI.list_dataset_shares)).
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* share_namespace_access(username, role)
+
+Grant a user access to the namespace (see [`DataLinksAPI.share_namespace_access()`](#datalinks.api.DataLinksAPI.share_namespace_access)).
+
+* **Return type:**
+  `None`
+
+#### *async* revoke_namespace_access(username, role)
+
+Remove a user’s namespace access (see [`DataLinksAPI.revoke_namespace_access()`](#datalinks.api.DataLinksAPI.revoke_namespace_access)).
+
+* **Return type:**
+  `None`
+
+#### *async* list_namespace_shares()
+
+List grants on the namespace (see [`DataLinksAPI.list_namespace_shares()`](#datalinks.api.DataLinksAPI.list_namespace_shares)).
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
 
 #### *async* list_conversations(username='self', namespace=None)
 
@@ -985,7 +1198,7 @@ Get a conversation and its turns (see [`DataLinksAPI.get_conversation()`](#datal
 * **Return type:**
   `Optional`[`Dict`]
 
-### *exception* datalinks.api.DataLinksRequestError(endpoint, e)
+### *exception* datalinks.api.DataLinksRequestError(endpoint, e, reason=None)
 
 Bases: `Exception`
 
@@ -1023,13 +1236,105 @@ Bases: `object`
 
 Represents a single SSE event from the /query/ask streaming endpoint.
 
+Server-sent types are `plan`, `step`, `answer`, `error`, the
+lifecycle signals `planningStarted`, `stepStarted`, `queryExecuting`
+and `answerStarted`, and — when resuming — `run-started`. Two further
+types are synthesised by the SDK when the server answers a resume with a
+one-off body instead of a stream: `terminal` and `no-checkpoint` (see
+[`DataLinksAPI.resume_agent_run()`](#datalinks.api.DataLinksAPI.resume_agent_run)). Both vocabularies share this one
+field, so match on the types you expect rather than assuming the list is
+closed — the server may add lifecycle events without an SDK release.
+
 * **Variables:**
-  * **type** – Event type — one of `plan`, `step`, `answer`, or `error`.
+  * **type** – Event type.
   * **data** – Parsed JSON payload for the event.
 
 #### type *: str*
 
 #### data *: Dict[str, Any]*
+
+### *class* datalinks.api.AskStream(open_events)
+
+Bases: `object`
+
+The [`DataLinksAPI.ask()`](#datalinks.api.DataLinksAPI.ask) event stream, plus the response carrying it.
+
+Iterate it exactly as before to get [`AskEvent`](#datalinks.api.AskEvent) objects. `headers`
+and `status_code` are `None` until the first event arrives — nothing is
+sent until iteration starts, so there is no response to read them off before
+then.
+
+Only the headers and status are exposed, not the response itself: its body
+is consumed by the event loop, so reading `.text` off it would raise.
+
+Close it when abandoning a stream early, or use it as a context manager:
+
+```default
+with api.ask("...") as stream:
+    for event in stream:
+        if event.type == "answer":
+            break
+```
+
+#### close()
+
+Release the connection, whether or not the stream was exhausted.
+
+* **Return type:**
+  `None`
+
+#### *property* headers *: Headers | None*
+
+Response headers once the stream is open, else `None`.
+
+#### *property* status_code *: int | None*
+
+HTTP status once the stream is open, else `None`.
+
+### *class* datalinks.api.AsyncAskStream(open_events)
+
+Bases: `object`
+
+Async counterpart of [`AskStream`](#datalinks.api.datalinks.AskStream).
+
+Iterated with `async for`; released with `aclose()` or `async with`.
+
+#### *async* aclose()
+
+Release the connection, whether or not the stream was exhausted.
+
+* **Return type:**
+  `None`
+
+#### *property* headers *: Headers | None*
+
+Response headers once the stream is open, else `None`.
+
+#### *property* status_code *: int | None*
+
+HTTP status once the stream is open, else `None`.
+
+### *class* datalinks.api.AutoRagResult(data, http_response)
+
+Bases: `Dict`[`str`, `Any`]
+
+The AutoRAG answer body, plus the response it arrived in.
+
+A `dict` subclass rather than a wrapper, so `result["response"]` and
+`result["steps"]` keep working unchanged. The attribute is
+`http_response`, not `response`, because `result["response"]` is
+already the answer text.
+
+* **Variables:**
+  **http_response** – The raw `httpx.Response`, already fully read.
+
+#### *property* headers *: Headers*
+
+Response headers.
+
+#### *property* status_code *: int*
+
+HTTP status of the response — always 2xx, since anything else raised.
 
 ### *class* datalinks.api.IngestionResult(successful, failed)
 
@@ -1218,6 +1523,29 @@ typed models, so spec drift is caught uniformly.
 Use this when you need concurrency — e.g. fanning out queries, embedding the
 SDK in an async web service. For one-shot scripts, prefer `DataLinksAPI`.
 
+### *class* datalinks.api.async_datalinks.AsyncAskStream(open_events)
+
+Bases: `object`
+
+Async counterpart of [`AskStream`](#datalinks.api.datalinks.AskStream).
+
+Iterated with `async for`; released with `aclose()` or `async with`.
+
+#### *async* aclose()
+
+Release the connection, whether or not the stream was exhausted.
+
+* **Return type:**
+  `None`
+
+#### *property* headers *: Headers | None*
+
+Response headers once the stream is open, else `None`.
+
+#### *property* status_code *: int | None*
+
+HTTP status once the stream is open, else `None`.
+
 ### *class* datalinks.api.async_datalinks.AsyncDataLinksAPI(config=None)
 
 Bases: `object`
@@ -1226,7 +1554,8 @@ Async counterpart of `DataLinksAPI`.
 
 Method signatures mirror the sync facade — same parameter names, defaults,
 and return types. Every networked method is `async def`. The streaming
-`ask` method returns an `AsyncIterator` instead of an iterator.
+`ask` method returns an [`AsyncAskStream`](#datalinks.api.async_datalinks.AsyncAskStream) instead of an
+[`AskStream`](#datalinks.api.datalinks.AskStream).
 
 Use `async with` for guaranteed cleanup of the underlying
 `httpx.AsyncClient`, or call [`aclose()`](#datalinks.api.async_datalinks.AsyncDataLinksAPI.aclose) manually:
@@ -1252,10 +1581,17 @@ Same batching + retry semantics as the sync facade.
 * **Return type:**
   [`IngestionResult`](#datalinks.api.datalinks.IngestionResult)
 
-#### *async* create_space(is_private=True, data_description=None, schema_definition=None)
+#### create_space(is_private=None, data_description=None, schema_definition=None)
+
+Create a new space (see `DataLinksAPI.create_space()`).
+
+Deliberately not an `async def`: the body of a coroutine runs on
+whoever resumes it, so under `asyncio.gather` the deprecation warning
+below would be filed against `asyncio/events.py` instead of the
+caller. Warning here, at call time, keeps the attribution right.
 
 * **Return type:**
-  `None`
+  `Coroutine`[`Any`, `Any`, `None`]
 
 #### *async* update_infer_definition(data_description=None, schema_definition=None)
 
@@ -1367,24 +1703,29 @@ ticks instead of blocking the event loop with `time.sleep`.
 * **Return type:**
   `Optional`[`List`[`Dict`]]
 
-#### *async* query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False)
+#### *async* query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False, , username='self')
+
+Query the configured dataset (see `DataLinksAPI.query_data()`).
 
 * **Return type:**
   `Optional`[`List`[`Dict`[`str`, `Any`]]]
 
-#### *async* autorag(query, model=None, provider=None, helper_prompt=None)
+#### *async* autorag(query, model=None, provider=None, helper_prompt=None, , username='self', stage_models=None, conversation_id=None, web_search=None)
+
+Answer a question with the AutoRAG agent (see `DataLinksAPI.autorag()`).
 
 * **Return type:**
-  `Optional`[`Dict`]
+  [`AutoRagResult`](#datalinks.api.datalinks.AutoRagResult)
 
-#### *async* ask(query, model=None, provider=None, helper_prompt=None)
+#### ask(query, model=None, provider=None, helper_prompt=None, , username='self', stage_models=None, conversation_id=None, web_search=None)
 
 Async SSE stream of `DataLinksAPI.ask()` events.
 
-Yields `AskEvent` objects until the server closes the stream.
+Yields `AskEvent` objects until the server closes the stream, and
+exposes the response headers once the stream is open (see [`AsyncAskStream`](#datalinks.api.async_datalinks.AsyncAskStream)).
 
 * **Return type:**
-  `AsyncIterator`[[`AskEvent`](#datalinks.api.datalinks.AskEvent)]
+  [`AsyncAskStream`](#datalinks.api.async_datalinks.AsyncAskStream)
 
 #### *async* preview_ingest(data, inference_steps=None)
 
@@ -1427,6 +1768,13 @@ Yields `AskEvent` objects until the server closes the stream.
   `None`
 
 #### *async* curate_links(namespace=None, dataset=None, model=None, provider=None, activate=False)
+
+* **Return type:**
+  `Optional`[`Dict`]
+
+#### *async* get_current_user()
+
+Resolve the current user’s identity (see `DataLinksAPI.get_current_user()`).
 
 * **Return type:**
   `Optional`[`Dict`]
@@ -1475,12 +1823,61 @@ Permanently delete an agent run and its resume checkpoint (see `DataLinksAPI.del
 * **Return type:**
   `None`
 
+#### *async* submit_agent_run_feedback(run_id, , thumbs_up, comment=None)
+
+Rate a completed agent run (see `DataLinksAPI.submit_agent_run_feedback()`).
+
+* **Return type:**
+  `None`
+
 #### *async* resume_agent_run(run_id)
 
 Resume an agent run, streaming its events (see `DataLinksAPI.resume_agent_run()`).
 
 * **Return type:**
   `AsyncIterator`[[`AskEvent`](#datalinks.api.datalinks.AskEvent)]
+
+#### *async* share_dataset_access(username, role)
+
+Grant a user access to the dataset (see `DataLinksAPI.share_dataset_access()`).
+
+* **Return type:**
+  `None`
+
+#### *async* revoke_dataset_access(username, role)
+
+Remove a user’s dataset access (see `DataLinksAPI.revoke_dataset_access()`).
+
+* **Return type:**
+  `None`
+
+#### *async* list_dataset_shares()
+
+List grants on the dataset (see `DataLinksAPI.list_dataset_shares()`).
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
+
+#### *async* share_namespace_access(username, role)
+
+Grant a user access to the namespace (see `DataLinksAPI.share_namespace_access()`).
+
+* **Return type:**
+  `None`
+
+#### *async* revoke_namespace_access(username, role)
+
+Remove a user’s namespace access (see `DataLinksAPI.revoke_namespace_access()`).
+
+* **Return type:**
+  `None`
+
+#### *async* list_namespace_shares()
+
+List grants on the namespace (see `DataLinksAPI.list_namespace_shares()`).
+
+* **Return type:**
+  `Optional`[`List`[`Dict`]]
 
 #### *async* list_conversations(username='self', namespace=None)
 
@@ -1532,13 +1929,82 @@ Bases: `object`
 
 Represents a single SSE event from the /query/ask streaming endpoint.
 
+Server-sent types are `plan`, `step`, `answer`, `error`, the
+lifecycle signals `planningStarted`, `stepStarted`, `queryExecuting`
+and `answerStarted`, and — when resuming — `run-started`. Two further
+types are synthesised by the SDK when the server answers a resume with a
+one-off body instead of a stream: `terminal` and `no-checkpoint` (see
+[`DataLinksAPI.resume_agent_run()`](#datalinks.api.datalinks.DataLinksAPI.resume_agent_run)). Both vocabularies share this one
+field, so match on the types you expect rather than assuming the list is
+closed — the server may add lifecycle events without an SDK release.
+
 * **Variables:**
-  * **type** – Event type — one of `plan`, `step`, `answer`, or `error`.
+  * **type** – Event type.
   * **data** – Parsed JSON payload for the event.
 
 #### type *: str*
 
 #### data *: Dict[str, Any]*
+
+### *class* datalinks.api.datalinks.AskStream(open_events)
+
+Bases: `object`
+
+The [`DataLinksAPI.ask()`](#datalinks.api.datalinks.DataLinksAPI.ask) event stream, plus the response carrying it.
+
+Iterate it exactly as before to get [`AskEvent`](#datalinks.api.datalinks.AskEvent) objects. `headers`
+and `status_code` are `None` until the first event arrives — nothing is
+sent until iteration starts, so there is no response to read them off before
+then.
+
+Only the headers and status are exposed, not the response itself: its body
+is consumed by the event loop, so reading `.text` off it would raise.
+
+Close it when abandoning a stream early, or use it as a context manager:
+
+```default
+with api.ask("...") as stream:
+    for event in stream:
+        if event.type == "answer":
+            break
+```
+
+#### close()
+
+Release the connection, whether or not the stream was exhausted.
+
+* **Return type:**
+  `None`
+
+#### *property* headers *: Headers | None*
+
+Response headers once the stream is open, else `None`.
+
+#### *property* status_code *: int | None*
+
+HTTP status once the stream is open, else `None`.
+
+### *class* datalinks.api.datalinks.AutoRagResult(data, http_response)
+
+Bases: `Dict`[`str`, `Any`]
+
+The AutoRAG answer body, plus the response it arrived in.
+
+A `dict` subclass rather than a wrapper, so `result["response"]` and
+`result["steps"]` keep working unchanged. The attribute is
+`http_response`, not `response`, because `result["response"]` is
+already the answer text.
+
+* **Variables:**
+  **http_response** – The raw `httpx.Response`, already fully read.
+
+#### *property* headers *: Headers*
+
+Response headers.
+
+#### *property* status_code *: int*
+
+HTTP status of the response — always 2xx, since anything else raised.
 
 ### *class* datalinks.api.datalinks.IngestionResult(successful, failed)
 
@@ -1560,7 +2026,7 @@ enabling users to track and handle both cases effectively.
 
 #### failed *: List[Dict[str, Any]]*
 
-### *exception* datalinks.api.datalinks.DataLinksRequestError(endpoint, e)
+### *exception* datalinks.api.datalinks.DataLinksRequestError(endpoint, e, reason=None)
 
 Bases: `Exception`
 
@@ -1605,16 +2071,20 @@ is retried up to a maximum number of attempts.
   An IngestionResult object containing lists of successfully ingested data blocks and
   data blocks that failed to be ingested.
 
-#### create_space(is_private=True, data_description=None, schema_definition=None)
+#### create_space(is_private=None, data_description=None, schema_definition=None)
 
-Creates a new space with the specified privacy settings. This function sends a
-POST request to create a namespace with the given privacy status. Information
-about the namespace creation will be logged, including the HTTP status code
-and response reason. If the namespace already exists, a warning will be logged.
+Creates a new space. This function sends a POST request to create a namespace.
+Information about the namespace creation will be logged, including the HTTP
+status code and response reason. A space that already exists is left alone
+and reported as success.
+
+#### Versionchanged
+Changed in version 1.2.13: `is_private` is ignored. Public datasets have been removed; every
+space is private and access is granted per user with
+[`share_dataset_access()`](#datalinks.api.datalinks.DataLinksAPI.share_dataset_access) / [`share_namespace_access()`](#datalinks.api.datalinks.DataLinksAPI.share_namespace_access).
 
 * **Parameters:**
-  * **is_private** (*bool*) – Determines whether the created namespace will be private
-    or public.
+  * **is_private** (*Optional* *[**bool* *]*) – Ignored; see the note above.
   * **data_description** (*Optional* *[**str* *]*) – Free-text description of the dataset (max 10,000 chars).
   * **schema_definition** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Field-name-to-description mapping to guide the AI in structuring data.
 * **Return type:**
@@ -1872,7 +2342,7 @@ Retrieves the list of datasets for the user, optionally filtered by a specific n
 * **Return type:**
   List[Dict] | None
 
-#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False)
+#### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False, , username='self')
 
 Queries data from a specified data source and processes the response.
 
@@ -1890,6 +2360,7 @@ identified by key names starting with an underscore.
   * **include_metadata** (*bool*) – Specifies whether to include metadata fields in
     the returned data. Defaults to False.
   * **explain** (*bool*) – If True, request an explanation of how the query was resolved.
+  * **username** (*str*) – Owner of the namespace being queried.
 * **Returns:**
   A list of records represented as dictionaries, or None if the query
   fails or an exception occurs during the request.
@@ -1898,7 +2369,7 @@ identified by key names starting with an underscore.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If a transport-level error occurs.
 
-#### ask(query, model=None, provider=None, helper_prompt=None)
+#### ask(query, model=None, provider=None, helper_prompt=None, , username='self', stage_models=None, conversation_id=None, web_search=None)
 
 Talk to your data with natural language using the DataLinks AutoRAG agent.
 
@@ -1911,12 +2382,28 @@ yielded in order: one `plan` event, one or more `step` events, then either an
   * **model** (*str*) – The model name to use for inference.
   * **provider** (*str*) – The LLM provider (e.g. `openai`, `ollama`).
   * **helper_prompt** (*str*) – Optional custom system prompt.
+  * **stage_models** (*Optional* *[**Dict* *[**str* *,* *Dict* *[**str* *,* *str* *]* *]* *]*) – Per-stage model overrides, keyed by stage (`plan`,
+    `query`, `answer`), each mapping to a dict with optional `model`
+    and `provider`. An override wins over the run-wide
+    `model`/`provider` *as a whole*: a stage that sets only `model`
+    does not inherit the run-wide `provider` but falls back to the
+    deployment default, so set both fields or neither.
+  * **conversation_id** (*Optional* *[**str* *]*) – Existing conversation to continue. Omit to start a new
+    one; its id arrives on the `run-started` event.
+  * **web_search** (*Optional* *[**bool* *]*) – Pass False to disable web search. `True` is
+    equivalent to omitting it — there is no way to force-enable a
+    deployment that has web search switched off.
+  * **username** (*str*) – Owner of the namespace being queried.
 * **Returns:**
-  An iterator of [`AskEvent`](#datalinks.api.datalinks.AskEvent) objects.
+  An iterator of [`AskEvent`](#datalinks.api.datalinks.AskEvent) objects, also exposing the
+  streaming response once it is open.
 * **Return type:**
-  Iterator[[AskEvent](#datalinks.api.datalinks.AskEvent)]
+  [AskStream](#datalinks.api.datalinks.AskStream)
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+
+#### Versionchanged
+Changed in version 1.2.15: Returns [`AskStream`](#datalinks.api.datalinks.AskStream) rather than a bare iterator.
 
 #### preview_ingest(data, inference_steps=None)
 
@@ -1972,7 +2459,7 @@ Mark an ingestion as seen, updating its `seenAt` timestamp.
 * **Return type:**
   `None`
 
-#### autorag(query, model=None, provider=None, helper_prompt=None)
+#### autorag(query, model=None, provider=None, helper_prompt=None, , username='self', stage_models=None, conversation_id=None, web_search=None)
 
 Answer a natural language question using the AutoRAG agent (non-streaming).
 
@@ -1984,12 +2471,29 @@ For incremental streaming results, use [`ask()`](#datalinks.api.datalinks.DataLi
   * **model** (*Optional* *[**str* *]*) – LLM model name.
   * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
   * **helper_prompt** (*Optional* *[**str* *]*) – Optional custom system prompt.
+  * **stage_models** (*Optional* *[**Dict* *[**str* *,* *Dict* *[**str* *,* *str* *]* *]* *]*) – Per-stage model overrides, keyed by stage (`plan`,
+    `query`, `answer`), each mapping to a dict with optional `model`
+    and `provider`. An override wins over the run-wide
+    `model`/`provider` *as a whole*: a stage that sets only `model`
+    does not inherit the run-wide `provider` but falls back to the
+    deployment default, so set both fields or neither.
+  * **conversation_id** (*Optional* *[**str* *]*) – Existing conversation to continue. Omit to start a new one.
+  * **web_search** (*Optional* *[**bool* *]*) – Pass False to disable web search. `True` is
+    equivalent to omitting it — there is no way to force-enable a
+    deployment that has web search switched off.
+  * **username** (*str*) – Owner of the namespace being queried.
 * **Returns:**
-  Dict with `response` (str) and `steps` (list) keys, or None on failure.
+  Dict with `response` (str) and `steps` (list) keys, also
+  carrying the response `headers`.
 * **Return type:**
-  Optional[Dict]
+  [AutoRagResult](#datalinks.api.datalinks.AutoRagResult)
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the request fails, the server answers
+  non-2xx, or the body is not a JSON object.
+
+#### Versionchanged
+Changed in version 1.2.15: Raises on failure instead of returning `None`, and returns
+[`AutoRagResult`](#datalinks.api.datalinks.AutoRagResult) rather than a plain dict.
 
 #### request_cleaning(prompts, output_namespace, output_dataset_name)
 
@@ -2111,16 +2615,25 @@ Retrieve datasets within a specific namespace (schema endpoint).
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
 
+#### get_current_user()
+
+Resolve the identity of the user owning the configured API key.
+
+* **Returns:**
+  Dict with `id` and `username`, plus nullable `name` and
+  `email`; or None on failure.
+* **Return type:**
+  Optional[Dict]
+
 #### list_tokens()
 
 List all API tokens for the authenticated user.
 
 * **Returns:**
-  List of token dicts, or None on failure.
+  List of token dicts, or None on failure — including the 403 a
+  restricted token gets, since it may not manage API tokens.
 * **Return type:**
   Optional[List[Dict]]
-* **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
 
 #### add_token(name, expires_at=None, access_restricted_to=None)
 
@@ -2221,19 +2734,40 @@ Permanently delete an agent run and its resume checkpoint.
 * **Return type:**
   `None`
 
+#### submit_agent_run_feedback(run_id, , thumbs_up, comment=None)
+
+Rate the answer a completed agent run produced.
+
+Resubmitting replaces the previous rating for the same run.
+
+* **Parameters:**
+  * **run_id** (*str*) – UUID of the agent run.
+  * **thumbs_up** (*bool*) – True for a thumbs up, False for a thumbs down.
+  * **comment** (*Optional* *[**str* *]*) – Optional free-text comment accompanying the rating.
+* **Raises:**
+  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails (e.g. 404 when the
+  run does not exist or is not owned by the caller, 422 when it has not
+  completed).
+* **Return type:**
+  `None`
+
 #### resume_agent_run(run_id)
 
 Resume a previously paused or crashed agent run, streaming its events.
 
 The first event is `run-started`, followed by the same domain events as
-[`ask()`](#datalinks.api.datalinks.DataLinksAPI.ask) (e.g. `plan`, `step`, `answer`). Terminal run states
-arrive as a single synthetic event instead of a stream:
+[`ask()`](#datalinks.api.datalinks.DataLinksAPI.ask) (e.g. `plan`, `step`, `answer`). Runs that cannot be
+streamed arrive as a single synthetic event instead:
 
 > * `completed` / `expired` (HTTP 410) — yielded as an
 >   `AskEvent(type="terminal", data=<body>)` whose data carries the
 >   original question and, for completed runs, the rendered result.
 > * `failed` (HTTP 422) — yielded as an `AskEvent` of type
 >   `"terminal"`.
+> * no checkpoint to resume from (HTTP 409) — yielded as an
+>   `AskEvent(type="no-checkpoint", data=<body>)`. The run is untouched
+>   and still in progress; poll [`get_agent_run_status()`](#datalinks.api.datalinks.DataLinksAPI.get_agent_run_status) for its
+>   eventual outcome.
 > * not-found / not-owned (HTTP 404) — raises `DataLinksRequestError`.
 * **Parameters:**
   **run_id** (*str*) – UUID of the agent run to resume.
@@ -2243,6 +2777,82 @@ arrive as a single synthetic event instead of a stream:
   Iterator[[AskEvent](#datalinks.api.datalinks.AskEvent)]
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – On 404 or transport-level failure.
+
+#### share_dataset_access(username, role)
+
+Grant another user access to the configured dataset.
+
+Since public datasets were removed, this is how you give someone else
+access. Re-sharing with a different role replaces the existing grant.
+
+* **Parameters:**
+  * **username** (*str*) – User to grant access to.
+  * **role** (*str*) – `"viewer"` (read-only) or `"editor"` (read and write).
+* **Raises:**
+  * **ValueError** – If `role` is not a valid access level.
+  * [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails (e.g. 403 when
+    the caller does not own the dataset).
+* **Return type:**
+  `None`
+
+#### revoke_dataset_access(username, role)
+
+Remove a user’s access to the configured dataset.
+
+* **Parameters:**
+  * **username** (*str*) – User whose access is being removed.
+  * **role** (*str*) – The granted access level to remove.
+* **Raises:**
+  * **ValueError** – If `role` is not a valid access level.
+  * [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### list_dataset_shares()
+
+List the per-user grants on the configured dataset.
+
+* **Returns:**
+  List of dicts with `username` and `role`, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
+
+#### share_namespace_access(username, role)
+
+Grant another user access to the configured namespace.
+
+The grant cascades to every dataset in the namespace.
+
+* **Parameters:**
+  * **username** (*str*) – User to grant access to.
+  * **role** (*str*) – `"viewer"` (read-only) or `"editor"` (read and write).
+* **Raises:**
+  * **ValueError** – If `role` is not a valid access level.
+  * [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### revoke_namespace_access(username, role)
+
+Remove a user’s access to the configured namespace.
+
+* **Parameters:**
+  * **username** (*str*) – User whose access is being removed.
+  * **role** (*str*) – The granted access level to remove.
+* **Raises:**
+  * **ValueError** – If `role` is not a valid access level.
+  * [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+* **Return type:**
+  `None`
+
+#### list_namespace_shares()
+
+List the per-user grants on the configured namespace.
+
+* **Returns:**
+  List of dicts with `username` and `role`, or None on failure.
+* **Return type:**
+  Optional[List[Dict]]
 
 #### list_conversations(username='self', namespace=None)
 
