@@ -312,8 +312,8 @@ def upload_multipart(filepath: str):
 
     final = dlapi.wait_for_ingestion(ingestion_id)
     logging.info(
-        f"Ingestion finished: status={final.get('status')!r}, "
-        f"rows={final.get('processedRows')}, message={final.get('statusMessage')!r}"
+        f"Ingestion finished: status={final.status!r}, "
+        f"rows={final.processed_rows}, message={final.status_message!r}"
     )
 
 
