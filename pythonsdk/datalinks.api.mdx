@@ -161,16 +161,12 @@ Abort a multipart upload and clean up partial data.
 
 List ingestion attempts for the configured dataset, most recent first.
 
-Each record contains `id`, `status`, `statusMessage`,
-`processedBytes`, `expectedTotalBytes`, `processedRows`,
-and `attributes`.
-
 * **Parameters:**
   **page_size** (*int*) – Number of records to return (1-100, default 25).
-* **Returns:**
-  List of ingestion attempt dicts, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ListIngestionsResponseDataItem`](datalinks#datalinks.models.ListIngestionsResponseDataItem)]]
+* **Returns:**
+  Ingestion attempts, or None on failure.
 
 #### wait_for_ingestion(ingestion_id, poll_interval=5, timeout=1200)
 
@@ -184,10 +180,10 @@ state, or until *timeout* seconds have elapsed.
   * **ingestion_id** (*str*) – Ingestion ID returned by [`finish_multipart_upload()`](#datalinks.api.DataLinksAPI.finish_multipart_upload).
   * **poll_interval** (*int*) – Seconds between polls (default 5).
   * **timeout** (*int*) – Maximum seconds to wait before raising (default 600).
-* **Returns:**
-  The final ingestion record dict.
 * **Return type:**
-  Dict
+  [`ListIngestionsResponseDataItem`](datalinks#datalinks.models.ListIngestionsResponseDataItem)
+* **Returns:**
+  The final ingestion record.
 * **Raises:**
   * **TimeoutError** – If *timeout* is exceeded before a terminal status.
   * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If polling requests fail.
@@ -196,13 +192,10 @@ state, or until *timeout* seconds have elapsed.
 
 Retrieve metadata for the configured dataset.
 
-Returns a dict with `dataset`, `metadata`, and `inferDefinition` keys,
-or `None` if the request fails.
-
-* **Returns:**
-  Dataset metadata dict, or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`DatasetResponse`](datalinks#datalinks.models.DatasetResponse)]
+* **Returns:**
+  The dataset and its metadata, or None on failure.
 
 #### delete_dataset()
 
@@ -264,10 +257,10 @@ Preview what recalculating links would produce without saving changes.
 * **Parameters:**
   * **data** (*Dataset*) – Array of ontology data objects (e.g. from [`query_data()`](#datalinks.api.DataLinksAPI.query_data)).
   * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](datalinks#datalinks.links.MatchTypeConfig) *]*) – Optional link matching configuration.
-* **Returns:**
-  Preview of link objects, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
+* **Returns:**
+  The previewed links, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -278,10 +271,10 @@ Recalculate links for the configured dataset based on current data.
 * **Parameters:**
   * **data** (*Dataset*) – Array of ontology data objects (e.g. from [`query_data()`](#datalinks.api.DataLinksAPI.query_data)).
   * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](datalinks#datalinks.links.MatchTypeConfig) *]*) – Optional link matching configuration.
-* **Returns:**
-  Updated list of link objects, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
+* **Returns:**
+  The rebuilt links, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -289,10 +282,10 @@ Recalculate links for the configured dataset based on current data.
 
 Retrieve active and suggested links for the configured dataset.
 
-* **Returns:**
-  A list of link objects, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
+* **Returns:**
+  The links, or None on failure.
 
 #### list_datasets(namespace=None)
 
@@ -303,12 +296,10 @@ Retrieves the list of datasets for the user, optionally filtered by a specific n
   If provided, only datasets associated with the given
   namespace will be returned. If not provided, all datasets are
   retrieved.
-* **Returns:**
-  A list of datasets represented as dictionaries if the
-  query is successful and returns a status code of 200, or
-  None if the query fails or encounters an error.
 * **Return type:**
-  List[Dict] | None
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
+* **Returns:**
+  The datasets, or None on failure.
 
 #### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False, , username='self')
 
@@ -380,10 +371,10 @@ Process data through the ingestion pipeline without saving it to a dataset.
 * **Parameters:**
   * **data** (*Dataset*) – List of data records to preview.
   * **inference_steps** (*Optional* *[*[*Pipeline*](datalinks#datalinks.pipeline.Pipeline) *]*) – Optional pipeline of inference steps to apply.
-* **Returns:**
-  List of processed preview records, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[`Dict`[`str`, `Any`]]]
+* **Returns:**
+  The processed preview records, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -396,10 +387,11 @@ Ask an agent to infer a field type schema from sampled data.
   * **model** (*Optional* *[**str* *]*) – LLM model name.
   * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
   * **current_schema** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Existing field schema to refine (field → description mapping).
-* **Returns:**
-  Dict with `schema` key mapping field names to their inferred types.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`InferredSchemaResponse`](datalinks#datalinks.models.InferredSchemaResponse)]
+* **Returns:**
+  The inferred schema, mapping field names to their types, or None
+  on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -409,10 +401,11 @@ Retry a failed ingestion by creating a new ingestion record from the original.
 
 * **Parameters:**
   **ingestion_id** (*str*) – The ID of the ingestion to retry.
-* **Returns:**
-  Dict with the new ingestion `id`, or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`CreatedIngestionTrackingResponse`](datalinks#datalinks.models.CreatedIngestionTrackingResponse)]
+* **Returns:**
+  The new ingestion record, whose `id` is a `UUID`; or None on
+  failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -495,10 +488,10 @@ Retrieve code files generated by the cleaning agent for a task.
 
 Load the ontology (active links) for the configured dataset.
 
-* **Returns:**
-  List of link dicts, or None if no ontology exists or the request fails.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
+* **Returns:**
+  The active links, or None if no ontology exists or the request fails.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -507,8 +500,8 @@ Load the ontology (active links) for the configured dataset.
 Save (update) the ontology for the configured dataset.
 
 * **Parameters:**
-  * **add** (*Optional* *[**List* *[**Dict* *]* *]*) – Links to add to the ontology.
-  * **remove** (*Optional* *[**List* *[**Dict* *]* *]*) – Links to remove from the ontology.
+  * **add** (`Optional`[`Sequence`[`Union`[[`ApiLink`](datalinks#datalinks.models.ApiLink), `Mapping`[`str`, `Any`]]]]) – Links to add, as returned by [`get_ontology()`](#datalinks.api.DataLinksAPI.get_ontology) or as dicts.
+  * **remove** (`Optional`[`Sequence`[`Union`[[`ApiLink`](datalinks#datalinks.models.ApiLink), `Mapping`[`str`, `Any`]]]]) – Links to remove, in the same form as `add`.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
@@ -527,10 +520,11 @@ When `activate=True`, the curated links are added to the ontology.
   * **model** (*Optional* *[**str* *]*) – LLM model name.
   * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"anthropic"`).
   * **activate** (*bool*) – If `True`, add curated links to the ontology.
-* **Returns:**
-  Dict with `datasetsProcessed`, `totalSelected`, and optionally `curatedLinks`.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`CurateLinkResponse`](datalinks#datalinks.models.CurateLinkResponse)]
+* **Returns:**
+  The curation outcome — `datasets_processed`, `total_selected`,
+  and `curated_links` when `activate` is `False`; or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -551,10 +545,10 @@ Retrieve namespaces for a user.
 
 * **Parameters:**
   **user** (*str*) – Username or `"self"` for the current user.
-* **Returns:**
-  List of namespace dicts, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiNamespace`](datalinks#datalinks.models.ApiNamespace)]]
+* **Returns:**
+  The namespaces, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -562,10 +556,10 @@ Retrieve namespaces for a user.
 
 Retrieve all datasets visible to the authenticated user (schema endpoint).
 
-* **Returns:**
-  List of dataset dicts, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
+* **Returns:**
+  The datasets, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -576,10 +570,10 @@ Retrieve datasets within a specific namespace (schema endpoint).
 * **Parameters:**
   * **namespace** (*Optional* *[**str* *]*) – Namespace to list. Defaults to the configured namespace.
   * **user** (*str*) – Username or `"self"` for the current user.
-* **Returns:**
-  List of dataset dicts, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
+* **Returns:**
+  The datasets, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -587,21 +581,21 @@ Retrieve datasets within a specific namespace (schema endpoint).
 
 Resolve the identity of the user owning the configured API key.
 
-* **Returns:**
-  Dict with `id` and `username`, plus nullable `name` and
-  `email`; or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`CurrentUserResponse`](datalinks#datalinks.models.CurrentUserResponse)]
+* **Returns:**
+  The user’s `id` and `username`, plus nullable `name` and
+  `email`; or None on failure.
 
 #### list_tokens()
 
 List all API tokens for the authenticated user.
 
-* **Returns:**
-  List of token dicts, or None on failure — including the 403 a
-  restricted token gets, since it may not manage API tokens.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`UserToken`](datalinks#datalinks.models.UserToken)]]
+* **Returns:**
+  The tokens, or None on failure — including the 403 a restricted
+  token gets, since it may not manage API tokens.
 
 #### add_token(name, expires_at=None, access_restricted_to=None)
 
@@ -610,12 +604,13 @@ Create a new API token for the authenticated user.
 * **Parameters:**
   * **name** (*str*) – Display name for the token.
   * **expires_at** (*Optional* *[**str* *]*) – Optional expiry timestamp (ISO 8601 string).
-  * **access_restricted_to** (*Optional* *[**List* *[**Dict* *]* *]*) – Optional list of permission entries restricting access
-    (each dict with `username`, `namespace`, and optionally `dataset`).
-* **Returns:**
-  Created token dict (includes the `token` secret), or None on failure.
+  * **access_restricted_to** (`Optional`[`Sequence`[`Union`[[`TokenPermissionEntry`](datalinks#datalinks.models.TokenPermissionEntry), `Mapping`[`str`, `Any`]]]]) – Permission entries restricting access, as returned
+    by [`list_token_permissions()`](#datalinks.api.DataLinksAPI.list_token_permissions) or as dicts with `username`,
+    `namespace` and optionally `dataset`.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`UserToken`](datalinks#datalinks.models.UserToken)]
+* **Returns:**
+  The created token, including the `token` secret, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -636,10 +631,10 @@ List permissions assigned to a token.
 
 * **Parameters:**
   **token_id** (*str*) – ID of the token.
-* **Returns:**
-  Dict with `restricted` (bool) and `permissions` (list) keys, or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`TokenPermissionsResponse`](datalinks#datalinks.models.TokenPermissionsResponse)]
+* **Returns:**
+  The token’s permissions, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -651,11 +646,11 @@ Retrieve historical usage data for the authenticated user.
   * **on_or_after** (*Optional* *[**str* *]*) – Return records on or after this ISO 8601 timestamp.
   * **before** (*Optional* *[**str* *]*) – Return records before this ISO 8601 timestamp.
   * **page_size** (*int*) – Number of records per page (default 25).
-  * **page_cursor** (*Optional* *[**Dict* *]*) – Pagination cursor dict from a previous response.
-* **Returns:**
-  Dict with `data` and `meta` keys, or None on failure.
+  * **page_cursor** (`Union`[[`UserUsageHistoryCursor`](datalinks#datalinks.models.UserUsageHistoryCursor), `Mapping`[`str`, `Any`], `None`]) – `meta.page_cursor` from a previous response.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`UserUsageHistoryResponse`](datalinks#datalinks.models.UserUsageHistoryResponse)]
+* **Returns:**
+  The usage history page, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -667,10 +662,10 @@ Retrieve usage data aggregated by day for the authenticated user.
   * **on_or_after** (*Optional* *[**str* *]*) – Return records on or after this ISO 8601 timestamp.
   * **before** (*Optional* *[**str* *]*) – Return records before this ISO 8601 timestamp.
   * **timezone** (*str*) – Timezone for date aggregation (e.g. `"America/New_York"`). Defaults to UTC.
-* **Returns:**
-  Dict with `data` and `meta` keys, or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`UserUsageByDayResponse`](datalinks#datalinks.models.UserUsageByDayResponse)]
+* **Returns:**
+  The daily usage, in `.data` and `.meta`; or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -680,13 +675,13 @@ Get the current status of an agent run.
 
 * **Parameters:**
   **run_id** (*str*) – UUID of the agent run.
-* **Returns:**
-  Dict with `runId`, `agentKind`, `question`, `status`
-  (`running`/`completed`/`failed`/`expired`), `canResume`,
-  and optionally `lastNodeId`, `errorMessage`, `result`. None on
-  failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`AgentRunStatusResponse`](datalinks#datalinks.models.AgentRunStatusResponse)]
+* **Returns:**
+  The run’s `run_id`, `agent_kind`, `question`, `status`
+  (`running`/`completed`/`failed`/`expired`), `can_resume`,
+  and optionally `last_node_id`, `error_message`, `result`; or
+  None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -780,10 +775,10 @@ Remove a user’s access to the configured dataset.
 
 List the per-user grants on the configured dataset.
 
-* **Returns:**
-  List of dicts with `username` and `role`, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`AccessGrant`](datalinks#datalinks.models.AccessGrant)]]
+* **Returns:**
+  The grants, each with `username` and `role`; or None on failure.
 
 #### share_namespace_access(username, role)
 
@@ -817,10 +812,10 @@ Remove a user’s access to the configured namespace.
 
 List the per-user grants on the configured namespace.
 
-* **Returns:**
-  List of dicts with `username` and `role`, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`AccessGrant`](datalinks#datalinks.models.AccessGrant)]]
+* **Returns:**
+  The grants, each with `username` and `role`; or None on failure.
 
 #### list_conversations(username='self', namespace=None)
 
@@ -829,10 +824,10 @@ List the caller’s conversations within a namespace (most-recently-updated firs
 * **Parameters:**
   * **username** (*str*) – Owner username. Defaults to `"self"`.
   * **namespace** (*Optional* *[**str* *]*) – Namespace to list within. Defaults to the configured namespace.
-* **Returns:**
-  Dict with a `conversations` list, or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`ConversationListResponse`](datalinks#datalinks.models.ConversationListResponse)]
+* **Returns:**
+  The summaries, in `.conversations`; or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -842,12 +837,12 @@ Get a conversation and its turns (oldest first).
 
 * **Parameters:**
   **conversation_id** (*str*) – UUID of the conversation.
-* **Returns:**
-  Dict with `id`, `title`, and a `turns` list (each turn has
-  `runId`, `question`, `status`, and optionally `result`), or
-  None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`ConversationDetailResponse`](datalinks#datalinks.models.ConversationDetailResponse)]
+* **Returns:**
+  The conversation’s `id`, `title` and `turns` (each turn has
+  `run_id`, `question`, `status`, and optionally `result`); or
+  None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -931,7 +926,7 @@ caller. Warning here, at call time, keeps the attribution right.
 #### *async* list_ingestions(page_size=25)
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ListIngestionsResponseDataItem`](datalinks#datalinks.models.ListIngestionsResponseDataItem)]]
 
 #### *async* wait_for_ingestion(ingestion_id, poll_interval=5, timeout=1200)
 
@@ -941,12 +936,12 @@ Polls via [`list_ingestions()`](#datalinks.api.AsyncDataLinksAPI.list_ingestions
 ticks instead of blocking the event loop with `time.sleep`.
 
 * **Return type:**
-  `Dict`
+  [`ListIngestionsResponseDataItem`](datalinks#datalinks.models.ListIngestionsResponseDataItem)
 
 #### *async* get_dataset_info()
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`DatasetResponse`](datalinks#datalinks.models.DatasetResponse)]
 
 #### *async* delete_dataset()
 
@@ -976,37 +971,37 @@ ticks instead of blocking the event loop with `time.sleep`.
 #### *async* preview_links(data, entity_resolution=None)
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
 
 #### *async* rebuild_links(data, entity_resolution=None)
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
 
 #### *async* load_links()
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
 
 #### *async* list_datasets(namespace=None)
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
 
 #### *async* list_namespaces(user='self')
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiNamespace`](datalinks#datalinks.models.ApiNamespace)]]
 
 #### *async* list_all_datasets_schema()
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
 
 #### *async* list_datasets_in_namespace_schema(namespace=None, user='self')
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
 
 #### *async* query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False, , username='self')
 
@@ -1035,17 +1030,17 @@ exposes the response headers once the stream is open (see [`AsyncAskStream`](#da
 #### *async* preview_ingest(data, inference_steps=None)
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[`Dict`[`str`, `Any`]]]
 
 #### *async* infer_schema(sample, model=None, provider=None, current_schema=None)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`InferredSchemaResponse`](datalinks#datalinks.models.InferredSchemaResponse)]
 
 #### *async* retry_ingestion(ingestion_id)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`CreatedIngestionTrackingResponse`](datalinks#datalinks.models.CreatedIngestionTrackingResponse)]
 
 #### *async* mark_ingestion_seen(ingestion_id)
 
@@ -1065,7 +1060,7 @@ exposes the response headers once the stream is open (see [`AsyncAskStream`](#da
 #### *async* get_ontology()
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
 
 #### *async* save_ontology(add=None, remove=None)
 
@@ -1075,24 +1070,24 @@ exposes the response headers once the stream is open (see [`AsyncAskStream`](#da
 #### *async* curate_links(namespace=None, dataset=None, model=None, provider=None, activate=False)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`CurateLinkResponse`](datalinks#datalinks.models.CurateLinkResponse)]
 
 #### *async* get_current_user()
 
 Resolve the current user’s identity (see [`DataLinksAPI.get_current_user()`](#datalinks.api.DataLinksAPI.get_current_user)).
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`CurrentUserResponse`](datalinks#datalinks.models.CurrentUserResponse)]
 
 #### *async* list_tokens()
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`UserToken`](datalinks#datalinks.models.UserToken)]]
 
 #### *async* add_token(name, expires_at=None, access_restricted_to=None)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`UserToken`](datalinks#datalinks.models.UserToken)]
 
 #### *async* delete_token(token_id)
 
@@ -1102,24 +1097,24 @@ Resolve the current user’s identity (see [`DataLinksAPI.get_current_user()`](#
 #### *async* list_token_permissions(token_id)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`TokenPermissionsResponse`](datalinks#datalinks.models.TokenPermissionsResponse)]
 
 #### *async* get_usage_history(on_or_after=None, before=None, page_size=25, page_cursor=None)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`UserUsageHistoryResponse`](datalinks#datalinks.models.UserUsageHistoryResponse)]
 
 #### *async* get_usage_by_day(on_or_after=None, before=None, timezone='UTC')
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`UserUsageByDayResponse`](datalinks#datalinks.models.UserUsageByDayResponse)]
 
 #### *async* get_agent_run_status(run_id)
 
 Get the current status of an agent run (see [`DataLinksAPI.get_agent_run_status()`](#datalinks.api.DataLinksAPI.get_agent_run_status)).
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`AgentRunStatusResponse`](datalinks#datalinks.models.AgentRunStatusResponse)]
 
 #### *async* delete_agent_run(run_id)
 
@@ -1161,7 +1156,7 @@ Remove a user’s dataset access (see [`DataLinksAPI.revoke_dataset_access()`](#
 List grants on the dataset (see [`DataLinksAPI.list_dataset_shares()`](#datalinks.api.DataLinksAPI.list_dataset_shares)).
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`AccessGrant`](datalinks#datalinks.models.AccessGrant)]]
 
 #### *async* share_namespace_access(username, role)
 
@@ -1182,21 +1177,21 @@ Remove a user’s namespace access (see [`DataLinksAPI.revoke_namespace_access()
 List grants on the namespace (see [`DataLinksAPI.list_namespace_shares()`](#datalinks.api.DataLinksAPI.list_namespace_shares)).
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`AccessGrant`](datalinks#datalinks.models.AccessGrant)]]
 
 #### *async* list_conversations(username='self', namespace=None)
 
 List the caller’s conversations within a namespace (see [`DataLinksAPI.list_conversations()`](#datalinks.api.DataLinksAPI.list_conversations)).
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`ConversationListResponse`](datalinks#datalinks.models.ConversationListResponse)]
 
 #### *async* get_conversation(conversation_id)
 
 Get a conversation and its turns (see [`DataLinksAPI.get_conversation()`](#datalinks.api.DataLinksAPI.get_conversation)).
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`ConversationDetailResponse`](datalinks#datalinks.models.ConversationDetailResponse)]
 
 ### *exception* datalinks.api.DataLinksRequestError(endpoint, e, reason=None)
 
@@ -1625,7 +1620,7 @@ caller. Warning here, at call time, keeps the attribution right.
 #### *async* list_ingestions(page_size=25)
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ListIngestionsResponseDataItem`](datalinks#datalinks.models.ListIngestionsResponseDataItem)]]
 
 #### *async* wait_for_ingestion(ingestion_id, poll_interval=5, timeout=1200)
 
@@ -1635,12 +1630,12 @@ Polls via [`list_ingestions()`](#datalinks.api.async_datalinks.AsyncDataLinksAPI
 ticks instead of blocking the event loop with `time.sleep`.
 
 * **Return type:**
-  `Dict`
+  [`ListIngestionsResponseDataItem`](datalinks#datalinks.models.ListIngestionsResponseDataItem)
 
 #### *async* get_dataset_info()
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`DatasetResponse`](datalinks#datalinks.models.DatasetResponse)]
 
 #### *async* delete_dataset()
 
@@ -1670,37 +1665,37 @@ ticks instead of blocking the event loop with `time.sleep`.
 #### *async* preview_links(data, entity_resolution=None)
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
 
 #### *async* rebuild_links(data, entity_resolution=None)
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
 
 #### *async* load_links()
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
 
 #### *async* list_datasets(namespace=None)
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
 
 #### *async* list_namespaces(user='self')
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiNamespace`](datalinks#datalinks.models.ApiNamespace)]]
 
 #### *async* list_all_datasets_schema()
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
 
 #### *async* list_datasets_in_namespace_schema(namespace=None, user='self')
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
 
 #### *async* query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False, , username='self')
 
@@ -1729,17 +1724,17 @@ exposes the response headers once the stream is open (see [`AsyncAskStream`](#da
 #### *async* preview_ingest(data, inference_steps=None)
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[`Dict`[`str`, `Any`]]]
 
 #### *async* infer_schema(sample, model=None, provider=None, current_schema=None)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`InferredSchemaResponse`](datalinks#datalinks.models.InferredSchemaResponse)]
 
 #### *async* retry_ingestion(ingestion_id)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`CreatedIngestionTrackingResponse`](datalinks#datalinks.models.CreatedIngestionTrackingResponse)]
 
 #### *async* mark_ingestion_seen(ingestion_id)
 
@@ -1759,7 +1754,7 @@ exposes the response headers once the stream is open (see [`AsyncAskStream`](#da
 #### *async* get_ontology()
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
 
 #### *async* save_ontology(add=None, remove=None)
 
@@ -1769,24 +1764,24 @@ exposes the response headers once the stream is open (see [`AsyncAskStream`](#da
 #### *async* curate_links(namespace=None, dataset=None, model=None, provider=None, activate=False)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`CurateLinkResponse`](datalinks#datalinks.models.CurateLinkResponse)]
 
 #### *async* get_current_user()
 
 Resolve the current user’s identity (see `DataLinksAPI.get_current_user()`).
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`CurrentUserResponse`](datalinks#datalinks.models.CurrentUserResponse)]
 
 #### *async* list_tokens()
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`UserToken`](datalinks#datalinks.models.UserToken)]]
 
 #### *async* add_token(name, expires_at=None, access_restricted_to=None)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`UserToken`](datalinks#datalinks.models.UserToken)]
 
 #### *async* delete_token(token_id)
 
@@ -1796,24 +1791,24 @@ Resolve the current user’s identity (see `DataLinksAPI.get_current_user()`).
 #### *async* list_token_permissions(token_id)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`TokenPermissionsResponse`](datalinks#datalinks.models.TokenPermissionsResponse)]
 
 #### *async* get_usage_history(on_or_after=None, before=None, page_size=25, page_cursor=None)
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`UserUsageHistoryResponse`](datalinks#datalinks.models.UserUsageHistoryResponse)]
 
 #### *async* get_usage_by_day(on_or_after=None, before=None, timezone='UTC')
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`UserUsageByDayResponse`](datalinks#datalinks.models.UserUsageByDayResponse)]
 
 #### *async* get_agent_run_status(run_id)
 
 Get the current status of an agent run (see `DataLinksAPI.get_agent_run_status()`).
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`AgentRunStatusResponse`](datalinks#datalinks.models.AgentRunStatusResponse)]
 
 #### *async* delete_agent_run(run_id)
 
@@ -1855,7 +1850,7 @@ Remove a user’s dataset access (see `DataLinksAPI.revoke_dataset_access()`).
 List grants on the dataset (see `DataLinksAPI.list_dataset_shares()`).
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`AccessGrant`](datalinks#datalinks.models.AccessGrant)]]
 
 #### *async* share_namespace_access(username, role)
 
@@ -1876,21 +1871,21 @@ Remove a user’s namespace access (see `DataLinksAPI.revoke_namespace_access()`
 List grants on the namespace (see `DataLinksAPI.list_namespace_shares()`).
 
 * **Return type:**
-  `Optional`[`List`[`Dict`]]
+  `Optional`[`List`[[`AccessGrant`](datalinks#datalinks.models.AccessGrant)]]
 
 #### *async* list_conversations(username='self', namespace=None)
 
 List the caller’s conversations within a namespace (see `DataLinksAPI.list_conversations()`).
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`ConversationListResponse`](datalinks#datalinks.models.ConversationListResponse)]
 
 #### *async* get_conversation(conversation_id)
 
 Get a conversation and its turns (see `DataLinksAPI.get_conversation()`).
 
 * **Return type:**
-  `Optional`[`Dict`]
+  `Optional`[[`ConversationDetailResponse`](datalinks#datalinks.models.ConversationDetailResponse)]
 
 ## datalinks.api.datalinks module
 
@@ -2188,16 +2183,12 @@ Abort a multipart upload and clean up partial data.
 
 List ingestion attempts for the configured dataset, most recent first.
 
-Each record contains `id`, `status`, `statusMessage`,
-`processedBytes`, `expectedTotalBytes`, `processedRows`,
-and `attributes`.
-
 * **Parameters:**
   **page_size** (*int*) – Number of records to return (1-100, default 25).
-* **Returns:**
-  List of ingestion attempt dicts, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ListIngestionsResponseDataItem`](datalinks#datalinks.models.ListIngestionsResponseDataItem)]]
+* **Returns:**
+  Ingestion attempts, or None on failure.
 
 #### wait_for_ingestion(ingestion_id, poll_interval=5, timeout=1200)
 
@@ -2211,10 +2202,10 @@ state, or until *timeout* seconds have elapsed.
   * **ingestion_id** (*str*) – Ingestion ID returned by [`finish_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.finish_multipart_upload).
   * **poll_interval** (*int*) – Seconds between polls (default 5).
   * **timeout** (*int*) – Maximum seconds to wait before raising (default 600).
-* **Returns:**
-  The final ingestion record dict.
 * **Return type:**
-  Dict
+  [`ListIngestionsResponseDataItem`](datalinks#datalinks.models.ListIngestionsResponseDataItem)
+* **Returns:**
+  The final ingestion record.
 * **Raises:**
   * **TimeoutError** – If *timeout* is exceeded before a terminal status.
   * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If polling requests fail.
@@ -2223,13 +2214,10 @@ state, or until *timeout* seconds have elapsed.
 
 Retrieve metadata for the configured dataset.
 
-Returns a dict with `dataset`, `metadata`, and `inferDefinition` keys,
-or `None` if the request fails.
-
-* **Returns:**
-  Dataset metadata dict, or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`DatasetResponse`](datalinks#datalinks.models.DatasetResponse)]
+* **Returns:**
+  The dataset and its metadata, or None on failure.
 
 #### delete_dataset()
 
@@ -2291,10 +2279,10 @@ Preview what recalculating links would produce without saving changes.
 * **Parameters:**
   * **data** (*Dataset*) – Array of ontology data objects (e.g. from [`query_data()`](#datalinks.api.datalinks.DataLinksAPI.query_data)).
   * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](datalinks#datalinks.links.MatchTypeConfig) *]*) – Optional link matching configuration.
-* **Returns:**
-  Preview of link objects, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
+* **Returns:**
+  The previewed links, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2305,10 +2293,10 @@ Recalculate links for the configured dataset based on current data.
 * **Parameters:**
   * **data** (*Dataset*) – Array of ontology data objects (e.g. from [`query_data()`](#datalinks.api.datalinks.DataLinksAPI.query_data)).
   * **entity_resolution** (*Optional* *[*[*MatchTypeConfig*](datalinks#datalinks.links.MatchTypeConfig) *]*) – Optional link matching configuration.
-* **Returns:**
-  Updated list of link objects, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
+* **Returns:**
+  The rebuilt links, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2316,10 +2304,10 @@ Recalculate links for the configured dataset based on current data.
 
 Retrieve active and suggested links for the configured dataset.
 
-* **Returns:**
-  A list of link objects, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
+* **Returns:**
+  The links, or None on failure.
 
 #### list_datasets(namespace=None)
 
@@ -2330,12 +2318,10 @@ Retrieves the list of datasets for the user, optionally filtered by a specific n
   If provided, only datasets associated with the given
   namespace will be returned. If not provided, all datasets are
   retrieved.
-* **Returns:**
-  A list of datasets represented as dictionaries if the
-  query is successful and returns a status code of 200, or
-  None if the query fails or encounters an error.
 * **Return type:**
-  List[Dict] | None
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
+* **Returns:**
+  The datasets, or None on failure.
 
 #### query_data(query=None, is_natural_language=False, model=None, provider=None, include_metadata=False, explain=False, , username='self')
 
@@ -2407,10 +2393,10 @@ Process data through the ingestion pipeline without saving it to a dataset.
 * **Parameters:**
   * **data** (*Dataset*) – List of data records to preview.
   * **inference_steps** (*Optional* *[*[*Pipeline*](datalinks#datalinks.pipeline.Pipeline) *]*) – Optional pipeline of inference steps to apply.
-* **Returns:**
-  List of processed preview records, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[`Dict`[`str`, `Any`]]]
+* **Returns:**
+  The processed preview records, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2423,10 +2409,11 @@ Ask an agent to infer a field type schema from sampled data.
   * **model** (*Optional* *[**str* *]*) – LLM model name.
   * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"ollama"`).
   * **current_schema** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Existing field schema to refine (field → description mapping).
-* **Returns:**
-  Dict with `schema` key mapping field names to their inferred types.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`InferredSchemaResponse`](datalinks#datalinks.models.InferredSchemaResponse)]
+* **Returns:**
+  The inferred schema, mapping field names to their types, or None
+  on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2436,10 +2423,11 @@ Retry a failed ingestion by creating a new ingestion record from the original.
 
 * **Parameters:**
   **ingestion_id** (*str*) – The ID of the ingestion to retry.
-* **Returns:**
-  Dict with the new ingestion `id`, or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`CreatedIngestionTrackingResponse`](datalinks#datalinks.models.CreatedIngestionTrackingResponse)]
+* **Returns:**
+  The new ingestion record, whose `id` is a `UUID`; or None on
+  failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2522,10 +2510,10 @@ Retrieve code files generated by the cleaning agent for a task.
 
 Load the ontology (active links) for the configured dataset.
 
-* **Returns:**
-  List of link dicts, or None if no ontology exists or the request fails.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiLink`](datalinks#datalinks.models.ApiLink)]]
+* **Returns:**
+  The active links, or None if no ontology exists or the request fails.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2534,8 +2522,8 @@ Load the ontology (active links) for the configured dataset.
 Save (update) the ontology for the configured dataset.
 
 * **Parameters:**
-  * **add** (*Optional* *[**List* *[**Dict* *]* *]*) – Links to add to the ontology.
-  * **remove** (*Optional* *[**List* *[**Dict* *]* *]*) – Links to remove from the ontology.
+  * **add** (`Optional`[`Sequence`[`Union`[[`ApiLink`](datalinks#datalinks.models.ApiLink), `Mapping`[`str`, `Any`]]]]) – Links to add, as returned by [`get_ontology()`](#datalinks.api.datalinks.DataLinksAPI.get_ontology) or as dicts.
+  * **remove** (`Optional`[`Sequence`[`Union`[[`ApiLink`](datalinks#datalinks.models.ApiLink), `Mapping`[`str`, `Any`]]]]) – Links to remove, in the same form as `add`.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
@@ -2554,10 +2542,11 @@ When `activate=True`, the curated links are added to the ontology.
   * **model** (*Optional* *[**str* *]*) – LLM model name.
   * **provider** (*Optional* *[**str* *]*) – LLM provider (e.g. `"openai"`, `"anthropic"`).
   * **activate** (*bool*) – If `True`, add curated links to the ontology.
-* **Returns:**
-  Dict with `datasetsProcessed`, `totalSelected`, and optionally `curatedLinks`.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`CurateLinkResponse`](datalinks#datalinks.models.CurateLinkResponse)]
+* **Returns:**
+  The curation outcome — `datasets_processed`, `total_selected`,
+  and `curated_links` when `activate` is `False`; or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2578,10 +2567,10 @@ Retrieve namespaces for a user.
 
 * **Parameters:**
   **user** (*str*) – Username or `"self"` for the current user.
-* **Returns:**
-  List of namespace dicts, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiNamespace`](datalinks#datalinks.models.ApiNamespace)]]
+* **Returns:**
+  The namespaces, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2589,10 +2578,10 @@ Retrieve namespaces for a user.
 
 Retrieve all datasets visible to the authenticated user (schema endpoint).
 
-* **Returns:**
-  List of dataset dicts, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
+* **Returns:**
+  The datasets, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2603,10 +2592,10 @@ Retrieve datasets within a specific namespace (schema endpoint).
 * **Parameters:**
   * **namespace** (*Optional* *[**str* *]*) – Namespace to list. Defaults to the configured namespace.
   * **user** (*str*) – Username or `"self"` for the current user.
-* **Returns:**
-  List of dataset dicts, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`ApiDatasetDescription`](datalinks#datalinks.models.ApiDatasetDescription)]]
+* **Returns:**
+  The datasets, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2614,21 +2603,21 @@ Retrieve datasets within a specific namespace (schema endpoint).
 
 Resolve the identity of the user owning the configured API key.
 
-* **Returns:**
-  Dict with `id` and `username`, plus nullable `name` and
-  `email`; or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`CurrentUserResponse`](datalinks#datalinks.models.CurrentUserResponse)]
+* **Returns:**
+  The user’s `id` and `username`, plus nullable `name` and
+  `email`; or None on failure.
 
 #### list_tokens()
 
 List all API tokens for the authenticated user.
 
-* **Returns:**
-  List of token dicts, or None on failure — including the 403 a
-  restricted token gets, since it may not manage API tokens.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`UserToken`](datalinks#datalinks.models.UserToken)]]
+* **Returns:**
+  The tokens, or None on failure — including the 403 a restricted
+  token gets, since it may not manage API tokens.
 
 #### add_token(name, expires_at=None, access_restricted_to=None)
 
@@ -2637,12 +2626,13 @@ Create a new API token for the authenticated user.
 * **Parameters:**
   * **name** (*str*) – Display name for the token.
   * **expires_at** (*Optional* *[**str* *]*) – Optional expiry timestamp (ISO 8601 string).
-  * **access_restricted_to** (*Optional* *[**List* *[**Dict* *]* *]*) – Optional list of permission entries restricting access
-    (each dict with `username`, `namespace`, and optionally `dataset`).
-* **Returns:**
-  Created token dict (includes the `token` secret), or None on failure.
+  * **access_restricted_to** (`Optional`[`Sequence`[`Union`[[`TokenPermissionEntry`](datalinks#datalinks.models.TokenPermissionEntry), `Mapping`[`str`, `Any`]]]]) – Permission entries restricting access, as returned
+    by [`list_token_permissions()`](#datalinks.api.datalinks.DataLinksAPI.list_token_permissions) or as dicts with `username`,
+    `namespace` and optionally `dataset`.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`UserToken`](datalinks#datalinks.models.UserToken)]
+* **Returns:**
+  The created token, including the `token` secret, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2663,10 +2653,10 @@ List permissions assigned to a token.
 
 * **Parameters:**
   **token_id** (*str*) – ID of the token.
-* **Returns:**
-  Dict with `restricted` (bool) and `permissions` (list) keys, or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`TokenPermissionsResponse`](datalinks#datalinks.models.TokenPermissionsResponse)]
+* **Returns:**
+  The token’s permissions, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2678,11 +2668,11 @@ Retrieve historical usage data for the authenticated user.
   * **on_or_after** (*Optional* *[**str* *]*) – Return records on or after this ISO 8601 timestamp.
   * **before** (*Optional* *[**str* *]*) – Return records before this ISO 8601 timestamp.
   * **page_size** (*int*) – Number of records per page (default 25).
-  * **page_cursor** (*Optional* *[**Dict* *]*) – Pagination cursor dict from a previous response.
-* **Returns:**
-  Dict with `data` and `meta` keys, or None on failure.
+  * **page_cursor** (`Union`[[`UserUsageHistoryCursor`](datalinks#datalinks.models.UserUsageHistoryCursor), `Mapping`[`str`, `Any`], `None`]) – `meta.page_cursor` from a previous response.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`UserUsageHistoryResponse`](datalinks#datalinks.models.UserUsageHistoryResponse)]
+* **Returns:**
+  The usage history page, or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2694,10 +2684,10 @@ Retrieve usage data aggregated by day for the authenticated user.
   * **on_or_after** (*Optional* *[**str* *]*) – Return records on or after this ISO 8601 timestamp.
   * **before** (*Optional* *[**str* *]*) – Return records before this ISO 8601 timestamp.
   * **timezone** (*str*) – Timezone for date aggregation (e.g. `"America/New_York"`). Defaults to UTC.
-* **Returns:**
-  Dict with `data` and `meta` keys, or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`UserUsageByDayResponse`](datalinks#datalinks.models.UserUsageByDayResponse)]
+* **Returns:**
+  The daily usage, in `.data` and `.meta`; or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2707,13 +2697,13 @@ Get the current status of an agent run.
 
 * **Parameters:**
   **run_id** (*str*) – UUID of the agent run.
-* **Returns:**
-  Dict with `runId`, `agentKind`, `question`, `status`
-  (`running`/`completed`/`failed`/`expired`), `canResume`,
-  and optionally `lastNodeId`, `errorMessage`, `result`. None on
-  failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`AgentRunStatusResponse`](datalinks#datalinks.models.AgentRunStatusResponse)]
+* **Returns:**
+  The run’s `run_id`, `agent_kind`, `question`, `status`
+  (`running`/`completed`/`failed`/`expired`), `can_resume`,
+  and optionally `last_node_id`, `error_message`, `result`; or
+  None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2807,10 +2797,10 @@ Remove a user’s access to the configured dataset.
 
 List the per-user grants on the configured dataset.
 
-* **Returns:**
-  List of dicts with `username` and `role`, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`AccessGrant`](datalinks#datalinks.models.AccessGrant)]]
+* **Returns:**
+  The grants, each with `username` and `role`; or None on failure.
 
 #### share_namespace_access(username, role)
 
@@ -2844,10 +2834,10 @@ Remove a user’s access to the configured namespace.
 
 List the per-user grants on the configured namespace.
 
-* **Returns:**
-  List of dicts with `username` and `role`, or None on failure.
 * **Return type:**
-  Optional[List[Dict]]
+  `Optional`[`List`[[`AccessGrant`](datalinks#datalinks.models.AccessGrant)]]
+* **Returns:**
+  The grants, each with `username` and `role`; or None on failure.
 
 #### list_conversations(username='self', namespace=None)
 
@@ -2856,10 +2846,10 @@ List the caller’s conversations within a namespace (most-recently-updated firs
 * **Parameters:**
   * **username** (*str*) – Owner username. Defaults to `"self"`.
   * **namespace** (*Optional* *[**str* *]*) – Namespace to list within. Defaults to the configured namespace.
-* **Returns:**
-  Dict with a `conversations` list, or None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`ConversationListResponse`](datalinks#datalinks.models.ConversationListResponse)]
+* **Returns:**
+  The summaries, in `.conversations`; or None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
@@ -2869,12 +2859,12 @@ Get a conversation and its turns (oldest first).
 
 * **Parameters:**
   **conversation_id** (*str*) – UUID of the conversation.
-* **Returns:**
-  Dict with `id`, `title`, and a `turns` list (each turn has
-  `runId`, `question`, `status`, and optionally `result`), or
-  None on failure.
 * **Return type:**
-  Optional[Dict]
+  `Optional`[[`ConversationDetailResponse`](datalinks#datalinks.models.ConversationDetailResponse)]
+* **Returns:**
+  The conversation’s `id`, `title` and `turns` (each turn has
+  `run_id`, `question`, `status`, and optionally `result`); or
+  None on failure.
 * **Raises:**
   [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
