@@ -1516,9 +1516,8 @@ Async sibling of [`datalinks.api.DataLinksAPI`](#datalinks.api.DataLinksAPI).
 
 `AsyncDataLinksAPI` exposes the same surface as `DataLinksAPI` but every
 remote-call method is an `async def` that dispatches through the underlying
-`httpx.AsyncClient`. The two facades share the same generated client (which
-holds both sync and async httpx clients internally) and the same body-building
-typed models, so spec drift is caught uniformly.
+`httpx.AsyncClient`. The two facades share one `DataLinksClient` and the
+same request bodies, so spec drift is caught uniformly.
 
 Use this when you need concurrency — e.g. fanning out queries, embedding the
 SDK in an async web service. For one-shot scripts, prefer `DataLinksAPI`.
@@ -2026,10 +2025,6 @@ enabling users to track and handle both cases effectively.
 
 #### failed *: List[Dict[str, Any]]*
 
-### *exception* datalinks.api.datalinks.DataLinksRequestError(endpoint, e, reason=None)
-
-Bases: `Exception`
-
 ### *class* datalinks.api.datalinks.DataLinksAPI(config=None)
 
 Bases: `object`
@@ -2107,7 +2102,7 @@ field extraction and normalization.
   * **schema_definition** (*Optional* *[**Dict* *[**str* *,* *str* *]* *]*) – Field-name-to-description mapping to guide the AI in
     structuring extracted data.
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2126,7 +2121,7 @@ Ask an agent to infer a data description and field schema from sampled data.
 * **Return type:**
   Dict
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### update_sort_order(order)
 
@@ -2135,7 +2130,7 @@ Update the display order of columns for the configured dataset.
 * **Parameters:**
   **order** (*List* *[**str* *]*) – Ordered list of all column names in the desired sequence.
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2154,7 +2149,7 @@ then call [`finish_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.fi
 * **Return type:**
   Dict
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### finish_multipart_upload(upload_id, key, parts, name=None, inference_steps=None, entity_resolution=None)
 
@@ -2175,7 +2170,7 @@ Complete a multipart upload after all parts have been uploaded.
 * **Return type:**
   Dict
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### abort_multipart_upload(upload_id, key)
 
@@ -2185,7 +2180,7 @@ Abort a multipart upload and clean up partial data.
   * **upload_id** (*str*) – Upload ID from [`prepare_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.prepare_multipart_upload).
   * **key** (*str*) – S3 object key from [`prepare_multipart_upload()`](#datalinks.api.datalinks.DataLinksAPI.prepare_multipart_upload).
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2222,7 +2217,7 @@ state, or until *timeout* seconds have elapsed.
   Dict
 * **Raises:**
   * **TimeoutError** – If *timeout* is exceeded before a terminal status.
-  * [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If polling requests fail.
+  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If polling requests fail.
 
 #### get_dataset_info()
 
@@ -2243,7 +2238,7 @@ Permanently delete the configured dataset, including all data, links, and metada
 This action is irreversible (balefire).
 
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2254,7 +2249,7 @@ Rename the configured dataset.
 * **Parameters:**
   **new_name** (*str*) – The new dataset name.
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2265,7 +2260,7 @@ Remove all data and links from the configured dataset.
 The dataset itself (metadata, schema) is preserved. This action is irreversible.
 
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2287,7 +2282,7 @@ Create a manual link between two dataset columns.
 * **Return type:**
   bool
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### preview_links(data, entity_resolution=None)
 
@@ -2301,7 +2296,7 @@ Preview what recalculating links would produce without saving changes.
 * **Return type:**
   Optional[List[Dict]]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### rebuild_links(data, entity_resolution=None)
 
@@ -2315,7 +2310,7 @@ Recalculate links for the configured dataset based on current data.
 * **Return type:**
   Optional[List[Dict]]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### load_links()
 
@@ -2367,7 +2362,7 @@ identified by key names starting with an underscore.
 * **Return type:**
   List[Dict] | None
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If a transport-level error occurs.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If a transport-level error occurs.
 
 #### ask(query, model=None, provider=None, helper_prompt=None, , username='self', stage_models=None, conversation_id=None, web_search=None)
 
@@ -2400,7 +2395,7 @@ yielded in order: one `plan` event, one or more `step` events, then either an
 * **Return type:**
   [AskStream](#datalinks.api.datalinks.AskStream)
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### Versionchanged
 Changed in version 1.2.15: Returns [`AskStream`](#datalinks.api.datalinks.AskStream) rather than a bare iterator.
@@ -2417,7 +2412,7 @@ Process data through the ingestion pipeline without saving it to a dataset.
 * **Return type:**
   Optional[List[Dict]]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### infer_schema(sample, model=None, provider=None, current_schema=None)
 
@@ -2433,7 +2428,7 @@ Ask an agent to infer a field type schema from sampled data.
 * **Return type:**
   Optional[Dict]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### retry_ingestion(ingestion_id)
 
@@ -2446,7 +2441,7 @@ Retry a failed ingestion by creating a new ingestion record from the original.
 * **Return type:**
   Optional[Dict]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### mark_ingestion_seen(ingestion_id)
 
@@ -2455,7 +2450,7 @@ Mark an ingestion as seen, updating its `seenAt` timestamp.
 * **Parameters:**
   **ingestion_id** (*str*) – The ID of the ingestion to mark as seen.
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2488,7 +2483,7 @@ For incremental streaming results, use [`ask()`](#datalinks.api.datalinks.DataLi
 * **Return type:**
   [AutoRagResult](#datalinks.api.datalinks.AutoRagResult)
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the request fails, the server answers
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the request fails, the server answers
   non-2xx, or the body is not a JSON object.
 
 #### Versionchanged
@@ -2508,7 +2503,7 @@ Request a cleaning job for the configured dataset.
 * **Return type:**
   Optional[str]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### get_cleaning_code(cleaning_task_id)
 
@@ -2521,7 +2516,7 @@ Retrieve code files generated by the cleaning agent for a task.
 * **Return type:**
   Optional[List[Dict]]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### get_ontology()
 
@@ -2532,7 +2527,7 @@ Load the ontology (active links) for the configured dataset.
 * **Return type:**
   Optional[List[Dict]]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### save_ontology(add=None, remove=None)
 
@@ -2542,7 +2537,7 @@ Save (update) the ontology for the configured dataset.
   * **add** (*Optional* *[**List* *[**Dict* *]* *]*) – Links to add to the ontology.
   * **remove** (*Optional* *[**List* *[**Dict* *]* *]*) – Links to remove from the ontology.
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2564,7 +2559,7 @@ When `activate=True`, the curated links are added to the ontology.
 * **Return type:**
   Optional[Dict]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### rename_namespace(new_name)
 
@@ -2573,7 +2568,7 @@ Rename the configured namespace.
 * **Parameters:**
   **new_name** (*str*) – The new namespace name.
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2588,7 +2583,7 @@ Retrieve namespaces for a user.
 * **Return type:**
   Optional[List[Dict]]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### list_all_datasets_schema()
 
@@ -2599,7 +2594,7 @@ Retrieve all datasets visible to the authenticated user (schema endpoint).
 * **Return type:**
   Optional[List[Dict]]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### list_datasets_in_namespace_schema(namespace=None, user='self')
 
@@ -2613,7 +2608,7 @@ Retrieve datasets within a specific namespace (schema endpoint).
 * **Return type:**
   Optional[List[Dict]]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### get_current_user()
 
@@ -2649,7 +2644,7 @@ Create a new API token for the authenticated user.
 * **Return type:**
   Optional[Dict]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### delete_token(token_id)
 
@@ -2658,7 +2653,7 @@ Delete an API token.
 * **Parameters:**
   **token_id** (*str*) – ID of the token to delete.
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2673,7 +2668,7 @@ List permissions assigned to a token.
 * **Return type:**
   Optional[Dict]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### get_usage_history(on_or_after=None, before=None, page_size=25, page_cursor=None)
 
@@ -2689,7 +2684,7 @@ Retrieve historical usage data for the authenticated user.
 * **Return type:**
   Optional[Dict]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### get_usage_by_day(on_or_after=None, before=None, timezone='UTC')
 
@@ -2704,7 +2699,7 @@ Retrieve usage data aggregated by day for the authenticated user.
 * **Return type:**
   Optional[Dict]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### get_agent_run_status(run_id)
 
@@ -2720,7 +2715,7 @@ Get the current status of an agent run.
 * **Return type:**
   Optional[Dict]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### delete_agent_run(run_id)
 
@@ -2729,7 +2724,7 @@ Permanently delete an agent run and its resume checkpoint.
 * **Parameters:**
   **run_id** (*str*) – UUID of the agent run.
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails (e.g. 404 when
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails (e.g. 404 when
   the run does not exist or is not owned by the caller).
 * **Return type:**
   `None`
@@ -2745,7 +2740,7 @@ Resubmitting replaces the previous rating for the same run.
   * **thumbs_up** (*bool*) – True for a thumbs up, False for a thumbs down.
   * **comment** (*Optional* *[**str* *]*) – Optional free-text comment accompanying the rating.
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails (e.g. 404 when the
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails (e.g. 404 when the
   run does not exist or is not owned by the caller, 422 when it has not
   completed).
 * **Return type:**
@@ -2776,7 +2771,7 @@ streamed arrive as a single synthetic event instead:
 * **Return type:**
   Iterator[[AskEvent](#datalinks.api.datalinks.AskEvent)]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – On 404 or transport-level failure.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – On 404 or transport-level failure.
 
 #### share_dataset_access(username, role)
 
@@ -2790,7 +2785,7 @@ access. Re-sharing with a different role replaces the existing grant.
   * **role** (*str*) – `"viewer"` (read-only) or `"editor"` (read and write).
 * **Raises:**
   * **ValueError** – If `role` is not a valid access level.
-  * [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails (e.g. 403 when
+  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails (e.g. 403 when
     the caller does not own the dataset).
 * **Return type:**
   `None`
@@ -2804,7 +2799,7 @@ Remove a user’s access to the configured dataset.
   * **role** (*str*) – The granted access level to remove.
 * **Raises:**
   * **ValueError** – If `role` is not a valid access level.
-  * [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2828,7 +2823,7 @@ The grant cascades to every dataset in the namespace.
   * **role** (*str*) – `"viewer"` (read-only) or `"editor"` (read and write).
 * **Raises:**
   * **ValueError** – If `role` is not a valid access level.
-  * [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2841,7 +2836,7 @@ Remove a user’s access to the configured namespace.
   * **role** (*str*) – The granted access level to remove.
 * **Raises:**
   * **ValueError** – If `role` is not a valid access level.
-  * [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  * [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 * **Return type:**
   `None`
 
@@ -2866,7 +2861,7 @@ List the caller’s conversations within a namespace (most-recently-updated firs
 * **Return type:**
   Optional[Dict]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 #### get_conversation(conversation_id)
 
@@ -2881,7 +2876,7 @@ Get a conversation and its turns (oldest first).
 * **Return type:**
   Optional[Dict]
 * **Raises:**
-  [**DataLinksRequestError**](#datalinks.api.datalinks.DataLinksRequestError) – If the HTTP request fails.
+  [**DataLinksRequestError**](#datalinks.api.DataLinksRequestError) – If the HTTP request fails.
 
 ## datalinks.api.ingest_proxy module
 
