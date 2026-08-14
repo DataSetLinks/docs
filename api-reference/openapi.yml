@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DataLinks
-  version: 2.21.1
+  version: 2.22.1
 servers:
   - url: https://api.datalinks.com/api/v1
     description: production server
@@ -66,6 +66,9 @@ paths:
         Protocol errors are returned as JSON-RPC error objects with HTTP 200. The target namespace is supplied
         in the message `metadata.namespace`; the acting user is taken from the bearer token.
         Request and response bodies follow the A2A 1.0 spec (https://a2a-protocol.org).
+        An agent whose card advertises the caller-context extension also accepts context established before it was
+        called, as `data` parts tagged with the extension URI; a malformed or oversized payload, or context sent to an
+        agent that does not advertise it, is an `InvalidParams` error. See docs/a2a-caller-context.md.
       operationId: a2aJsonRpc
       parameters:
         - name: agentName
@@ -116,12 +119,10 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CleanerAgentCodeFile"
+                $ref: "#/components/schemas/CleanerAgentCodeFilesResponse"
         "404":
           description: The cleaning task does not exist.
-  /agents/{username}/{namespace}/{data  setName}/requestCleaning:
+  /agents/{username}/{namespace}/{datasetName}/requestCleaning:
     post:
       tags:
         - agents
@@ -164,6 +165,10 @@ paths:
       responses:
         "201":
           description: Schedules a new cleaning task.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestCleaningResponse"
         "400":
           description: Request body is invalid or malformed JSON.
         "404":
@@ -726,8 +731,136 @@ paths:
       responses:
         "200":
           description: Returns the ingestion result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestDataResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
+  /build-specs:
+    get:
+      tags:
+        - buildspecs
+      summary: List the caller's BuildSpecs
+      description: Returns every BuildSpec owned by the authenticated user.
+      operationId: listBuildSpecs
+      responses:
+        "200":
+          description: The caller's BuildSpecs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BuildSpecListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags:
+        - buildspecs
+      summary: Create a BuildSpec
+      description: |
+        Create a derived-dataset transformation definition. Datasets are addressed by
+        user/namespace/dataset name. The caller must have access to every input and the destination.
+      operationId: createBuildSpec
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BuildSpecRequest"
+        required: true
+      responses:
+        "201":
+          description: The created BuildSpec.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BuildSpecResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableContent"
+  /build-specs/{buildSpecId}:
+    get:
+      tags:
+        - buildspecs
+      summary: Get a BuildSpec
+      operationId: getBuildSpec
+      parameters:
+        - name: buildSpecId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: The BuildSpec.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BuildSpecResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags:
+        - buildspecs
+      summary: Edit a BuildSpec
+      description: Replace the definition and bump its version. Datasets are addressed by name.
+      operationId: editBuildSpec
+      parameters:
+        - name: buildSpecId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BuildSpecRequest"
+        required: true
+      responses:
+        "200":
+          description: The updated BuildSpec.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BuildSpecResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/UnprocessableContent"
+    delete:
+      tags:
+        - buildspecs
+      summary: Delete a BuildSpec
+      operationId: deleteBuildSpec
+      parameters:
+        - name: buildSpecId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /ingestionTracking/{ingestionId}/retry:
     post:
       tags:
@@ -1801,7 +1934,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        "204":
           description: Deletes the specified token.
         "403":
           description: Forbidden. Restricted token cannot manage API tokens.
@@ -1872,11 +2005,10 @@ paths:
             default: 25
         - name: pageCursor
           in: query
-          description: Cursor for pagination (JSON object).
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserUsageHistoryCursor"
+          description: "Cursor for pagination, as a JSON-encoded string. Pass back the `meta.pageCursor` object from the previous response, serialised to JSON — see the UserUsageHistoryCursor schema for its shape."
+          schema:
+            type: string
+          example: "{\"lastStartTime\":\"2021-01-01T12:12:12.000Z\",\"lastObservationId\":\"obs_12345\"}"
       responses:
         "200":
           description: Returns usage history.
@@ -2245,8 +2377,7 @@ components:
           type: array
           items:
             type: object
-            additionalProperties:
-              type: string
+            additionalProperties: true
         infer:
           $ref: "#/components/schemas/IngestRequestInfer"
         link:
@@ -2537,6 +2668,76 @@ components:
           description: Ingestion id created for background ingestion.
           format: uuid
           example: 550e8400-e29b-41d4-a716-446655440000
+    BuildSpecRequest:
+      required:
+        - code
+        - destination
+        - sources
+      type: object
+      properties:
+        sources:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/DatasetCoordinate"
+        destination:
+          $ref: "#/components/schemas/DatasetCoordinate"
+        code:
+          $ref: "#/components/schemas/BuildSpecCode"
+    BuildSpecResponse:
+      required:
+        - code
+        - createdAt
+        - destination
+        - id
+        - owner
+        - sources
+        - updatedAt
+        - version
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner:
+          type: string
+          description: Username of the BuildSpec's owner.
+        version:
+          type: integer
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/DatasetCoordinate"
+        destination:
+          $ref: "#/components/schemas/DatasetCoordinate"
+        code:
+          $ref: "#/components/schemas/BuildSpecCode"
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+    DatasetCoordinate:
+      required:
+        - datasetName
+        - namespace
+        - owner
+      type: object
+      properties:
+        owner:
+          type: string
+          description: Owner username of the dataset's namespace.
+        namespace:
+          type: string
+        datasetName:
+          type: string
+    BuildSpecCode:
+      required:
+        - payload
+      type: object
+      properties:
+        payload:
+          type: string
+          description: Opaque code payload; jvmRest never interprets it.
     CleanerAgentCodeFilesResponse:
       required:
         - files
@@ -2810,6 +3011,26 @@ components:
           $ref: "#/components/schemas/DataDescription"
         schemaDefinition:
           $ref: "#/components/schemas/SchemaDefinition"
+    IngestDataResponse:
+      required:
+        - indexed
+      type: object
+      properties:
+        indexed:
+          type: integer
+          description: Number of records indexed by this request.
+          format: int64
+          example: 42
+    BuildSpecListResponse:
+      required:
+        - items
+      type: object
+      properties:
+        items:
+          type: array
+          description: The caller's BuildSpecs
+          items:
+            $ref: "#/components/schemas/BuildSpecResponse"
     IngestLinksResponse:
       type: array
       items:
@@ -2844,9 +3065,21 @@ components:
       type: object
       properties:
         from:
-          $ref: "#/components/schemas/ApiStringColumnIdentifier"
+          example:
+            username: johndoe
+            namespace: cinematography
+            dataset: movies
+            columnName: director
+          allOf:
+            - $ref: "#/components/schemas/ApiStringColumnIdentifier"
         to:
-          $ref: "#/components/schemas/ApiStringColumnIdentifier"
+          example:
+            username: janedoe
+            namespace: entertainment
+            dataset: films
+            columnName: director_name
+          allOf:
+            - $ref: "#/components/schemas/ApiStringColumnIdentifier"
         options:
           description: Flexible options map for match configuration.
           oneOf:
@@ -3152,6 +3385,8 @@ components:
         webSearch:
           type: boolean
           description: "Override web search for this request: false disables it; omit (or true) to use the deployment default."
+        callerContext:
+          $ref: "#/components/schemas/CallerContext"
     AutoRagStageModels:
       type: object
       properties:
@@ -3170,6 +3405,51 @@ components:
         provider:
           type: string
       description: "Model selection for a single agent stage, applied as a (model, provider) pair. Precedence is resolved per stage — this override, then the run-wide model/provider, then the configured stage default — and the highest-precedence level that sets either field wins as a whole: its unset field is not merged from a lower level but resolves to the provider default (default provider, then that provider's default model). So sending only the run-wide model with no provider routes every stage to the default provider."
+    CallerContext:
+      type: object
+      properties:
+        turns:
+          type: array
+          description: "Prior exchange in the calling system, oldest first."
+          items:
+            $ref: "#/components/schemas/CallerContextTurn"
+        facts:
+          type: array
+          description: "Values the calling system asserts. Where a label repeats, the later entry supersedes the earlier one."
+          items:
+            $ref: "#/components/schemas/CallerContextFact"
+      description: "Context established outside this platform — typically by an agent the calling system ran before this one. It is rendered into the planning and answering prompts as caller-asserted background: it never overrides data retrieved from the datasets, and it never widens data access. Applies to the turn it is sent with."
+    CallerContextTurn:
+      required:
+        - role
+        - text
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+            - user
+            - agent
+        text:
+          type: string
+        agentName:
+          type: string
+          description: Which upstream agent produced this turn. Shown to the model in place of the bare role.
+    CallerContextFact:
+      required:
+        - label
+        - value
+      type: object
+      properties:
+        label:
+          type: string
+          example: tenant
+        value:
+          type: string
+          example: acme
+        source:
+          type: string
+          description: Which upstream agent asserted this fact.
     AutoRagResponseData:
       required:
         - response
@@ -3202,7 +3482,7 @@ components:
               data:
                 $ref: "#/components/schemas/DataArray"
     AutoRagStreamEvent:
-      oneOf:
+      anyOf:
         - $ref: "#/components/schemas/AutoRagPlanEvent"
         - $ref: "#/components/schemas/AutoRagStepEvent"
         - $ref: "#/components/schemas/AutoRagAnswerEvent"
@@ -3448,9 +3728,6 @@ components:
         name:
           type: string
         accessRestrictedTo:
-          required:
-            - datasets
-            - namespaces
           type: array
           items:
             $ref: "#/components/schemas/TokenPermissionEntry"
@@ -3517,7 +3794,9 @@ components:
       type: object
       properties:
         pageCursor:
-          $ref: "#/components/schemas/UserUsageHistoryCursor"
+          description: Cursor for fetching the next page of results.
+          allOf:
+            - $ref: "#/components/schemas/UserUsageHistoryCursor"
         pageSize:
           type: integer
           description: Number of items per page.
@@ -3680,9 +3959,13 @@ components:
           description: "Optional name/label for the ingestion (e.g., original filename)."
           example: sales-data-2024.csv
         infer:
-          $ref: "#/components/schemas/IngestRequestInfer"
+          description: Optional inference pipeline steps to run on each batch of data after reading from S3.
+          allOf:
+            - $ref: "#/components/schemas/IngestRequestInfer"
         link:
-          $ref: "#/components/schemas/IngestLink"
+          description: Optional entity resolution configuration.
+          allOf:
+            - $ref: "#/components/schemas/IngestLink"
         inferBatchSize:
           type: integer
           description: Number of rows per LLM inference batch. Defaults to 1000. Reduce for large files to avoid S3 read timeouts caused by slow LLM processing.
@@ -4094,6 +4377,13 @@ components:
       schema:
         type: boolean
       example: true
+    BuildSpecId:
+      name: buildSpecId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     IngestionId:
       name: ingestionId
       in: path
