@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: DataLinks
-  version: 2.22.1
+  version: 2.23.0
 servers:
   - url: https://api.datalinks.com/api/v1
     description: production server
@@ -759,7 +759,7 @@ paths:
       summary: Create a BuildSpec
       description: |
         Create a derived-dataset transformation definition. Datasets are addressed by
-        user/namespace/dataset name. The caller must have access to every input and the destination.
+        user/namespace/dataset name. The caller must have access to every source and every destination.
       operationId: createBuildSpec
       requestBody:
         content:
@@ -857,6 +857,85 @@ paths:
       responses:
         "204":
           description: Deleted.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /build-specs/{buildSpecId}/run:
+    post:
+      tags:
+        - buildspecs
+      summary: Schedule a build (create a BuildRun)
+      description: |
+        Schedule a build of the BuildSpec. Re-checks the caller's access to the spec's datasets and
+        rejects the request if the spec already has an active run. Returns the new run in status `scheduled`.
+      operationId: scheduleBuild
+      parameters:
+        - name: buildSpecId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "201":
+          description: The created BuildRun.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BuildRunResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /build-specs/{buildSpecId}/runs:
+    get:
+      tags:
+        - buildspecs
+      summary: List a BuildSpec's runs
+      operationId: listBuildRuns
+      parameters:
+        - name: buildSpecId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: "The BuildSpec's runs, newest first."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BuildRunListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /build-runs/{buildRunId}:
+    get:
+      tags:
+        - buildspecs
+      summary: Get a BuildRun
+      operationId: getBuildRun
+      parameters:
+        - name: buildRunId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: The BuildRun.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BuildRunResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
@@ -2671,7 +2750,7 @@ components:
     BuildSpecRequest:
       required:
         - code
-        - destination
+        - destinations
         - sources
       type: object
       properties:
@@ -2680,15 +2759,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DatasetCoordinate"
-        destination:
-          $ref: "#/components/schemas/DatasetCoordinate"
+        destinations:
+          minItems: 1
+          type: array
+          items:
+            $ref: "#/components/schemas/DatasetCoordinate"
         code:
           $ref: "#/components/schemas/BuildSpecCode"
     BuildSpecResponse:
       required:
         - code
         - createdAt
-        - destination
+        - destinations
         - id
         - owner
         - sources
@@ -2708,14 +2790,22 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DatasetCoordinate"
-        destination:
-          $ref: "#/components/schemas/DatasetCoordinate"
+        destinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DatasetCoordinate"
         code:
           $ref: "#/components/schemas/BuildSpecCode"
         createdAt:
           type: string
+          description: Timestamp of the BuildSpec creation.
+          format: date-time
+          example: 2005-04-02T19:37:00Z
         updatedAt:
           type: string
+          description: Timestamp of the BuildSpec last update.
+          format: date-time
+          example: 2005-04-02T19:37:00Z
     DatasetCoordinate:
       required:
         - datasetName
@@ -2737,7 +2827,8 @@ components:
       properties:
         payload:
           type: string
-          description: Opaque code payload; jvmRest never interprets it.
+          description: "Code payload, base64-encoded by the client. Only Python code is supported."
+          example: cGFzcwo=
     CleanerAgentCodeFilesResponse:
       required:
         - files
@@ -3031,6 +3122,61 @@ components:
           description: The caller's BuildSpecs
           items:
             $ref: "#/components/schemas/BuildSpecResponse"
+    BuildRunResponse:
+      required:
+        - buildSpecId
+        - createdAt
+        - id
+        - retries
+        - specVersion
+        - status
+        - updatedAt
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        buildSpecId:
+          type: string
+          format: uuid
+        specVersion:
+          type: integer
+          description: The BuildSpec version this run executes (snapshotted at schedule time).
+        status:
+          type: string
+          enum:
+            - Scheduled
+            - Exporting
+            - Claimable
+            - Running
+            - Produced
+            - Ingesting
+            - Ingested
+            - Failed
+        retries:
+          type: integer
+        errorMessage:
+          type: string
+        createdAt:
+          type: string
+          description: Timestamp of the BuildRun creation.
+          format: date-time
+          example: 2005-04-02T19:37:00Z
+        updatedAt:
+          type: string
+          description: Timestamp of the BuildRun last update.
+          format: date-time
+          example: 2005-04-02T19:37:00Z
+    BuildRunListResponse:
+      required:
+        - items
+      type: object
+      properties:
+        items:
+          type: array
+          description: "The BuildSpec's runs, newest first."
+          items:
+            $ref: "#/components/schemas/BuildRunResponse"
     IngestLinksResponse:
       type: array
       items:
@@ -4379,6 +4525,13 @@ components:
       example: true
     BuildSpecId:
       name: buildSpecId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    BuildRunId:
+      name: buildRunId
       in: path
       required: true
       schema:
